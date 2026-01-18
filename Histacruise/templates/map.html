@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Travel Map{% endblock %}
+
+{% block content %}
+    <h2>Your Cruise Travel Map</h2>
+
+    {% if map_data and total_ports > 0 %}
+        <div class="map-controls">
+            <div class="map-stats">
+                <span><strong>{{ total_ports }}</strong> unique ports visited</span>
+            </div>
+            <div class="map-filters">
+                <label for="colorBySelect">Color by:</label>
+                <select id="colorBySelect" class="filter-select">
+                    <option value="cruiseline">Cruise Line</option>
+                    <option value="year">Year</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="cruiseMap"></div>
+
+        <div class="map-legend" id="mapLegend">
+            <h4>Legend</h4>
+            <div class="legend-items">
+                {% for line, color in cruiseline_colors.items() %}
+                <div class="legend-item">
+                    <span class="legend-color" style="background: {{ color }};"></span>
+                    <span class="legend-label">{{ line }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if most_visited_ports %}
+        <div class="port-stats">
+            <h3>Most Visited Ports</h3>
+            <div class="port-stats-grid">
+                {% for port_name, count in most_visited_ports %}
+                <div class="port-stat-item">
+                    <span class="port-name">{{ port_name }}</span>
+                    <span class="port-count">{{ count }} visit{{ 's' if count > 1 else '' }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    {% else %}
+        <div class="no-data-message">
+            <p>No ports tracked yet. Add ports to your cruises to see them on the map!</p>
+            <p class="sub-message">You can add ports when creating or editing a cruise from the History page.</p>
+            <a href="{{ url_for('history') }}" class="btn-primary">Go to History</a>
+        </div>
+    {% endif %}
+
+    <script>
+        {% if map_data and total_ports > 0 %}
+        const mapData = {{ map_data | tojson }};
+        const cruiselineColors = {{ cruiseline_colors | tojson }};
+
+        // Generate year colors
+        const years = [...new Set(mapData.map(c => c.year))].sort();
+        const yearColors = {};
+        const yearColorPalette = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a', '#00c9ff', '#92fe9d'];
+        years.forEach((year, i) => {
+            yearColors[year] = yearColorPalette[i % yearColorPalette.length];
+        });
+
+        // Initialize map
+        const map = L.map('cruiseMap').setView([20, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        let markers = [];
+        let polylines = [];
+
+        function clearMap() {
+            markers.forEach(m => map.removeLayer(m));
+            polylines.forEach(p => map.removeLayer(p));
+            markers = [];
+            polylines = [];
+        }
+
+        function drawMap(colorBy) {
+            clearMap();
+
+            mapData.forEach(cruise => {
+                let color;
+                if (colorBy === 'cruiseline') {
+                    color = cruiselineColors[cruise.cruiseline] || '#667eea';
+                } else {
+                    color = yearColors[cruise.year] || '#667eea';
+                }
+
+                // Draw route polyline
+                if (cruise.ports.length > 1) {
+                    const coords = cruise.ports.map(p => [p.lat, p.lng]);
+                    const polyline = L.polyline(coords, {
+                        color: color,
+                        weight: 3,
+                        opacity: 0.7
+                    }).addTo(map);
+                    polylines.push(polyline);
+                }
+
+                // Add port markers
+                cruise.ports.forEach((port, idx) => {
+                    const marker = L.circleMarker([port.lat, port.lng], {
+                        radius: 8,
+                        fillColor: color,
+                        color: '#fff',
+                        weight: 2,
+                        fillOpacity: 0.8
+                    })
+                    .bindPopup(`
+                        <strong>${port.name}</strong><br>
+                        ${port.country}<br>
+                        <em>${cruise.ship}</em> (${cruise.cruiseline})<br>
+                        ${cruise.year}
+                    `)
+                    .addTo(map);
+                    markers.push(marker);
+                });
+            });
+
+            // Update legend
+            updateLegend(colorBy);
+        }
+
+        function updateLegend(colorBy) {
+            const legendItems = document.querySelector('.legend-items');
+            legendItems.innerHTML = '';
+
+            if (colorBy === 'cruiseline') {
+                for (const [line, color] of Object.entries(cruiselineColors)) {
+                    legendItems.innerHTML += `
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: ${color};"></span>
+                            <span class="legend-label">${line}</span>
+                        </div>
+                    `;
+                }
+            } else {
+                for (const [year, color] of Object.entries(yearColors)) {
+                    legendItems.innerHTML += `
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: ${color};"></span>
+                            <span class="legend-label">${year}</span>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Initial draw
+        drawMap('cruiseline');
+
+        // Color by selector
+        document.getElementById('colorBySelect').addEventListener('change', function() {
+            drawMap(this.value);
+        });
+
+        // Fit bounds to show all ports
+        if (mapData.length > 0) {
+            const allCoords = mapData.flatMap(c => c.ports.map(p => [p.lat, p.lng]));
+            if (allCoords.length > 0) {
+                map.fitBounds(allCoords, { padding: [50, 50] });
+            }
+        }
+        {% endif %}
+    </script>
+{% endblock %}

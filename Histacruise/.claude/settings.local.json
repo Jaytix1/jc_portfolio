@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m py_compile:*)",
+      "Bash(python:*)",
+      "Bash(venvScriptspython -c \"from app import app; print\\(''Import successful - no runtime errors detected''\\)\")",
+      "Bash(./venv/Scripts/python:*)",
+      "Bash(dir \"C:\\\\Users\\\\joshu\\\\Desktop\\\\Histacruise\" /s)"
+    ]
+  }
+}

@@ -1,0 +1,1008 @@
+{% extends "base.html" %}
+
+{% block title %}My Cruise History{% endblock %}
+
+{% block content %}
+    <h2>My Cruise History</h2>
+    
+    <div class="history-controls">
+        <button id="openAddModal" class="btn-primary">Add Cruise</button>
+        {% if cruises %}
+        <div class="view-toggle">
+            <button id="tableViewBtn" class="view-btn active">Table View</button>
+            <button id="cardViewBtn" class="view-btn">Card View</button>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if cruises %}
+        <!-- Filters -->
+        <div class="filter-container" style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+            <h3 style="margin-bottom: 15px; color: #16318c;">Filter Cruises</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                <div>
+                    <label for="filterCruiseLine">Cruise Line:</label>
+                    <select id="filterCruiseLine" class="filter-select">
+                        <option value="">All Cruise Lines</option>
+                        {% for cruiseline in cruiselines %}
+                            <option value="{{ cruiseline.id }}">{{ cruiseline.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="filterRegion">Region:</label>
+                    <select id="filterRegion" class="filter-select">
+                        <option value="">All Regions</option>
+                        {% for region in regions %}
+                            <option value="{{ region.id }}">{{ region.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="searchBox">Search:</label>
+                    <input type="text" id="searchBox" placeholder="Search ship or cruise line..." style="padding: 10px; width: 100%; border: 2px solid #ddd; border-radius: 6px;">
+                </div>
+            </div>
+            <button id="resetFilters" class="btn-secondary" style="margin-top: 15px;">Reset Filters</button>
+        </div>
+
+        <!-- Table View -->
+        <div id="tableView">
+        <table id="cruiseTable">
+            <thead>
+                <tr>
+                    <th class="sortable" data-column="begindate">Begin Date ▼</th>
+                    <th class="sortable" data-column="enddate">End Date ▼</th>
+                    <th class="sortable" data-column="cruiselineName">Cruise Line ▼</th>
+                    <th class="sortable" data-column="shipName">Ship Name ▼</th>
+                    <th class="sortable" data-column="regionName">Region ▼</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="cruiseTableBody">
+                {% for cruise in cruises %}
+                <tr class="cruise-row" 
+                    data-cruiseline-id="{{ cruise.cruiseline_id }}"
+                    data-region-id="{{ cruise.region_id }}"
+                    data-begindate="{{ cruise.begindate }}"
+                    data-enddate="{{ cruise.enddate }}"
+                    data-cruiseline-name="{{ cruise.cruiseline.name|lower }}"
+                    data-ship-name="{{ cruise.ship.name|lower }}"
+                    data-region-name="{{ cruise.region.name|lower }}">
+                    <td>{{ cruise.begindate }}</td>
+                    <td>{{ cruise.enddate }}</td>
+                    <td>{{ cruise.cruiseline.name }}</td>
+                    <td>{{ cruise.ship.name }}</td>
+                    <td>{{ cruise.region.name }}</td>
+                    <td>
+                        <div style="display: flex; gap: 5px; justify-content: center;">
+                                <button class="action-btn action-primary view-btn" 
+                                    data-cruise-id="{{ cruise.cruiseid }}"
+                                    data-begin-date="{{ cruise.begindate }}"
+                                    data-end-date="{{ cruise.enddate }}"
+                                    data-cruiseline-name="{{ cruise.cruiseline.name }}"
+                                    data-ship-name="{{ cruise.ship.name }}"
+                                    data-region-name="{{ cruise.region.name }}"
+                                    data-cabin-number="{{ cruise.cabin_number or 'Not specified' }}"
+                                    data-deck="{{ cruise.deck or 'Not specified' }}"
+                                    data-cost="{{ cruise.cost or 'Not specified' }}"
+                                    data-rating="{{ cruise.rating or 'Not rated' }}"
+                                    data-notes="{{ cruise.notes or 'No notes' }}">
+                                View
+                            </button>
+                            <button class="action-btn action-primary edit-btn" 
+                                    data-cruise-id="{{ cruise.cruiseid }}"
+                                    data-begin-date="{{ cruise.begindate }}"
+                                    data-end-date="{{ cruise.enddate }}"
+                                    data-cruiseline-id="{{ cruise.cruiseline_id }}"
+                                    data-ship-id="{{ cruise.ship_id }}"
+                                    data-region-id="{{ cruise.region_id }}"
+                                    data-cabin-number="{{ cruise.cabin_number or '' }}"
+                                    data-deck="{{ cruise.deck or '' }}"
+                                    data-cost="{{ cruise.cost or '' }}"
+                                    data-rating="{{ cruise.rating or '' }}"
+                                    data-notes="{{ cruise.notes or '' }}">
+                                Edit
+                            </button>
+                            <form method="POST" action="{{ url_for('delete_cruise', cruise_id=cruise.cruiseid) }}" class="delete-form" style="margin: 0;">
+                                <button type="button" class="action-btn action-danger delete-btn">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+
+        <!-- Card View -->
+        <div id="cardView" class="cruise-cards-grid" style="display: none;">
+            {% for cruise in cruises %}
+            <div class="cruise-card"
+                data-cruiseline-id="{{ cruise.cruiseline_id }}"
+                data-region-id="{{ cruise.region_id }}"
+                data-cruiseline-name="{{ cruise.cruiseline.name|lower }}"
+                data-ship-name="{{ cruise.ship.name|lower }}">
+                {% if cruise.photos and (cruise.photos|selectattr('is_cover')|first or cruise.photos[0]) %}
+                    {% set cover = cruise.photos|selectattr('is_cover')|first or cruise.photos[0] %}
+                    <div class="cruise-card-image">
+                        <img src="{{ url_for('static', filename='uploads/cruise_photos/' + cover.filename) }}" alt="{{ cruise.ship.name }}">
+                    </div>
+                {% else %}
+                    <div class="cruise-card-image placeholder">
+                        <span>No Photo</span>
+                    </div>
+                {% endif %}
+                <div class="cruise-card-content">
+                    <h4 class="cruise-card-ship">{{ cruise.ship.name }}</h4>
+                    <p class="cruise-card-cruiseline">{{ cruise.cruiseline.name }}</p>
+                    <p class="cruise-card-dates">{{ cruise.begindate.strftime('%b %d') }} - {{ cruise.enddate.strftime('%b %d, %Y') }}</p>
+                    <p class="cruise-card-region">{{ cruise.region.name }}</p>
+                    {% if cruise.rating %}
+                    <p class="cruise-card-rating">{{ '★' * cruise.rating }}{{ '☆' * (5 - cruise.rating) }}</p>
+                    {% endif %}
+                </div>
+                <div class="cruise-card-actions">
+                    <button class="action-btn action-primary view-btn"
+                        data-cruise-id="{{ cruise.cruiseid }}"
+                        data-begin-date="{{ cruise.begindate }}"
+                        data-end-date="{{ cruise.enddate }}"
+                        data-cruiseline-name="{{ cruise.cruiseline.name }}"
+                        data-ship-name="{{ cruise.ship.name }}"
+                        data-region-name="{{ cruise.region.name }}"
+                        data-cabin-number="{{ cruise.cabin_number or 'Not specified' }}"
+                        data-deck="{{ cruise.deck or 'Not specified' }}"
+                        data-cost="{{ cruise.cost or 'Not specified' }}"
+                        data-rating="{{ cruise.rating or 'Not rated' }}"
+                        data-notes="{{ cruise.notes or 'No notes' }}">View</button>
+                    <button class="action-btn action-primary edit-btn"
+                        data-cruise-id="{{ cruise.cruiseid }}"
+                        data-begin-date="{{ cruise.begindate }}"
+                        data-end-date="{{ cruise.enddate }}"
+                        data-cruiseline-id="{{ cruise.cruiseline_id }}"
+                        data-ship-id="{{ cruise.ship_id }}"
+                        data-region-id="{{ cruise.region_id }}"
+                        data-cabin-number="{{ cruise.cabin_number or '' }}"
+                        data-deck="{{ cruise.deck or '' }}"
+                        data-cost="{{ cruise.cost or '' }}"
+                        data-rating="{{ cruise.rating or '' }}"
+                        data-notes="{{ cruise.notes or '' }}">Edit</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-cruises">
+            <p>No cruises yet. Click "Add Cruise" to get started!</p>
+        </div>
+    {% endif %}
+
+    <!-- Add Cruise Modal -->
+    <div id="addCruiseModal" class="modal">
+        <div class="modal-content-large">
+            <span class="close-modal" id="closeAddModal">&times;</span>
+            <h3>Add a New Cruise</h3>
+            
+            <form method="POST" action="{{ url_for('add_cruise') }}">
+                <h4 style="color: #667eea; margin-bottom: 10px;">Basic Information</h4>
+                
+                <div>
+                    <label for="begindate">Begin Date: *</label>
+                    <input type="date" id="begindate" name="begindate" required>
+                </div>
+
+                <div>
+                    <label for="enddate">End Date: *</label>
+                    <input type="date" id="enddate" name="enddate" required>
+                </div>
+
+                <div>
+                    <label for="cruiseline_id">Cruise Line: *</label>
+                    <select id="cruiseline_id" name="cruiseline_id" required>
+                        <option value="">-- Select Cruise Line --</option>
+                        {% for cruiseline in cruiselines %}
+                            <option value="{{ cruiseline.id }}">{{ cruiseline.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="ship_id">Ship Name: *</label>
+                    <select id="ship_id" name="ship_id" required>
+                        <option value="">-- First select a cruise line --</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="region_id">Cruise Region: *</label>
+                    <select id="region_id" name="region_id" required>
+                        <option value="">-- Select Region --</option>
+                        {% for region in regions %}
+                            <option value="{{ region.id }}">{{ region.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <hr style="margin: 20px 0; border: 1px solid #ddd;">
+                
+                <h4 style="color: #667eea; margin-bottom: 10px;">Additional Details (Optional)</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label for="cabin_number">Cabin Number:</label>
+                        <input type="text" id="cabin_number" name="cabin_number" placeholder="e.g., 8234">
+                    </div>
+                    
+                    <div>
+                        <label for="deck">Deck:</label>
+                        <input type="text" id="deck" name="deck" placeholder="e.g., Deck 8">
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="cost">Total Cost ($):</label>
+                    <input type="number" id="cost" name="cost" step="0.01" placeholder="e.g., 1500.00">
+                </div>
+                
+                <div>
+                    <label for="rating">Rating:</label>
+                    <select id="rating" name="rating">
+                        <option value="">-- Select Rating --</option>
+                        <option value="5">⭐⭐⭐⭐⭐ (5 stars)</option>
+                        <option value="4">⭐⭐⭐⭐ (4 stars)</option>
+                        <option value="3">⭐⭐⭐ (3 stars)</option>
+                        <option value="2">⭐⭐ (2 stars)</option>
+                        <option value="1">⭐ (1 star)</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="notes">Notes/Memories:</label>
+                    <textarea id="notes" name="notes" rows="4" placeholder="Share your thoughts about this cruise..." style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; font-family: inherit;"></textarea>
+                </div>
+
+                <hr style="margin: 20px 0; border: 1px solid #ddd;">
+
+                <h4 style="color: #667eea; margin-bottom: 10px;">Ports Visited (Optional)</h4>
+                <p style="color: #666; font-size: 0.9em; margin-bottom: 10px;">Add ports in the order visited (embarkation first, disembarkation last)</p>
+
+                <div id="addPortsContainer" class="ports-container">
+                    <div class="port-entry">
+                        <select name="port_ids[]" class="port-select">
+                            <option value="">-- Select Port --</option>
+                            {% for port in ports %}
+                                <option value="{{ port.id }}">{{ port.name }}, {{ port.country }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="button" class="btn-remove-port" onclick="this.parentElement.remove()">X</button>
+                    </div>
+                </div>
+                <button type="button" class="btn-secondary" id="addMorePorts" style="margin-top: 10px;">+ Add Another Port</button>
+
+                <div class="modal-buttons">
+                    <button type="button" class="btn-secondary" id="cancelAdd">Cancel</button>
+                    <button type="submit" class="btn-primary">Add Cruise</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Cruise Modal -->
+    <div id="editCruiseModal" class="modal">
+        <div class="modal-content-large">
+            <span class="close-modal" id="closeEditModal">&times;</span>
+            <h3>Edit Cruise</h3>
+            
+            <form method="POST" id="editCruiseForm">
+                <h4 style="color: #667eea; margin-bottom: 10px;">Basic Information</h4>
+                
+                <div>
+                    <label for="edit_begindate">Begin Date: *</label>
+                    <input type="date" id="edit_begindate" name="begindate" required>
+                </div>
+
+                <div>
+                    <label for="edit_enddate">End Date: *</label>
+                    <input type="date" id="edit_enddate" name="enddate" required>
+                </div>
+
+                <div>
+                    <label for="edit_cruiseline_id">Cruise Line: *</label>
+                    <select id="edit_cruiseline_id" name="cruiseline_id" required>
+                        <option value="">-- Select Cruise Line --</option>
+                        {% for cruiseline in cruiselines %}
+                            <option value="{{ cruiseline.id }}">{{ cruiseline.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="edit_ship_id">Ship Name: *</label>
+                    <select id="edit_ship_id" name="ship_id" required>
+                        <option value="">-- Select Ship --</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="edit_region_id">Cruise Region: *</label>
+                    <select id="edit_region_id" name="region_id" required>
+                        <option value="">-- Select Region --</option>
+                        {% for region in regions %}
+                            <option value="{{ region.id }}">{{ region.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <hr style="margin: 20px 0; border: 1px solid #ddd;">
+                
+                <h4 style="color: #667eea; margin-bottom: 10px;">Additional Details (Optional)</h4>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label for="edit_cabin_number">Cabin Number:</label>
+                        <input type="text" id="edit_cabin_number" name="cabin_number" placeholder="e.g., 8234">
+                    </div>
+                    
+                    <div>
+                        <label for="edit_deck">Deck:</label>
+                        <input type="text" id="edit_deck" name="deck" placeholder="e.g., Deck 8">
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="edit_cost">Total Cost ($):</label>
+                    <input type="number" id="edit_cost" name="cost" step="0.01" placeholder="e.g., 1500.00">
+                </div>
+                
+                <div>
+                    <label for="edit_rating">Rating:</label>
+                    <select id="edit_rating" name="rating">
+                        <option value="">-- Select Rating --</option>
+                        <option value="5">⭐⭐⭐⭐⭐ (5 stars)</option>
+                        <option value="4">⭐⭐⭐⭐ (4 stars)</option>
+                        <option value="3">⭐⭐⭐ (3 stars)</option>
+                        <option value="2">⭐⭐ (2 stars)</option>
+                        <option value="1">⭐ (1 star)</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="edit_notes">Notes/Memories:</label>
+                    <textarea id="edit_notes" name="notes" rows="4" placeholder="Share your thoughts about this cruise..." style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; font-family: inherit;"></textarea>
+                </div>
+
+                <hr style="margin: 20px 0; border: 1px solid #ddd;">
+
+                <h4 style="color: #667eea; margin-bottom: 10px;">Ports Visited (Optional)</h4>
+                <p style="color: #666; font-size: 0.9em; margin-bottom: 10px;">Add ports in the order visited (embarkation first, disembarkation last)</p>
+
+                <div id="editPortsContainer" class="ports-container">
+                    <!-- Ports will be populated by JavaScript -->
+                </div>
+                <button type="button" class="btn-secondary" id="editAddMorePorts" style="margin-top: 10px;">+ Add Another Port</button>
+
+                <div class="modal-buttons">
+                    <button type="button" class="btn-secondary" id="cancelEdit">Cancel</button>
+                    <button type="submit" class="btn-primary">Update Cruise</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Cruise Details Modal -->
+    <div id="viewCruiseModal" class="modal">
+        <div class="modal-content-large">
+            <span class="close-modal" id="closeViewModal">&times;</span>
+            <h3>Cruise Details</h3>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div>
+                        <h4 style="color: #667eea; margin-bottom: 10px;">Basic Information</h4>
+                        <p><strong>Cruise Line:</strong> <span id="view_cruiseline"></span></p>
+                        <p><strong>Ship:</strong> <span id="view_ship"></span></p>
+                        <p><strong>Region:</strong> <span id="view_region"></span></p>
+                        <p><strong>Begin Date:</strong> <span id="view_begindate"></span></p>
+                        <p><strong>End Date:</strong> <span id="view_enddate"></span></p>
+                        <p><strong>Duration:</strong> <span id="view_duration"></span> days</p>
+                    </div>
+                    
+                    <div>
+                        <h4 style="color: #667eea; margin-bottom: 10px;">Cabin Details</h4>
+                        <p><strong>Cabin Number:</strong> <span id="view_cabin"></span></p>
+                        <p><strong>Deck:</strong> <span id="view_deck"></span></p>
+                        <p><strong>Total Cost:</strong> $<span id="view_cost"></span></p>
+                        <p><strong>Rating:</strong> <span id="view_rating"></span></p>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 style="color: #667eea; margin-bottom: 10px;">Notes & Memories</h4>
+                    <div style="background: white; padding: 15px; border-radius: 8px; min-height: 100px; white-space: pre-wrap;" id="view_notes"></div>
+                </div>
+
+                <!-- Photo Gallery Section -->
+                <div class="photo-gallery-section" style="margin-top: 20px;">
+                    <h4 style="color: #667eea; margin-bottom: 10px;">Photos</h4>
+                    <div id="viewPhotoGallery" class="photo-gallery"></div>
+                    <div class="photo-upload-area" style="margin-top: 15px;">
+                        <input type="file" id="photoUploadInput" multiple accept="image/*" style="display: none;">
+                        <button type="button" class="btn-primary" id="selectPhotosBtn">Select Photos</button>
+                        <button type="button" class="btn-primary" id="uploadPhotosBtn" style="display: none;">Upload Selected</button>
+                        <span id="selectedFilesCount"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn-secondary" id="closeViewBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h3>Confirm Deletion</h3>
+            <p>Are you sure you want to delete this cruise?</p>
+            <div class="modal-buttons">
+                <button id="cancelDelete" class="btn-secondary">Cancel</button>
+                <button id="confirmDelete" class="btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Store all ships data
+            const allShips = [
+                {% for ship in ships %}
+                {
+                    id: {{ ship.id }},
+                    name: "{{ ship.name }}",
+                    cruiseline_id: {{ ship.cruiseline_id }}
+                }{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ];
+
+            const allPorts = [
+                {% for port in ports %}
+                {
+                    id: {{ port.id }},
+                    name: "{{ port.name }}",
+                    country: "{{ port.country }}"
+                }{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ];
+
+            // Create port entry HTML
+            function createPortEntry(selectedPortId = '') {
+                const div = document.createElement('div');
+                div.className = 'port-entry';
+                div.innerHTML = `
+                    <select name="port_ids[]" class="port-select">
+                        <option value="">-- Select Port --</option>
+                        ${allPorts.map(p => `<option value="${p.id}" ${p.id == selectedPortId ? 'selected' : ''}>${p.name}, ${p.country}</option>`).join('')}
+                    </select>
+                    <button type="button" class="btn-remove-port" onclick="this.parentElement.remove()">X</button>
+                `;
+                return div;
+            }
+
+            // Add port buttons
+            document.getElementById('addMorePorts').addEventListener('click', function() {
+                document.getElementById('addPortsContainer').appendChild(createPortEntry());
+            });
+
+            document.getElementById('editAddMorePorts').addEventListener('click', function() {
+                document.getElementById('editPortsContainer').appendChild(createPortEntry());
+            });
+
+            // ===== ADD CRUISE MODAL =====
+            const addModal = document.getElementById('addCruiseModal');
+            const openAddBtn = document.getElementById('openAddModal');
+            const cancelAddBtn = document.getElementById('cancelAdd');
+            const closeAddModalBtn = document.getElementById('closeAddModal');
+            
+            openAddBtn.addEventListener('click', function() {
+                addModal.style.display = 'flex';
+            });
+            
+            cancelAddBtn.addEventListener('click', function() {
+                addModal.style.display = 'none';
+            });
+            
+            closeAddModalBtn.addEventListener('click', function() {
+                addModal.style.display = 'none';
+            });
+
+            // Add form - Ship filtering
+            const cruiselineSelect = document.getElementById('cruiseline_id');
+            const shipSelect = document.getElementById('ship_id');
+
+            cruiselineSelect.addEventListener('change', function() {
+                const selectedCruiselineId = parseInt(this.value);
+                
+                shipSelect.innerHTML = '<option value="">-- Select Ship --</option>';
+                
+                if (selectedCruiselineId) {
+                    const filteredShips = allShips.filter(ship => ship.cruiseline_id === selectedCruiselineId);
+                    
+                    filteredShips.forEach(ship => {
+                        const option = document.createElement('option');
+                        option.value = ship.id;
+                        option.textContent = ship.name;
+                        shipSelect.appendChild(option);
+                    });
+                }
+            });
+
+            // ===== EDIT CRUISE MODAL =====
+            const editModal = document.getElementById('editCruiseModal');
+            const editBtns = document.querySelectorAll('.edit-btn');
+            const cancelEditBtn = document.getElementById('cancelEdit');
+            const closeEditModalBtn = document.getElementById('closeEditModal');
+            const editForm = document.getElementById('editCruiseForm');
+            
+            const editCruiselineSelect = document.getElementById('edit_cruiseline_id');
+            const editShipSelect = document.getElementById('edit_ship_id');
+            
+            // Open edit modal and populate with cruise data
+            editBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const cruiseId = this.dataset.cruiseId;
+                    const beginDate = this.dataset.beginDate;
+                    const endDate = this.dataset.endDate;
+                    const cruiselineId = this.dataset.cruiselineId;
+                    const shipId = this.dataset.shipId;
+                    const regionId = this.dataset.regionId;
+                    const cabinNumber = this.dataset.cabinNumber;
+                    const deck = this.dataset.deck;
+                    const cost = this.dataset.cost;
+                    const rating = this.dataset.rating;
+                    const notes = this.dataset.notes;
+                    
+                    // Set form action
+                    editForm.action = `/edit_cruise/${cruiseId}`;
+                    
+                    // Populate basic fields
+                    document.getElementById('edit_begindate').value = beginDate;
+                    document.getElementById('edit_enddate').value = endDate;
+                    document.getElementById('edit_cruiseline_id').value = cruiselineId;
+                    document.getElementById('edit_region_id').value = regionId;
+                    
+                    // Populate optional fields
+                    document.getElementById('edit_cabin_number').value = cabinNumber;
+                    document.getElementById('edit_deck').value = deck;
+                    document.getElementById('edit_cost').value = cost;
+                    document.getElementById('edit_rating').value = rating;
+                    document.getElementById('edit_notes').value = notes;
+                    
+                    // Filter and select ship
+                    filterEditShips(parseInt(cruiselineId), parseInt(shipId));
+
+                    // Load ports for this cruise
+                    loadCruisePorts(cruiseId);
+
+                    // Show modal
+                    editModal.style.display = 'flex';
+                });
+            });
+
+            // Load ports for a cruise when editing
+            function loadCruisePorts(cruiseId) {
+                const container = document.getElementById('editPortsContainer');
+                container.innerHTML = '';
+
+                fetch(`/api/cruise_ports/${cruiseId}`)
+                    .then(response => response.json())
+                    .then(ports => {
+                        if (ports.length === 0) {
+                            container.appendChild(createPortEntry());
+                        } else {
+                            ports.forEach(port => {
+                                container.appendChild(createPortEntry(port.port_id));
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        container.appendChild(createPortEntry());
+                    });
+            }
+            
+            // Function to filter ships in edit form
+            function filterEditShips(cruiselineId, selectedShipId) {
+                editShipSelect.innerHTML = '<option value="">-- Select Ship --</option>';
+                
+                if (cruiselineId) {
+                    const filteredShips = allShips.filter(ship => ship.cruiseline_id === cruiselineId);
+                    
+                    filteredShips.forEach(ship => {
+                        const option = document.createElement('option');
+                        option.value = ship.id;
+                        option.textContent = ship.name;
+                        if (ship.id === selectedShipId) {
+                            option.selected = true;
+                        }
+                        editShipSelect.appendChild(option);
+                    });
+                }
+            }
+            
+            // Edit form - Ship filtering on cruise line change
+            editCruiselineSelect.addEventListener('change', function() {
+                const selectedCruiselineId = parseInt(this.value);
+                filterEditShips(selectedCruiselineId, null);
+            });
+            
+            cancelEditBtn.addEventListener('click', function() {
+                editModal.style.display = 'none';
+            });
+            
+            closeEditModalBtn.addEventListener('click', function() {
+                editModal.style.display = 'none';
+            });
+
+            // ===== VIEW CRUISE DETAILS MODAL =====
+            const viewModal = document.getElementById('viewCruiseModal');
+            const viewBtns = document.querySelectorAll('.view-btn');
+            const closeViewModalBtn = document.getElementById('closeViewModal');
+            const closeViewBtn = document.getElementById('closeViewBtn');
+
+            // Open view modal and populate with cruise data
+            let currentViewCruiseId = null;
+
+            viewBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    currentViewCruiseId = this.dataset.cruiseId;
+                    const beginDate = this.dataset.beginDate;
+                    const endDate = this.dataset.endDate;
+                    const cruiselineName = this.dataset.cruiselineName;
+                    const shipName = this.dataset.shipName;
+                    const regionName = this.dataset.regionName;
+                    const cabinNumber = this.dataset.cabinNumber;
+                    const deck = this.dataset.deck;
+                    const cost = this.dataset.cost;
+                    const rating = this.dataset.rating;
+                    const notes = this.dataset.notes;
+
+                    // Calculate duration
+                    const start = new Date(beginDate);
+                    const end = new Date(endDate);
+                    const duration = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+
+                    // Populate modal
+                    document.getElementById('view_cruiseline').textContent = cruiselineName;
+                    document.getElementById('view_ship').textContent = shipName;
+                    document.getElementById('view_region').textContent = regionName;
+                    document.getElementById('view_begindate').textContent = beginDate;
+                    document.getElementById('view_enddate').textContent = endDate;
+                    document.getElementById('view_duration').textContent = duration;
+                    document.getElementById('view_cabin').textContent = cabinNumber;
+                    document.getElementById('view_deck').textContent = deck;
+                    document.getElementById('view_cost').textContent = cost;
+
+                    // Format rating with stars
+                    let ratingDisplay = '';
+                    if (rating === 'Not rated') {
+                        ratingDisplay = 'Not rated';
+                    } else {
+                        const stars = '⭐'.repeat(parseInt(rating));
+                        ratingDisplay = `${stars} (${rating}/5)`;
+                    }
+                    document.getElementById('view_rating').textContent = ratingDisplay;
+
+                    document.getElementById('view_notes').textContent = notes;
+
+                    // Load photos
+                    loadCruisePhotos(currentViewCruiseId);
+
+                    // Show modal
+                    viewModal.style.display = 'flex';
+                });
+            });
+
+            // Load photos for a cruise
+            function loadCruisePhotos(cruiseId) {
+                const gallery = document.getElementById('viewPhotoGallery');
+                gallery.innerHTML = '<p class="loading-photos">Loading photos...</p>';
+
+                fetch(`/cruise_photos/${cruiseId}`)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Failed to load');
+                        return response.json();
+                    })
+                    .then(photos => {
+                        if (!photos || photos.length === 0 || photos.error) {
+                            gallery.innerHTML = '<p class="no-photos">No photos yet. Upload some memories!</p>';
+                        } else {
+                            gallery.innerHTML = photos.map(photo => `
+                                <div class="photo-thumbnail ${photo.is_cover ? 'cover' : ''}" data-photo-id="${photo.id}">
+                                    <img src="${photo.url}" alt="${photo.original_filename}" onerror="this.parentElement.innerHTML='<span class=\\'photo-error\\'>Image not found</span>'">
+                                    <div class="photo-actions">
+                                        ${!photo.is_cover ? `<button class="set-cover-btn" data-photo-id="${photo.id}">Set Cover</button>` : '<span class="cover-label">Cover</span>'}
+                                        <button class="delete-photo-btn" data-photo-id="${photo.id}">Delete</button>
+                                    </div>
+                                </div>
+                            `).join('');
+
+                            // Add event listeners for photo actions
+                            gallery.querySelectorAll('.set-cover-btn').forEach(btn => {
+                                btn.addEventListener('click', function() {
+                                    setCoverPhoto(this.dataset.photoId);
+                                });
+                            });
+
+                            gallery.querySelectorAll('.delete-photo-btn').forEach(btn => {
+                                btn.addEventListener('click', function() {
+                                    if (confirm('Delete this photo?')) {
+                                        deletePhoto(this.dataset.photoId);
+                                    }
+                                });
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        gallery.innerHTML = '<p class="no-photos">No photos yet. Upload some memories!</p>';
+                    });
+            }
+
+            function setCoverPhoto(photoId) {
+                fetch(`/set_cover_photo/${photoId}`, { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            loadCruisePhotos(currentViewCruiseId);
+                        }
+                    });
+            }
+
+            function deletePhoto(photoId) {
+                fetch(`/delete_photo/${photoId}`, { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            loadCruisePhotos(currentViewCruiseId);
+                        }
+                    });
+            }
+
+            // Photo upload
+            const photoUploadInput = document.getElementById('photoUploadInput');
+            const selectPhotosBtn = document.getElementById('selectPhotosBtn');
+            const uploadPhotosBtn = document.getElementById('uploadPhotosBtn');
+            const selectedFilesCount = document.getElementById('selectedFilesCount');
+
+            selectPhotosBtn.addEventListener('click', function() {
+                photoUploadInput.click();
+            });
+
+            photoUploadInput.addEventListener('change', function() {
+                const count = this.files.length;
+                if (count > 0) {
+                    selectedFilesCount.textContent = `${count} file(s) selected`;
+                    uploadPhotosBtn.style.display = 'inline-block';
+                } else {
+                    selectedFilesCount.textContent = '';
+                    uploadPhotosBtn.style.display = 'none';
+                }
+            });
+
+            uploadPhotosBtn.addEventListener('click', function() {
+                if (!currentViewCruiseId || photoUploadInput.files.length === 0) return;
+
+                const formData = new FormData();
+                for (let file of photoUploadInput.files) {
+                    formData.append('photos', file);
+                }
+
+                uploadPhotosBtn.textContent = 'Uploading...';
+                uploadPhotosBtn.disabled = true;
+
+                fetch(`/upload_photos/${currentViewCruiseId}`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    loadCruisePhotos(currentViewCruiseId);
+                    photoUploadInput.value = '';
+                    selectedFilesCount.textContent = '';
+                    uploadPhotosBtn.style.display = 'none';
+                    uploadPhotosBtn.textContent = 'Upload Selected';
+                    uploadPhotosBtn.disabled = false;
+                })
+                .catch(err => {
+                    alert('Error uploading photos');
+                    uploadPhotosBtn.textContent = 'Upload Selected';
+                    uploadPhotosBtn.disabled = false;
+                });
+            });
+
+            closeViewModalBtn.addEventListener('click', function() {
+                viewModal.style.display = 'none';
+            });
+
+            closeViewBtn.addEventListener('click', function() {
+                viewModal.style.display = 'none';
+            });
+
+            // ===== DELETE CRUISE MODAL =====
+            let formToSubmit = null;
+            const deleteForms = document.querySelectorAll('.delete-form');
+            const deleteBtns = document.querySelectorAll('.delete-btn');
+            const deleteModal = document.getElementById('deleteModal');
+            const cancelDeleteBtn = document.getElementById('cancelDelete');
+            const confirmDeleteBtn = document.getElementById('confirmDelete');
+            
+            // Open delete modal from delete button (keeps styling consistent)
+            deleteBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    formToSubmit = this.closest('form');
+                    deleteModal.style.display = 'flex';
+                });
+            });
+            
+            cancelDeleteBtn.addEventListener('click', function() {
+                deleteModal.style.display = 'none';
+                formToSubmit = null;
+            });
+            
+            confirmDeleteBtn.addEventListener('click', function() {
+                if (formToSubmit) {
+                    formToSubmit.submit();
+                }
+            });
+            
+            // ===== CLOSE MODALS WHEN CLICKING OUTSIDE =====
+            window.addEventListener('click', function(e) {
+                if (e.target === addModal) {
+                    addModal.style.display = 'none';
+                }
+                if (e.target === editModal) {
+                    editModal.style.display = 'none';
+                }
+                if (e.target === viewModal) {
+                    viewModal.style.display = 'none';
+                }
+                if (e.target === deleteModal) {
+                    deleteModal.style.display = 'none';
+                    formToSubmit = null;
+                }
+            });
+
+            // ===== SORTING & FILTERING =====
+            const table = document.getElementById('cruiseTable');
+            const tbody = document.getElementById('cruiseTableBody');
+            const rows = Array.from(document.querySelectorAll('.cruise-row'));
+            const filterCruiseLine = document.getElementById('filterCruiseLine');
+            const filterRegion = document.getElementById('filterRegion');
+            const searchBox = document.getElementById('searchBox');
+            const resetFiltersBtn = document.getElementById('resetFilters');
+
+            let currentSort = { column: 'begindate', direction: 'desc' };
+
+            // Sorting function
+            function sortTable(column) {
+                const direction = (currentSort.column === column && currentSort.direction === 'desc') ? 'asc' : 'desc';
+                currentSort = { column, direction };
+                
+                const sortedRows = rows.sort((a, b) => {
+                    let aVal = a.dataset[column.toLowerCase()];
+                    let bVal = b.dataset[column.toLowerCase()];
+                    
+                    // Handle dates
+                    if (column === 'begindate' || column === 'enddate') {
+                        aVal = new Date(aVal);
+                        bVal = new Date(bVal);
+                    }
+                    
+                    if (aVal < bVal) return direction === 'asc' ? -1 : 1;
+                    if (aVal > bVal) return direction === 'asc' ? 1 : -1;
+                    return 0;
+                });
+                
+                // Clear and re-append sorted rows
+                tbody.innerHTML = '';
+                sortedRows.forEach(row => tbody.appendChild(row));
+                
+                // Update header arrows
+                document.querySelectorAll('.sortable').forEach(th => {
+                    const thColumn = th.dataset.column;
+                    const baseText = th.textContent.replace(' ▲', '').replace(' ▼', '');
+                    const arrow = thColumn === column ? (direction === 'asc' ? ' ▲' : ' ▼') : ' ▼';
+                    th.textContent = baseText + arrow;
+                });
+                
+                applyFilters();
+            }
+
+            // Add click listeners to sortable headers
+            document.querySelectorAll('.sortable').forEach(header => {
+                header.style.cursor = 'pointer';
+                header.addEventListener('click', function() {
+                    sortTable(this.dataset.column);
+                });
+            });
+
+            // Filtering function
+            function applyFilters() {
+                const cruiselineFilter = filterCruiseLine.value;
+                const regionFilter = filterRegion.value;
+                const searchTerm = searchBox.value.toLowerCase();
+
+                // Filter table rows
+                rows.forEach(row => {
+                    const matchesCruiseLine = !cruiselineFilter || row.dataset.cruiselineId === cruiselineFilter;
+                    const matchesRegion = !regionFilter || row.dataset.regionId === regionFilter;
+                    const matchesSearch = !searchTerm ||
+                        row.dataset.cruiselineName.includes(searchTerm) ||
+                        row.dataset.shipName.includes(searchTerm);
+
+                    if (matchesCruiseLine && matchesRegion && matchesSearch) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                // Filter card view
+                const cards = document.querySelectorAll('.cruise-card');
+                cards.forEach(card => {
+                    const matchesCruiseLine = !cruiselineFilter || card.dataset.cruiselineId === cruiselineFilter;
+                    const matchesRegion = !regionFilter || card.dataset.regionId === regionFilter;
+                    const matchesSearch = !searchTerm ||
+                        (card.dataset.cruiselineName && card.dataset.cruiselineName.includes(searchTerm)) ||
+                        (card.dataset.shipName && card.dataset.shipName.includes(searchTerm));
+
+                    if (matchesCruiseLine && matchesRegion && matchesSearch) {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+
+            // Add filter listeners
+            filterCruiseLine.addEventListener('change', applyFilters);
+            filterRegion.addEventListener('change', applyFilters);
+            searchBox.addEventListener('input', applyFilters);
+
+            // Reset filters
+            resetFiltersBtn.addEventListener('click', function() {
+                filterCruiseLine.value = '';
+                filterRegion.value = '';
+                searchBox.value = '';
+                applyFilters();
+            });
+
+            // ===== VIEW TOGGLE =====
+            const tableViewBtn = document.getElementById('tableViewBtn');
+            const cardViewBtn = document.getElementById('cardViewBtn');
+            const tableView = document.getElementById('tableView');
+            const cardView = document.getElementById('cardView');
+
+            if (tableViewBtn && cardViewBtn) {
+                tableViewBtn.addEventListener('click', function() {
+                    tableView.style.display = 'block';
+                    cardView.style.display = 'none';
+                    tableViewBtn.classList.add('active');
+                    cardViewBtn.classList.remove('active');
+                });
+
+                cardViewBtn.addEventListener('click', function() {
+                    tableView.style.display = 'none';
+                    cardView.style.display = 'grid';
+                    cardViewBtn.classList.add('active');
+                    tableViewBtn.classList.remove('active');
+                });
+            }
+
+            // Initial sort by begin date (newest first)
+            sortTable('begindate');
+        });
+    </script>
+{% endblock %}

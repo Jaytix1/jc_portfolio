@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Cruise Timeline{% endblock %}
+
+{% block content %}
+    <h2>Your Cruise Timeline</h2>
+
+    {% if cruises %}
+        <div class="timeline-stats">
+            <p>{{ cruises|length }} cruises from {{ cruises[0].begindate.strftime('%Y') }} to {{ cruises[-1].enddate.strftime('%Y') }}</p>
+        </div>
+
+        <div class="timeline-container">
+            <div class="timeline-line"></div>
+
+            {% for cruise in cruises %}
+            <div class="timeline-item {{ 'left' if loop.index % 2 == 1 else 'right' }}">
+                <div class="timeline-dot"></div>
+                <div class="timeline-card" data-year="{{ cruise.begindate.year }}">
+                    {% if cruise.photos and (cruise.photos|selectattr('is_cover')|first or cruise.photos[0]) %}
+                        {% set cover = cruise.photos|selectattr('is_cover')|first or cruise.photos[0] %}
+                        <div class="timeline-card-image">
+                            <img src="{{ url_for('static', filename='uploads/cruise_photos/' + cover.filename) }}" alt="{{ cruise.ship.name }}">
+                        </div>
+                    {% endif %}
+                    <div class="timeline-card-content">
+                        <span class="timeline-date">{{ cruise.begindate.strftime('%b %d') }} - {{ cruise.enddate.strftime('%b %d, %Y') }}</span>
+                        <h4 class="timeline-ship">{{ cruise.ship.name }}</h4>
+                        <p class="timeline-cruiseline">{{ cruise.cruiseline.name }}</p>
+                        <p class="timeline-region">{{ cruise.region.name }}</p>
+                        <div class="timeline-details">
+                            <span class="timeline-duration">{{ (cruise.enddate - cruise.begindate).days }} days</span>
+                            {% if cruise.rating %}
+                            <span class="timeline-rating">{{ '★' * cruise.rating }}{{ '☆' * (5 - cruise.rating) }}</span>
+                            {% endif %}
+                        </div>
+                        {% if cruise.cost %}
+                        <p class="timeline-cost">${{ "{:,.2f}".format(cruise.cost) }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Year Navigation -->
+        <div class="timeline-year-nav">
+            <span>Jump to year:</span>
+            {% set years = cruises|map(attribute='begindate')|map(attribute='year')|list|unique|list %}
+            {% for year in years %}
+            <button class="year-btn" data-year="{{ year }}">{{ year }}</button>
+            {% endfor %}
+        </div>
+
+    {% else %}
+        <div class="no-data-message">
+            <p>No cruises yet. Start adding cruises to see your timeline!</p>
+            <a href="{{ url_for('history') }}" class="btn-primary">Add Your First Cruise</a>
+        </div>
+    {% endif %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Year navigation
+            const yearBtns = document.querySelectorAll('.year-btn');
+            yearBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const year = this.dataset.year;
+                    const card = document.querySelector(`.timeline-card[data-year="${year}"]`);
+                    if (card) {
+                        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        card.classList.add('highlight');
+                        setTimeout(() => card.classList.remove('highlight'), 2000);
+                    }
+                });
+            });
+
+            // Animate timeline items on scroll
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.2 });
+
+            document.querySelectorAll('.timeline-item').forEach(item => {
+                observer.observe(item);
+            });
+        });
+    </script>
+{% endblock %}

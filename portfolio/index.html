@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Portfolio of Joshua - Full Stack Developer specializing in web applications and data visualization">
+    <meta name="keywords" content="developer, portfolio, web development, full stack, python, javascript">
+    <title>Joshua Cundiff | Full Stack Developer</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#home" class="nav-logo">
+                <span class="logo-bracket">&lt;</span>JC<span class="logo-bracket">/&gt;</span>
+            </a>
+            <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+                <span class="hamburger"></span>
+            </button>
+            <ul class="nav-menu" id="nav-menu">
+                <li class="nav-item"><a href="#home" class="nav-link">Home</a></li>
+                <li class="nav-item"><a href="#about" class="nav-link">About</a></li>
+                <li class="nav-item"><a href="#skills" class="nav-link">Skills</a></li>
+                <li class="nav-item"><a href="#projects" class="nav-link">Projects</a></li>
+                <li class="nav-item"><a href="#experience" class="nav-link">Experience</a></li>
+                <li class="nav-item"><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-background">
+            <div class="hero-gradient"></div>
+            <div class="hero-grid"></div>
+        </div>
+        <div class="hero-content">
+            <p class="hero-greeting animate-fade-in">Hello, I'm</p>
+            <h1 class="hero-name animate-fade-in-delay-1">Joshua Cundiff</h1>
+            <h2 class="hero-title animate-fade-in-delay-2">
+                <span class="typing-text"></span><span class="cursor">|</span>
+            </h2>
+            <p class="hero-description animate-fade-in-delay-3">
+                I am experienced in programming, data analysis, web development, and more!
+            </p>
+            <div class="hero-buttons animate-fade-in-delay-4">
+                <a href="#projects" class="btn btn-primary">View My Work</a>
+                <a href="#contact" class="btn btn-secondary">Get In Touch</a>
+            </div>
+            <div class="hero-social animate-fade-in-delay-4">
+                <a href="https://github.com/Jaytix1" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="GitHub">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                </a>
+                <a href="https://www.linkedin.com/in/jc137" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="LinkedIn">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                </a>
+                <a href="mailto:joshuacundiff321@gmail.com" class="social-link" aria-label="Email">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></svg>
+                </a>
+            </div>
+        </div>
+        <a href="#about" class="scroll-indicator" aria-label="Scroll to about section">
+            <div class="mouse">
+                <div class="wheel"></div>
+            </div>
+        </a>
+    </section>
+
+    <!-- About Section -->
+    <section class="section about" id="about">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">01.</span> About Me
+            </h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <p>
+                        Hello! I'm Joshua, a Computer Science student at the University of South Florida with a passion
+                        for data analysis and full-stack development. I thrive on turning complex data into actionable
+                        insights and building applications that solve real-world problems.
+                    </p>
+                    <p>
+                        With experience in Python, SQL, R, and data visualization tools like Tableau and Chart.js,
+                        I bring both technical skills and a strong analytical mindset to every project. My background
+                        in management has sharpened my ability to identify patterns, optimize processes, and communicate
+                        findings effectively.
+                    </p>
+                    <p>
+                        I'm currently completing my B.S. in Computer Science (Completion by May 2026) while building projects
+                        that combine my love for data and web development. I'm always eager to learn new technologies
+                        and take on challenges that push me to grow.
+                    </p>
+                </div>
+                <div class="about-image">
+                    <div class="image-wrapper">
+                        <div class="image-placeholder">
+                            <span>Your Photo</span>
+                        </div>
+                        <div class="image-border"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section class="section skills" id="skills">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">02.</span> Skills & Technologies
+            </h2>
+            <div class="skills-container">
+                <div class="skill-category">
+                    <h3 class="skill-category-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                        Languages
+                    </h3>
+                    <div class="skill-tags">
+                        <span class="skill-tag">Python</span>
+                        <span class="skill-tag">SQL</span>
+                        <span class="skill-tag">R</span>
+                        <span class="skill-tag">C</span>
+                        <span class="skill-tag">C++</span>
+                        <span class="skill-tag">C#</span>
+                        <span class="skill-tag">JavaScript</span>
+                        <span class="skill-tag">HTML/CSS</span>
+                        <span class="skill-tag">Ruby</span>
+                    </div>
+                </div>
+                <div class="skill-category">
+                    <h3 class="skill-category-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                        Frameworks & Libraries
+                    </h3>
+                    <div class="skill-tags">
+                        <span class="skill-tag">Flask</span>
+                        <span class="skill-tag">SQLAlchemy</span>
+                        <span class="skill-tag">Chart.js</span>
+                        <span class="skill-tag">Leaflet.js</span>
+                        <span class="skill-tag">Pandas</span>
+                    </div>
+                </div>
+                <div class="skill-category">
+                    <h3 class="skill-category-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                        Data & Tools
+                    </h3>
+                    <div class="skill-tags">
+                        <span class="skill-tag">Tableau</span>
+                        <span class="skill-tag">Excel</span>
+                        <span class="skill-tag">Google Sheets</span>
+                        <span class="skill-tag">SQL Databases</span>
+                        <span class="skill-tag">Git</span>
+                    </div>
+                </div>
+                <div class="skill-category">
+                    <h3 class="skill-category-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                        Strengths
+                    </h3>
+                    <div class="skill-tags">
+                        <span class="skill-tag">Data Analysis</span>
+                        <span class="skill-tag">Pattern Recognition</span>
+                        <span class="skill-tag">Data Visualization</span>
+                        <span class="skill-tag">Problem Solving</span>
+                        <span class="skill-tag">Team Leadership</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section class="section projects" id="projects">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">03.</span> Featured Projects
+            </h2>
+            <div class="projects-grid">
+                <!-- Histacruise Project -->
+                <article class="project-card featured">
+                    <div class="project-image">
+                        <div class="project-image-placeholder">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M3 17l6-6 4 4 8-8"/>
+                                <path d="M14 7h7v7"/>
+                            </svg>
+                        </div>
+                        <div class="project-overlay">
+                            <div class="project-links">
+                                <a href="#" class="project-link" title="View Live Demo">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                </a>
+                                <a href="#" class="project-link" title="View Source Code">
+                                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="project-content">
+                        <span class="project-label">Featured Project</span>
+                        <h3 class="project-title">Histacruise</h3>
+                        <p class="project-description">
+                            A full-stack web application for tracking personal cruise history with comprehensive analytics.
+                            Features include an interactive map of visited ports, spending analytics with Chart.js visualizations,
+                            photo galleries, and a timeline view. Built with user authentication and secure data management.
+                        </p>
+                        <ul class="project-tech">
+                            <li>Python</li>
+                            <li>Flask</li>
+                            <li>SQLAlchemy</li>
+                            <li>Chart.js</li>
+                            <li>Leaflet.js</li>
+                            <li>SQLite</li>
+                        </ul>
+                        <span class="project-status wip">Work in Progress</span>
+                    </div>
+                </article>
+
+                <!-- Placeholder Project 2 -->
+                <article class="project-card">
+                    <div class="project-image">
+                        <div class="project-image-placeholder coming-soon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            <span>Coming Soon</span>
+                        </div>
+                    </div>
+                    <div class="project-content">
+                        <span class="project-label">Upcoming Project</span>
+                        <h3 class="project-title">Project Name</h3>
+                        <p class="project-description">
+                            Your next amazing project description will go here. This placeholder shows how
+                            additional projects will appear in your portfolio.
+                        </p>
+                        <ul class="project-tech">
+                            <li>Tech 1</li>
+                            <li>Tech 2</li>
+                            <li>Tech 3</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- Placeholder Project 3 -->
+                <article class="project-card">
+                    <div class="project-image">
+                        <div class="project-image-placeholder coming-soon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            <span>Coming Soon</span>
+                        </div>
+                    </div>
+                    <div class="project-content">
+                        <span class="project-label">Upcoming Project</span>
+                        <h3 class="project-title">Project Name</h3>
+                        <p class="project-description">
+                            Another project placeholder. As you complete more projects, simply update this
+                            section with your new work to showcase your growing portfolio.
+                        </p>
+                        <ul class="project-tech">
+                            <li>Tech 1</li>
+                            <li>Tech 2</li>
+                            <li>Tech 3</li>
+                        </ul>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience Section -->
+    <section class="section experience" id="experience">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">04.</span> Experience & Education
+            </h2>
+            <div class="timeline">
+                <!-- Timeline Item 1 - USF -->
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-date">Aug 2022 - May 2025</span>
+                        <h3 class="timeline-title">B.S. in Computer Science</h3>
+                        <p class="timeline-company">University of South Florida, Tampa FL</p>
+                        <p class="timeline-description">
+                            Pursuing a comprehensive computer science education with a focus on data analysis,
+                            software development, and building practical applications that solve real-world problems.
+                        </p>
+                        <ul class="timeline-highlights">
+                            <li>Coursework in algorithms, data structures, databases, and software engineering</li>
+                            <li>Building full-stack applications using Python, Flask, and SQL</li>
+                            <li>Developing data visualization and analytics projects</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Timeline Item 2 - Skechers -->
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-date">Jan 2020 - Present</span>
+                        <h3 class="timeline-title">Operations Manager (1st ASM)</h3>
+                        <p class="timeline-company">Skechers USA</p>
+                        <p class="timeline-description">
+                            Leading store operations while applying analytical thinking to optimize performance.
+                            Managing data-driven decisions for inventory, scheduling, and sales targets.
+                        </p>
+                        <ul class="timeline-highlights">
+                            <li>Analyzed sales data and KPIs to identify trends and optimize daily operations</li>
+                            <li>Built and managed scheduling systems to maximize team efficiency and coverage</li>
+                            <li>Utilized inventory management systems to track shipments and stock levels</li>
+                            <li>Led cross-functional team coordination and process improvement initiatives</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Timeline Item 3 - State College -->
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-date">Aug 2017 - May 2020</span>
+                        <h3 class="timeline-title">Associate in Arts Degree</h3>
+                        <p class="timeline-company">State College of Florida, Bradenton FL</p>
+                        <p class="timeline-description">
+                            Completed AA degree through dual enrollment while in high school, demonstrating
+                            strong time management and dedication to academic excellence.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Timeline Item 4 - Three Seasons -->
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-date">Jan 2017 - Dec 2019</span>
+                        <h3 class="timeline-title">Sales & Office Associate</h3>
+                        <p class="timeline-company">Three Seasons LLC</p>
+                        <p class="timeline-description">
+                            Managed garden center operations and office systems, gaining early experience
+                            with data organization, digital tools, and systematic process management.
+                        </p>
+                        <ul class="timeline-highlights">
+                            <li>Created digital sales materials and managed appointment scheduling systems</li>
+                            <li>Maintained inventory tracking and shipment intake records</li>
+                            <li>Coordinated customer database and landscaping appointment management</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="section contact" id="contact">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="section-number">05.</span> Get In Touch
+            </h2>
+            <div class="contact-content">
+                <div class="contact-text">
+                    <p>
+                        I'm currently open to new opportunities and would love to hear from you.
+                        Whether you have a question, want to discuss a project, or just want to say hello,
+                        feel free to reach out!
+                    </p>
+                </div>
+                <form class="contact-form" id="contact-form">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" name="name" required placeholder="Your name">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required placeholder="your.email@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" name="message" rows="5" required placeholder="Your message..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">
+                        <span>Send Message</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </form>
+                <div class="contact-alternatives">
+                    <p>Or reach me directly:</p>
+                    <div class="contact-links">
+                        <a href="mailto:joshuacundiff321@gmail.com" class="contact-link">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></svg>
+                            joshuacundiff321@gmail.com
+                        </a>
+                        <a href="https://www.linkedin.com/in/jc137" target="_blank" rel="noopener noreferrer" class="contact-link">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                            www.linkedin.com/in/jc137
+                        </a>
+                        <a href="https://github.com/Jaytix1" target="_blank" rel="noopener noreferrer" class="contact-link">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                            GitHub
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p class="footer-text">
+                Designed & Built by Joshua Cundiff
+            </p>
+            <p class="footer-copyright">
+                &copy; <span id="current-year"></span> All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

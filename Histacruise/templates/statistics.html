@@ -1,0 +1,373 @@
+{% extends "base.html" %}
+
+{% block title %}Statistics{% endblock %}
+
+{% block content %}
+    <h2>Your Cruise Statistics</h2>
+
+    {% if total_cruises == 0 %}
+        <div class="no-data-message">
+            <p>No cruise data yet. Add some cruises to see your statistics!</p>
+            <a href="{{ url_for('history') }}" class="btn-primary">Add Your First Cruise</a>
+        </div>
+    {% else %}
+        <!-- Summary Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">🚢</div>
+                <h3>Total Cruises</h3>
+                <p class="stat-number">{{ total_cruises }}</p>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🌊</div>
+                <h3>Days at Sea</h3>
+                <p class="stat-number">{{ total_days }}</p>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <h3>Total Spent</h3>
+                <p class="stat-number">${{ "{:,.2f}".format(total_cost) }}</p>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <h3>Avg Cost/Day</h3>
+                <p class="stat-number">${{ "{:,.2f}".format(avg_cost_per_day) }}</p>
+            </div>
+        </div>
+
+        <!-- Secondary Stats -->
+        <div class="stats-grid secondary">
+            <div class="stat-card small">
+                <h4>Avg Cruise Length</h4>
+                <p class="stat-number-small">{{ avg_cruise_length }} days</p>
+            </div>
+            <div class="stat-card small">
+                <h4>Avg Cruise Cost</h4>
+                <p class="stat-number-small">${{ "{:,.2f}".format(avg_cost) }}</p>
+            </div>
+        </div>
+
+        <!-- Favorites Section -->
+        <div class="favorites-section">
+            <h3>Your Favorites</h3>
+            <div class="favorites-grid">
+                <div class="favorite-item">
+                    <span class="favorite-icon">🚢</span>
+                    <span class="favorite-label">Most Sailed Ship</span>
+                    <span class="favorite-value">{{ most_sailed_ship or 'N/A' }}</span>
+                    {% if most_sailed_ship %}
+                    <span class="favorite-count">{{ ship_counts[most_sailed_ship] }} cruises</span>
+                    {% endif %}
+                </div>
+                <div class="favorite-item">
+                    <span class="favorite-icon">⚓</span>
+                    <span class="favorite-label">Favorite Cruise Line</span>
+                    <span class="favorite-value">{{ favorite_cruiseline or 'N/A' }}</span>
+                    {% if favorite_cruiseline %}
+                    <span class="favorite-count">{{ cruiseline_counts[favorite_cruiseline] }} cruises</span>
+                    {% endif %}
+                </div>
+                <div class="favorite-item">
+                    <span class="favorite-icon">🌍</span>
+                    <span class="favorite-label">Most Visited Region</span>
+                    <span class="favorite-value">{{ most_visited_region or 'N/A' }}</span>
+                    {% if most_visited_region %}
+                    <span class="favorite-count">{{ region_counts[most_visited_region] }} cruises</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Budget Tracker -->
+        <div class="budget-section enhanced">
+            <div class="budget-header">
+                <h3>Budget Tracker ({{ current_year }})</h3>
+                {% if yearly_budget %}
+                <button class="budget-edit-btn" id="toggleBudgetEdit">Edit</button>
+                {% endif %}
+            </div>
+            {% if yearly_budget %}
+                {% set percentage = (current_year_spending / yearly_budget * 100) %}
+                <div class="budget-display enhanced" id="budgetDisplay">
+                    <div class="budget-visual">
+                        <div class="budget-circle-container">
+                            <svg class="budget-circle" viewBox="0 0 36 36">
+                                <path class="budget-circle-bg"
+                                    d="M18 2.0845
+                                    a 15.9155 15.9155 0 0 1 0 31.831
+                                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    fill="none"
+                                    stroke="#eee"
+                                    stroke-width="3"/>
+                                <path class="budget-circle-progress {{ 'over' if percentage > 100 else '' }}"
+                                    d="M18 2.0845
+                                    a 15.9155 15.9155 0 0 1 0 31.831
+                                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    fill="none"
+                                    stroke="{{ '#dc3545' if percentage > 100 else '#667eea' }}"
+                                    stroke-width="3"
+                                    stroke-dasharray="{{ [percentage, 100] | min }}, 100"/>
+                            </svg>
+                            <div class="budget-circle-text">
+                                <span class="budget-percentage">{{ percentage | round(0) | int }}%</span>
+                                <span class="budget-label">used</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="budget-details">
+                        <div class="budget-stat">
+                            <span class="budget-stat-label">Budget</span>
+                            <span class="budget-stat-value">${{ "{:,.2f}".format(yearly_budget) }}</span>
+                        </div>
+                        <div class="budget-stat">
+                            <span class="budget-stat-label">Spent</span>
+                            <span class="budget-stat-value spent">${{ "{:,.2f}".format(current_year_spending) }}</span>
+                        </div>
+                        <div class="budget-stat">
+                            <span class="budget-stat-label">{{ 'Remaining' if budget_remaining >= 0 else 'Over Budget' }}</span>
+                            <span class="budget-stat-value {{ 'remaining' if budget_remaining >= 0 else 'over' }}">
+                                ${{ "{:,.2f}".format(budget_remaining if budget_remaining >= 0 else -budget_remaining) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="budget-edit-form" id="budgetEditForm" style="display: none;">
+                    <form method="POST" action="{{ url_for('set_budget') }}" class="budget-form-inline">
+                        <div class="form-group">
+                            <label>New Budget Amount:</label>
+                            <input type="number" name="yearly_budget" step="0.01" value="{{ yearly_budget }}" required>
+                        </div>
+                        <div class="budget-form-actions">
+                            <button type="submit" class="btn-primary">Update Budget</button>
+                            <button type="button" class="btn-secondary" id="cancelBudgetEdit">Cancel</button>
+                            <button type="submit" formaction="{{ url_for('clear_budget') }}" class="btn-danger">Clear Budget</button>
+                        </div>
+                    </form>
+                </div>
+            {% else %}
+                <div class="budget-setup enhanced">
+                    <div class="budget-setup-icon">💰</div>
+                    <h4>Set Your Cruise Budget</h4>
+                    <p>Track your cruise spending for {{ current_year }} by setting a yearly budget.</p>
+                    <form method="POST" action="{{ url_for('set_budget') }}" class="budget-form">
+                        <input type="number" name="yearly_budget" step="0.01" placeholder="Enter budget amount (e.g., 5000)" required>
+                        <button type="submit" class="btn-primary">Set Budget</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const toggleBtn = document.getElementById('toggleBudgetEdit');
+                const editForm = document.getElementById('budgetEditForm');
+                const display = document.getElementById('budgetDisplay');
+                const cancelBtn = document.getElementById('cancelBudgetEdit');
+
+                if (toggleBtn) {
+                    toggleBtn.addEventListener('click', function() {
+                        editForm.style.display = editForm.style.display === 'none' ? 'block' : 'none';
+                        display.style.display = display.style.display === 'none' ? 'flex' : 'none';
+                        this.textContent = editForm.style.display === 'none' ? 'Edit' : 'Cancel';
+                    });
+                }
+
+                if (cancelBtn) {
+                    cancelBtn.addEventListener('click', function() {
+                        editForm.style.display = 'none';
+                        display.style.display = 'flex';
+                        toggleBtn.textContent = 'Edit';
+                    });
+                }
+            });
+        </script>
+
+        <!-- Cost Highlights -->
+        {% if most_expensive %}
+        <div class="cost-highlights">
+            <h3>Cost Highlights</h3>
+            <div class="highlights-grid">
+                <div class="highlight-card expensive">
+                    <h4>Most Expensive Cruise</h4>
+                    <p class="highlight-ship">{{ most_expensive.ship.name }}</p>
+                    <p class="highlight-line">{{ most_expensive.cruiseline.name }}</p>
+                    <p class="highlight-cost">${{ "{:,.2f}".format(most_expensive.cost) }}</p>
+                    <p class="highlight-date">{{ most_expensive.begindate.strftime('%b %Y') }}</p>
+                </div>
+                {% if least_expensive and least_expensive != most_expensive %}
+                <div class="highlight-card budget-friendly">
+                    <h4>Best Value Cruise</h4>
+                    <p class="highlight-ship">{{ least_expensive.ship.name }}</p>
+                    <p class="highlight-line">{{ least_expensive.cruiseline.name }}</p>
+                    <p class="highlight-cost">${{ "{:,.2f}".format(least_expensive.cost) }}</p>
+                    <p class="highlight-date">{{ least_expensive.begindate.strftime('%b %Y') }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Time Series Charts -->
+        {% if years %}
+        <div class="charts-row">
+            <div class="chart-container">
+                <h3>Cruises Over Time</h3>
+                <canvas id="cruisesOverTimeChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Spending Over Time</h3>
+                <canvas id="costOverTimeChart"></canvas>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Distribution Charts -->
+        <div class="charts-row">
+            <div class="chart-container">
+                <h3>Cruises by Cruise Line</h3>
+                <canvas id="cruiselineChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Cruises by Region</h3>
+                <canvas id="regionChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Cost by Cruise Line Chart -->
+        {% if avg_cost_by_cruiseline %}
+        <div class="charts-row single">
+            <div class="chart-container wide">
+                <h3>Average Cost by Cruise Line</h3>
+                <canvas id="costByCruiselineChart"></canvas>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+
+    <script>
+        {% if total_cruises > 0 %}
+        // Color palette
+        const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a', '#00c9ff', '#92fe9d', '#ff9a9e', '#fecfef'];
+
+        {% if years %}
+        // Cruises Over Time Line Chart
+        new Chart(document.getElementById('cruisesOverTimeChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: {{ years | tojson }},
+                datasets: [{
+                    label: 'Cruises',
+                    data: {{ cruises_over_time | tojson }},
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#667eea',
+                    pointRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                }
+            }
+        });
+
+        // Cost Over Time Line Chart
+        new Chart(document.getElementById('costOverTimeChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: {{ years | tojson }},
+                datasets: [{
+                    label: 'Total Spending ($)',
+                    data: {{ costs_over_time | tojson }},
+                    borderColor: '#764ba2',
+                    backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#764ba2',
+                    pointRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) { return '$' + value.toLocaleString(); }
+                        }
+                    }
+                }
+            }
+        });
+        {% endif %}
+
+        // Cruise Line Pie Chart
+        new Chart(document.getElementById('cruiselineChart').getContext('2d'), {
+            type: 'pie',
+            data: {
+                labels: {{ cruiseline_counts.keys() | list | tojson }},
+                datasets: [{
+                    data: {{ cruiseline_counts.values() | list | tojson }},
+                    backgroundColor: colors.slice(0, {{ cruiseline_counts | length }})
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+
+        // Region Bar Chart
+        new Chart(document.getElementById('regionChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: {{ region_counts.keys() | list | tojson }},
+                datasets: [{
+                    label: 'Number of Cruises',
+                    data: {{ region_counts.values() | list | tojson }},
+                    backgroundColor: '#667eea'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                }
+            }
+        });
+
+        {% if avg_cost_by_cruiseline %}
+        // Cost by Cruise Line Bar Chart
+        new Chart(document.getElementById('costByCruiselineChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: {{ avg_cost_by_cruiseline.keys() | list | tojson }},
+                datasets: [{
+                    label: 'Average Cost ($)',
+                    data: {{ avg_cost_by_cruiseline.values() | list | tojson }},
+                    backgroundColor: colors.slice(0, {{ avg_cost_by_cruiseline | length }})
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) { return '$' + value.toLocaleString(); }
+                        }
+                    }
+                }
+            }
+        });
+        {% endif %}
+        {% endif %}
+    </script>
+{% endblock %}

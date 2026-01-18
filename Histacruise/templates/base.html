@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <title>Histacruise - {% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    {% if request.endpoint != "home" %}
+        <img src="{{url_for('static', filename='images/banner.png') }}" class="smallbanner" alt="Histacruise Banner" style="display: block; margin-left: auto; margin-right: auto;" >
+
+    {% endif %}
+</head>
+<body class="{{ 'dark-mode' if current_user.is_authenticated and current_user.preferences and current_user.preferences.dark_mode else '' }}">
+    <div class="container">
+
+        <nav>
+            <a href="/">Home</a>
+            <a href="/about">About</a>
+
+            {% if current_user.is_authenticated %}
+                <a href="/history">History</a>
+                <a href="{{ url_for('timeline') }}">Timeline</a>
+                <a href="{{ url_for('cruise_map') }}">Map</a>
+                <a href="{{ url_for('statistics') }}">Statistics</a>
+                <button id="darkModeToggle" class="dark-mode-btn" title="Toggle Dark Mode">{{ '🌙' if not (current_user.preferences and current_user.preferences.dark_mode) else '☀️' }}</button>
+                <a href="{{ url_for('logout') }}">Logout ({{ current_user.username }})</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Login</a>
+                <a href="{{ url_for('register') }}">Register</a>
+            {% endif %}
+        </nav>
+        
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            if (darkModeToggle) {
+                darkModeToggle.addEventListener('click', function() {
+                    fetch('/toggle_dark_mode', { method: 'POST' })
+                        .then(response => response.json())
+                        .then(data => {
+                            document.body.classList.toggle('dark-mode', data.dark_mode);
+                            this.textContent = data.dark_mode ? '☀️' : '🌙';
+                        });
+                });
+            }
+        });
+    </script>
+    {% endif %}
+</body>
+</html>
