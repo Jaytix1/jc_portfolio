@@ -1683,3 +1683,482 @@ body.dark-mode .ports-container {
     background: #1e3a5f;
     border-color: #2a4a6e;
 }
+
+/* ===== HOMEPAGE ZIGZAG SECTIONS ===== */
+.home-intro {
+    text-align: center;
+    font-size: 1.2em;
+    color: #555;
+    max-width: 800px;
+    margin: 0 auto 40px auto;
+    line-height: 1.6;
+}
+
+.zigzag-section {
+    margin: 40px 0;
+    padding: 30px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.zigzag-content {
+    display: flex;
+    gap: 40px;
+    align-items: center;
+}
+
+.zigzag-visual {
+    flex: 1;
+    min-width: 0;
+}
+
+.zigzag-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.zigzag-text h2 {
+    color: #16318c;
+    margin-bottom: 15px;
+    border-bottom: 3px solid #667eea;
+    padding-bottom: 10px;
+}
+
+.zigzag-text p {
+    color: #555;
+    line-height: 1.7;
+    margin-bottom: 15px;
+    font-size: 1.05em;
+}
+
+.zigzag-section.alternate .zigzag-content {
+    flex-direction: row-reverse;
+}
+
+/* Stock Cards */
+.stock-ticker-cards {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.stock-card {
+    flex: 1;
+    min-width: 120px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.stock-symbol {
+    font-size: 1.4em;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.stock-price {
+    font-size: 1.8em;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.stock-change {
+    font-size: 0.9em;
+    padding: 4px 8px;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+.stock-change.positive {
+    background: rgba(40, 167, 69, 0.3);
+    color: #90EE90;
+}
+
+.stock-change.negative {
+    background: rgba(220, 53, 69, 0.3);
+    color: #FFB6C1;
+}
+
+.mini-chart-container {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    height: 200px;
+}
+
+/* Fun Facts List */
+.fun-facts {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.fun-facts li {
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    color: #555;
+}
+
+.fun-facts li:last-child {
+    border-bottom: none;
+}
+
+.fun-tagline {
+    font-style: italic;
+    color: #667eea !important;
+    font-weight: 500;
+    margin-top: 20px;
+}
+
+/* News Feed */
+.news-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.news-item {
+    display: block;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    text-decoration: none;
+    border-left: 4px solid #667eea;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.news-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.news-source {
+    font-size: 0.75em;
+    color: #667eea;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.news-title {
+    color: #333;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.news-date {
+    font-size: 0.8em;
+    color: #999;
+    margin-top: 5px;
+}
+
+.news-stats {
+    display: flex;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.stat-badge {
+    background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+    color: #667eea;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 500;
+}
+
+/* Deals Grid */
+.deals-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.deal-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 20px;
+    border-radius: 12px;
+    border-left: 4px solid #28a745;
+    transition: transform 0.2s;
+}
+
+.deal-card:hover {
+    transform: translateY(-3px);
+}
+
+.deal-title {
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.deal-price {
+    font-size: 1.4em;
+    font-weight: bold;
+    color: #28a745;
+    margin-bottom: 5px;
+}
+
+.deal-duration {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.deal-region {
+    color: #667eea;
+    font-size: 0.85em;
+    margin-top: 5px;
+}
+
+.deals-placeholder {
+    grid-column: span 2;
+    text-align: center;
+    padding: 40px;
+    background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+    border-radius: 12px;
+}
+
+.placeholder-icon {
+    font-size: 3em;
+    margin-bottom: 10px;
+}
+
+.deals-placeholder p {
+    color: #666;
+    margin: 5px 0;
+}
+
+.deals-placeholder .small {
+    font-size: 0.85em;
+    color: #999;
+}
+
+/* Features Showcase */
+.features-showcase {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+    padding: 15px 20px;
+    border-radius: 10px;
+    transition: transform 0.2s;
+}
+
+.feature-item:hover {
+    transform: translateX(5px);
+}
+
+.feature-icon {
+    font-size: 1.8em;
+}
+
+.feature-label {
+    color: #333;
+    font-weight: 500;
+}
+
+/* CTA Buttons */
+.cta-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.cta-buttons .btn-primary,
+.cta-buttons .btn-secondary {
+    padding: 12px 25px;
+    text-align: center;
+}
+
+/* No Data Message */
+.no-data {
+    text-align: center;
+    color: #999;
+    padding: 30px;
+    font-style: italic;
+}
+
+/* Price Trends Section */
+.price-trends-container {
+    width: 100%;
+}
+
+.price-sample-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.price-card {
+    background: linear-gradient(135deg, #2b92bf 0%, #16318c 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(43, 146, 191, 0.3);
+    transition: transform 0.2s;
+}
+
+.price-card:hover {
+    transform: translateY(-3px);
+}
+
+.price-card.sample {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.price-line-name {
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.price-avg {
+    font-size: 1.6em;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.price-label {
+    font-size: 0.5em;
+    font-weight: normal;
+    opacity: 0.9;
+}
+
+.price-range {
+    font-size: 0.9em;
+    opacity: 0.9;
+}
+
+.price-category {
+    font-size: 0.85em;
+    margin-top: 8px;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    display: inline-block;
+}
+
+.sample-note {
+    text-align: center;
+    color: #888;
+    font-size: 0.9em;
+    margin-top: 15px;
+    font-style: italic;
+}
+
+.price-placeholder {
+    width: 100%;
+}
+
+/* Dark mode for price cards */
+body.dark-mode .price-card.sample {
+    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+}
+
+body.dark-mode .sample-note {
+    color: #aaa;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .zigzag-content {
+        flex-direction: column !important;
+    }
+
+    .zigzag-section.alternate .zigzag-content {
+        flex-direction: column !important;
+    }
+
+    .stock-ticker-cards {
+        justify-content: center;
+    }
+
+    .deals-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .deals-placeholder {
+        grid-column: span 1;
+    }
+
+    .features-showcase {
+        grid-template-columns: 1fr;
+    }
+
+    .cta-buttons {
+        flex-direction: column;
+    }
+}
+
+/* Dark Mode for Homepage */
+body.dark-mode .home-intro {
+    color: #aaa;
+}
+
+body.dark-mode .zigzag-section {
+    background: #1e3a5f;
+}
+
+body.dark-mode .zigzag-text p {
+    color: #ccc;
+}
+
+body.dark-mode .fun-facts li {
+    color: #ccc;
+    border-bottom-color: #2a4a6e;
+}
+
+body.dark-mode .news-item {
+    background: #16213e;
+}
+
+body.dark-mode .news-title {
+    color: #eee;
+}
+
+body.dark-mode .deal-card {
+    background: linear-gradient(135deg, #16213e 0%, #1e3a5f 100%);
+}
+
+body.dark-mode .deal-title {
+    color: #eee;
+}
+
+body.dark-mode .mini-chart-container {
+    background: #16213e;
+}
+
+body.dark-mode .feature-item {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+}
+
+body.dark-mode .feature-label {
+    color: #eee;
+}
+
+body.dark-mode .deals-placeholder {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+}
+
+body.dark-mode .deals-placeholder p {
+    color: #ccc;
+}
+
+body.dark-mode .stat-badge {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
+}

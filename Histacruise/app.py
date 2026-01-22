@@ -8,8 +8,10 @@ import os
 
 app = Flask(__name__)
 
+# Use absolute path for database to ensure consistency
+basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['SECRET_KEY'] = 'your-secret-key-here'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///histacruise.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(basedir, "instance", "histacruise.db")}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Photo upload configuration
@@ -131,6 +133,125 @@ class CruisePort(db.Model):
     def __repr__(self):
         return f'<CruisePort {self.cruise_id} - {self.port.name}>'
 
+# ============== PIPELINE MODELS ==============
+
+class StockPrice(db.Model):
+    """Daily stock prices for cruise companies (CCL, RCL, NCLH)."""
+    __tablename__ = 'stock_price'
+
+    id = db.Column(db.Integer, primary_key=True)
+    symbol = db.Column(db.String(10), nullable=False, index=True)
+    date = db.Column(db.Date, nullable=False, index=True)
+    open_price = db.Column(db.Float, nullable=True)
+    high_price = db.Column(db.Float, nullable=True)
+    low_price = db.Column(db.Float, nullable=True)
+    close_price = db.Column(db.Float, nullable=False)
+    volume = db.Column(db.BigInteger, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint('symbol', 'date', name='unique_stock_date'),
+    )
+
+    def __repr__(self):
+        return f'<StockPrice {self.symbol} {self.date}: ${self.close_price}>'
+
+
+class IndustryNews(db.Model):
+    """Cruise industry news articles from RSS feeds."""
+    __tablename__ = 'industry_news'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(500), nullable=False)
+    summary = db.Column(db.Text, nullable=True)
+    url = db.Column(db.String(1000), nullable=False, unique=True)
+    source_name = db.Column(db.String(100), nullable=False)
+    published_at = db.Column(db.DateTime, nullable=True)
+    scraped_at = db.Column(db.DateTime, default=datetime.utcnow)
+    category = db.Column(db.String(100), nullable=True)
+    related_cruiseline_id = db.Column(db.Integer, db.ForeignKey('cruise_line.id'), nullable=True)
+
+    cruiseline = db.relationship('CruiseLine', backref='news_articles')
+
+    def __repr__(self):
+        return f'<IndustryNews {self.title[:30]}...>'
+
+
+class CruiseDeal(db.Model):
+    """Tracked cruise deals and pricing."""
+    __tablename__ = 'cruise_deal'
+
+    id = db.Column(db.Integer, primary_key=True)
+    cruiseline_id = db.Column(db.Integer, db.ForeignKey('cruise_line.id'), nullable=True)
+    ship_id = db.Column(db.Integer, db.ForeignKey('ship.id'), nullable=True)
+    title = db.Column(db.String(500), nullable=False)
+    departure_date = db.Column(db.Date, nullable=True)
+    duration_nights = db.Column(db.Integer, nullable=True)
+    departure_port = db.Column(db.String(200), nullable=True)
+    destination_region = db.Column(db.String(200), nullable=True)
+    price = db.Column(db.Float, nullable=True)
+    original_price = db.Column(db.Float, nullable=True)
+    price_per_night = db.Column(db.Float, nullable=True)
+    cabin_type = db.Column(db.String(100), nullable=True)
+    source_url = db.Column(db.String(1000), nullable=True)
+    source_name = db.Column(db.String(100), nullable=True)
+    scraped_at = db.Column(db.DateTime, default=datetime.utcnow)
+    expires_at = db.Column(db.DateTime, nullable=True)
+    is_active = db.Column(db.Boolean, default=True)
+
+    cruiseline_rel = db.relationship('CruiseLine', backref='deals')
+    ship_rel = db.relationship('Ship', backref='deals')
+
+    def __repr__(self):
+        return f'<CruiseDeal {self.title[:30]}... ${self.price}>'
+
+
+class ShipSpecification(db.Model):
+    """Detailed ship specifications extending the Ship model."""
+    __tablename__ = 'ship_specification'
+
+    id = db.Column(db.Integer, primary_key=True)
+    ship_id = db.Column(db.Integer, db.ForeignKey('ship.id'), nullable=False, unique=True)
+    gross_tonnage = db.Column(db.Integer, nullable=True)
+    length_meters = db.Column(db.Float, nullable=True)
+    beam_meters = db.Column(db.Float, nullable=True)
+    draft_meters = db.Column(db.Float, nullable=True)
+    passenger_capacity = db.Column(db.Integer, nullable=True)
+    crew_capacity = db.Column(db.Integer, nullable=True)
+    deck_count = db.Column(db.Integer, nullable=True)
+    year_built = db.Column(db.Integer, nullable=True)
+    year_refurbished = db.Column(db.Integer, nullable=True)
+    builder = db.Column(db.String(200), nullable=True)
+    ship_class = db.Column(db.String(100), nullable=True)
+    registry = db.Column(db.String(100), nullable=True)
+    imo_number = db.Column(db.String(20), nullable=True)
+    status = db.Column(db.String(50), default='active')
+    last_updated = db.Column(db.DateTime, default=datetime.utcnow)
+    data_source = db.Column(db.String(100), nullable=True)
+
+    ship = db.relationship('Ship', backref=db.backref('specifications', uselist=False))
+
+    def __repr__(self):
+        return f'<ShipSpecification ship_id={self.ship_id}>'
+
+
+class PipelineRun(db.Model):
+    """Tracks pipeline execution history."""
+    __tablename__ = 'pipeline_run'
+
+    id = db.Column(db.Integer, primary_key=True)
+    run_type = db.Column(db.String(50), nullable=False)
+    started_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    status = db.Column(db.String(20), nullable=False)
+    records_processed = db.Column(db.Integer, default=0)
+    records_added = db.Column(db.Integer, default=0)
+    records_updated = db.Column(db.Integer, default=0)
+    error_message = db.Column(db.Text, nullable=True)
+
+    def __repr__(self):
+        return f'<PipelineRun {self.run_type} {self.status}>'
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -138,9 +259,75 @@ def load_user(user_id):
 with app.app_context():
     db.create_all()
 
+# Register Pipeline API blueprint
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from HC_Pipeline.api.routes import pipeline_api
+app.register_blueprint(pipeline_api)
+
 @app.route('/')
 def home():
-    return render_template('home.html')
+    # Fetch pipeline data for homepage
+    from datetime import timedelta
+
+    # Get latest stock prices
+    stocks_data = {}
+    for symbol in ['CCL', 'RCL', 'NCLH']:
+        latest = db.session.query(StockPrice).filter_by(
+            symbol=symbol
+        ).order_by(StockPrice.date.desc()).first()
+
+        if latest:
+            prev = db.session.query(StockPrice).filter(
+                StockPrice.symbol == symbol,
+                StockPrice.date < latest.date
+            ).order_by(StockPrice.date.desc()).first()
+
+            change = None
+            change_pct = None
+            if prev and prev.close_price:
+                change = round(latest.close_price - prev.close_price, 2)
+                change_pct = round((change / prev.close_price) * 100, 2)
+
+            stocks_data[symbol] = {
+                'price': latest.close_price,
+                'change': change,
+                'change_pct': change_pct,
+                'date': latest.date
+            }
+
+    # Get stock chart data (last 30 days)
+    chart_data = {'labels': [], 'ccl': [], 'rcl': [], 'nclh': []}
+    ccl_prices = db.session.query(StockPrice).filter(
+        StockPrice.symbol == 'CCL'
+    ).order_by(StockPrice.date.asc()).limit(30).all()
+
+    for p in ccl_prices:
+        chart_data['labels'].append(p.date.strftime('%b %d'))
+        chart_data['ccl'].append(p.close_price)
+
+    for symbol in ['RCL', 'NCLH']:
+        prices = db.session.query(StockPrice).filter(
+            StockPrice.symbol == symbol
+        ).order_by(StockPrice.date.asc()).limit(30).all()
+        chart_data[symbol.lower()] = [p.close_price for p in prices]
+
+    # Get recent news
+    news = db.session.query(IndustryNews).order_by(
+        IndustryNews.published_at.desc().nullslast()
+    ).limit(5).all()
+
+    # Get active deals
+    deals = db.session.query(CruiseDeal).filter_by(
+        is_active=True
+    ).order_by(CruiseDeal.scraped_at.desc()).limit(4).all()
+
+    return render_template('home.html',
+                          stocks=stocks_data,
+                          chart_data=chart_data,
+                          news=news,
+                          deals=deals)
 
 @app.route('/about')
 def about():

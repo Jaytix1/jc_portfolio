@@ -1,0 +1,23 @@
+# HC_Pipeline - Data Collection Dependencies
+
+# Stock data
+yfinance>=0.2.36
+
+# RSS/News parsing
+feedparser>=6.0.10
+
+# Web scraping (for future enhancements)
+beautifulsoup4>=4.12.0
+requests>=2.31.0
+lxml>=5.1.0
+
+# Data processing
+pandas>=2.1.0
+
+# Scheduling (optional - for automated runs)
+APScheduler>=3.10.4
+pytz>=2024.1
+
+# These should already be installed from Histacruise:
+# Flask
+# Flask-SQLAlchemy

@@ -6,9 +6,282 @@
 
 {% block content %}
     <h1 style="text-align: center;">WELCOME TO HISTACRUISE</h1>
-    <h2 style="text-align: center;">HOMEPAGE</h2>
-    <p style="text-align: center;">Your ultimate cruise statistic tracker!  
-    With Histacruise, you can easily insert and track your cruising data.  
-    Keep track of your cruise history and take a view into your adventures at sea!
-    </p>
+    <p class="home-intro">Your ultimate cruise statistic tracker! Track your adventures at sea and stay up to date with the cruise industry.</p>
+
+    <!-- Section 1: Stock Ticker - Visual LEFT, Text RIGHT -->
+    <div class="zigzag-section">
+        <div class="zigzag-content">
+            <div class="zigzag-visual">
+                <div class="stock-ticker-cards">
+                    {% if stocks %}
+                        {% for symbol, data in stocks.items() %}
+                        <div class="stock-card">
+                            <div class="stock-symbol">{{ symbol }}</div>
+                            <div class="stock-price">${{ "%.2f"|format(data.price) }}</div>
+                            {% if data.change is not none %}
+                            <div class="stock-change {{ 'positive' if data.change >= 0 else 'negative' }}">
+                                {{ '+' if data.change >= 0 else '' }}{{ data.change }} ({{ '+' if data.change_pct >= 0 else '' }}{{ data.change_pct }}%)
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="no-data">No stock data available yet. Run the pipeline to fetch data!</p>
+                    {% endif %}
+                </div>
+                {% if chart_data and chart_data.labels %}
+                <div class="mini-chart-container">
+                    <canvas id="stockChart"></canvas>
+                </div>
+                {% endif %}
+            </div>
+            <div class="zigzag-text">
+                <h2>Cruise Industry at a Glance</h2>
+                <p>Keep your finger on the pulse of the cruise industry! We track the major cruise line stocks so you can see how the industry is performing.</p>
+                <ul class="fun-facts">
+                    <li><strong>CCL</strong> - Carnival Corporation, the world's largest cruise company</li>
+                    <li><strong>RCL</strong> - Royal Caribbean Group, known for innovative mega-ships</li>
+                    <li><strong>NCLH</strong> - Norwegian Cruise Line Holdings, pioneers of freestyle cruising</li>
+                </ul>
+                <p class="fun-tagline">Watch the waves of the market while planning your next voyage!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: News - Visual LEFT, Text RIGHT -->
+    <div class="zigzag-section">
+        <div class="zigzag-content">
+            <div class="zigzag-visual">
+                <div class="news-feed">
+                    {% if news %}
+                        {% for article in news %}
+                        <a href="{{ article.url }}" target="_blank" class="news-item">
+                            <div class="news-source">{{ article.source_name }}</div>
+                            <div class="news-title">{{ article.title }}</div>
+                            {% if article.published_at %}
+                            <div class="news-date">{{ article.published_at.strftime('%b %d, %Y') }}</div>
+                            {% endif %}
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                        <p class="no-data">No news articles yet. Run the pipeline to fetch the latest cruise news!</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="zigzag-text">
+                <h2>What's Happening on the High Seas?</h2>
+                <p>Stay informed with the latest cruise industry news! From new ship launches to exciting itineraries, we've got you covered.</p>
+                <p>Our automated news feed pulls the freshest stories from top cruise publications so you never miss a beat.</p>
+                <div class="news-stats">
+                    <span class="stat-badge">Updated Daily</span>
+                    <span class="stat-badge">Multiple Sources</span>
+                </div>
+                <p class="fun-tagline">Because knowing is half the adventure!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: Average Cruise Prices - Visual LEFT, Text RIGHT -->
+    <div class="zigzag-section">
+        <div class="zigzag-content">
+            <div class="zigzag-visual">
+                <div class="price-trends-container">
+                    {% if price_stats %}
+                        <div class="price-cards">
+                            {% for line, stats in price_stats.items() %}
+                            <div class="price-card">
+                                <div class="price-line-name">{{ line }}</div>
+                                <div class="price-avg">${{ "%.0f"|format(stats.avg) }}<span class="price-label">/night avg</span></div>
+                                <div class="price-range">${{ "%.0f"|format(stats.min) }} - ${{ "%.0f"|format(stats.max) }}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="price-placeholder">
+                            <div class="price-sample-cards">
+                                <div class="price-card sample">
+                                    <div class="price-line-name">Caribbean</div>
+                                    <div class="price-avg">$75-150<span class="price-label">/night</span></div>
+                                    <div class="price-category">Budget-Friendly</div>
+                                </div>
+                                <div class="price-card sample">
+                                    <div class="price-line-name">Alaska</div>
+                                    <div class="price-avg">$150-300<span class="price-label">/night</span></div>
+                                    <div class="price-category">Premium</div>
+                                </div>
+                                <div class="price-card sample">
+                                    <div class="price-line-name">Mediterranean</div>
+                                    <div class="price-avg">$100-250<span class="price-label">/night</span></div>
+                                    <div class="price-category">Mid-Range</div>
+                                </div>
+                                <div class="price-card sample">
+                                    <div class="price-line-name">Luxury Lines</div>
+                                    <div class="price-avg">$400+<span class="price-label">/night</span></div>
+                                    <div class="price-category">All-Inclusive</div>
+                                </div>
+                            </div>
+                            <p class="sample-note">Sample industry averages - Live pricing data coming soon!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="zigzag-text">
+                <h2>Cruise Price Trends</h2>
+                <p>Wondering what you should budget for your next cruise? We track average prices across different cruise lines and destinations to help you plan.</p>
+                <p>Prices vary based on season, cabin type, and cruise line. Inside cabins are most affordable, while suites and balconies command premium rates.</p>
+                <ul class="fun-facts">
+                    <li><strong>Wave Season</strong> (Jan-Mar) - Best deals and promotions</li>
+                    <li><strong>Summer</strong> - Peak prices for Alaska & Europe</li>
+                    <li><strong>Hurricane Season</strong> - Caribbean bargains available</li>
+                </ul>
+                <p class="fun-tagline">Book smart, sail happy!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 4: Deals - Visual LEFT, Text RIGHT -->
+    <div class="zigzag-section">
+        <div class="zigzag-content">
+            <div class="zigzag-visual">
+                <div class="deals-grid">
+                    {% if deals %}
+                        {% for deal in deals %}
+                        <div class="deal-card">
+                            <div class="deal-title">{{ deal.title[:80] }}{% if deal.title|length > 80 %}...{% endif %}</div>
+                            {% if deal.price %}
+                            <div class="deal-price">From ${{ "%.0f"|format(deal.price) }}</div>
+                            {% endif %}
+                            {% if deal.duration_nights %}
+                            <div class="deal-duration">{{ deal.duration_nights }} Nights</div>
+                            {% endif %}
+                            {% if deal.destination_region %}
+                            <div class="deal-region">{{ deal.destination_region }}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="deals-placeholder">
+                            <div class="placeholder-icon">&#9875;</div>
+                            <p>Deals Feed Coming Soon</p>
+                            <p class="small">We're connecting deal sources to bring you the best cruise bargains!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="zigzag-text">
+                <h2>Set Sail for Savings!</h2>
+                <p>Looking for your next cruise adventure? We're building a deals aggregator to help you find the perfect voyage at the perfect price.</p>
+                <p>Whether you're dreaming of Caribbean beaches, Alaskan glaciers, or Mediterranean sunsets, great deals are on the horizon.</p>
+                <p class="fun-tagline">Your dream cruise is just around the corner!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 5: Call to Action - Visual LEFT, Text RIGHT -->
+    <div class="zigzag-section">
+        <div class="zigzag-content">
+            <div class="zigzag-visual">
+                <div class="features-showcase">
+                    <div class="feature-item">
+                        <span class="feature-icon">&#128674;</span>
+                        <span class="feature-label">Track Cruise History</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">&#128202;</span>
+                        <span class="feature-label">View Statistics</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">&#127757;</span>
+                        <span class="feature-label">Interactive Maps</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">&#128247;</span>
+                        <span class="feature-label">Photo Galleries</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">&#128176;</span>
+                        <span class="feature-label">Budget Tracking</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">&#128197;</span>
+                        <span class="feature-label">Timeline View</span>
+                    </div>
+                </div>
+            </div>
+            <div class="zigzag-text">
+                <h2>Start Tracking Your Adventures!</h2>
+                <p>Histacruise is more than just data - it's your personal cruise companion. Log your voyages, track your spending, and relive your memories.</p>
+                {% if not current_user.is_authenticated %}
+                <div class="cta-buttons">
+                    <a href="{{ url_for('register') }}" class="btn-primary">Sign Up Free</a>
+                    <a href="{{ url_for('login') }}" class="btn-secondary">Login</a>
+                </div>
+                {% else %}
+                <div class="cta-buttons">
+                    <a href="{{ url_for('history') }}" class="btn-primary">View My Cruises</a>
+                    <a href="{{ url_for('statistics') }}" class="btn-secondary">My Statistics</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scripts %}
+{% if chart_data and chart_data.labels %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('stockChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ chart_data.labels | tojson }},
+                datasets: [
+                    {
+                        label: 'CCL',
+                        data: {{ chart_data.ccl | tojson }},
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.3,
+                        fill: false
+                    },
+                    {
+                        label: 'RCL',
+                        data: {{ chart_data.rcl | tojson }},
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        tension: 0.3,
+                        fill: false
+                    },
+                    {
+                        label: 'NCLH',
+                        data: {{ chart_data.nclh | tojson }},
+                        borderColor: '#ffc107',
+                        backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                        tension: 0.3,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endif %}
 {% endblock %}

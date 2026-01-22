@@ -1,0 +1,32 @@
+2026-01-21 17:53:02,732 - HC_Pipeline - INFO - ==================================================
+2026-01-21 17:53:02,732 - HC_Pipeline - INFO - Starting stock price collection
+2026-01-21 17:53:02,772 - HC_Pipeline - INFO - Starting stock collection for ['CCL', 'RCL', 'NCLH']
+2026-01-21 17:53:07,804 - HC_Pipeline - INFO - Stock collection complete: 15 processed, 15 added, 0 updated
+2026-01-21 17:53:43,315 - HC_Pipeline - INFO - ==================================================
+2026-01-21 17:53:43,315 - HC_Pipeline - INFO - Starting news collection
+2026-01-21 17:53:43,361 - HC_Pipeline - INFO - Starting news collection from 3 feeds
+2026-01-21 17:53:43,362 - HC_Pipeline - INFO - Fetching feed: CruiseHive
+2026-01-21 17:53:44,209 - HC_Pipeline - INFO - Fetching feed: CruiseCritic
+2026-01-21 17:53:44,559 - HC_Pipeline - WARNING - Feed CruiseCritic returned error: text/html;charset=utf-8 is not an XML media type
+2026-01-21 17:53:44,559 - HC_Pipeline - INFO - Fetching feed: Maritime Executive
+2026-01-21 17:53:45,269 - HC_Pipeline - WARNING - Feed Maritime Executive returned error: <unknown>:19:47: not well-formed (invalid token)
+2026-01-21 17:53:45,272 - HC_Pipeline - INFO - News collection complete: 9 processed, 9 added, 0 errors
+2026-01-21 17:53:58,799 - HC_Pipeline - INFO - ==================================================
+2026-01-21 17:53:58,799 - HC_Pipeline - INFO - Starting deals collection
+2026-01-21 17:53:58,838 - HC_Pipeline - INFO - Starting deals collection from 1 feeds
+2026-01-21 17:53:58,841 - HC_Pipeline - INFO - Fetching deals feed: CruiseCritic Deals
+2026-01-21 17:53:59,310 - HC_Pipeline - WARNING - Deals feed CruiseCritic Deals returned error: text/html; charset=utf-8 is not an XML media type
+2026-01-21 17:53:59,310 - HC_Pipeline - INFO - Deals collection complete: 0 processed, 0 added, 0 errors
+2026-01-21 17:57:07,026 - HC_Pipeline - INFO - ==================================================
+2026-01-21 17:57:07,026 - HC_Pipeline - INFO - Starting stock price collection
+2026-01-21 17:57:07,079 - HC_Pipeline - INFO - Starting stock collection for ['CCL', 'RCL', 'NCLH']
+2026-01-21 17:57:07,946 - HC_Pipeline - INFO - Stock collection complete: 15 processed, 15 added, 0 updated
+2026-01-21 17:57:10,107 - HC_Pipeline - INFO - ==================================================
+2026-01-21 17:57:10,108 - HC_Pipeline - INFO - Starting news collection
+2026-01-21 17:57:10,150 - HC_Pipeline - INFO - Starting news collection from 3 feeds
+2026-01-21 17:57:10,150 - HC_Pipeline - INFO - Fetching feed: CruiseHive
+2026-01-21 17:57:10,562 - HC_Pipeline - INFO - Fetching feed: CruiseCritic
+2026-01-21 17:57:10,834 - HC_Pipeline - WARNING - Feed CruiseCritic returned error: text/html;charset=utf-8 is not an XML media type
+2026-01-21 17:57:10,834 - HC_Pipeline - INFO - Fetching feed: Maritime Executive
+2026-01-21 17:57:11,479 - HC_Pipeline - WARNING - Feed Maritime Executive returned error: <unknown>:19:47: not well-formed (invalid token)
+2026-01-21 17:57:11,482 - HC_Pipeline - INFO - News collection complete: 9 processed, 9 added, 0 errors
