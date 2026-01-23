@@ -1,0 +1,56 @@
+DATA CLEANING LOG - 2026-01-23 09:18:35
+============================================================
+
+Original dataset: 2000 rows, 8 columns
+Columns: CustomerID, Gender, Age, Annual Income ($), Spending Score (1-100), Profession, Work Experience, Family Size
+
+------------------------------------------------------------
+1. DUPLICATE CHECK
+   No duplicate rows found
+
+------------------------------------------------------------
+2. MISSING VALUES CHECK
+   Found 35 missing values:
+      - Profession: 35 missing
+   Filled Profession missing values with mode (Artist)
+   Reason: Mode preserves most common category
+
+------------------------------------------------------------
+3. INVALID VALUES CHECK
+   Found 2 invalid spending scores - REMOVED
+   Reason: Spending score must be between 1-100 as per column definition
+
+------------------------------------------------------------
+4. TEXT STANDARDIZATION
+   Gender values standardized: <ArrowStringArray>
+['Male', 'Female']
+Length: 2, dtype: str -> <ArrowStringArray>
+['Male', 'Female']
+Length: 2, dtype: str
+   Reason: Consistent capitalization for accurate grouping
+   Profession values standardized (trimmed whitespace, title case)
+   Reason: Consistent formatting prevents duplicate categories
+
+------------------------------------------------------------
+5. OUTLIER DETECTION (IQR Method)
+   Note: Outliers logged but NOT removed - may be valid data points
+   Age: No outliers detected
+   Annual Income ($): No outliers detected
+   Spending Score (1-100): No outliers detected
+   Work Experience: 5 outliers detected (below -8.0 or above 16.0)
+   Family Size: No outliers detected
+
+------------------------------------------------------------
+6. DATA TYPE OPTIMIZATION
+   CustomerID: Kept as int (unique identifier)
+   Gender: Converted to category (memory efficient)
+   Profession: Converted to category (memory efficient)
+
+============================================================
+SUMMARY
+============================================================
+Original rows: 2000
+Final rows: 1998
+Rows removed: 2 (0.10%)
+
+Cleaned data saved to: Customers_cleaned.csv
