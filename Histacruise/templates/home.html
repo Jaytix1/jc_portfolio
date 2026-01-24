@@ -146,18 +146,24 @@
                 <div class="deals-grid">
                     {% if deals %}
                         {% for deal in deals %}
-                        <div class="deal-card">
-                            <div class="deal-title">{{ deal.title[:80] }}{% if deal.title|length > 80 %}...{% endif %}</div>
-                            {% if deal.price %}
-                            <div class="deal-price">From ${{ "%.0f"|format(deal.price) }}</div>
-                            {% endif %}
-                            {% if deal.duration_nights %}
-                            <div class="deal-duration">{{ deal.duration_nights }} Nights</div>
-                            {% endif %}
-                            {% if deal.destination_region %}
-                            <div class="deal-region">{{ deal.destination_region }}</div>
-                            {% endif %}
-                        </div>
+                        <a href="{{ deal.source_url or '#' }}" target="_blank" class="deal-card-link">
+                            <div class="deal-card">
+                                <div class="deal-title">{{ deal.title[:80] }}{% if deal.title|length > 80 %}...{% endif %}</div>
+                                {% if deal.price %}
+                                <div class="deal-price">From ${{ "%.0f"|format(deal.price) }}</div>
+                                {% endif %}
+                                {% if deal.duration_nights %}
+                                <div class="deal-duration">{{ deal.duration_nights }} Nights</div>
+                                {% endif %}
+                                {% if deal.destination_region %}
+                                <div class="deal-region">{{ deal.destination_region }}</div>
+                                {% endif %}
+                                {% if deal.departure_port %}
+                                <div class="deal-port">From {{ deal.departure_port }}</div>
+                                {% endif %}
+                                <div class="deal-source">{{ deal.source_name }}</div>
+                            </div>
+                        </a>
                         {% endfor %}
                     {% else %}
                         <div class="deals-placeholder">
@@ -245,7 +251,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         borderColor: '#667eea',
                         backgroundColor: 'rgba(102, 126, 234, 0.1)',
                         tension: 0.3,
-                        fill: false
+                        fill: false,
+                        yAxisID: 'y'
                     },
                     {
                         label: 'RCL',
@@ -253,7 +260,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         borderColor: '#28a745',
                         backgroundColor: 'rgba(40, 167, 69, 0.1)',
                         tension: 0.3,
-                        fill: false
+                        fill: false,
+                        yAxisID: 'y1'
                     },
                     {
                         label: 'NCLH',
@@ -261,7 +269,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         borderColor: '#ffc107',
                         backgroundColor: 'rgba(255, 193, 7, 0.1)',
                         tension: 0.3,
-                        fill: false
+                        fill: false,
+                        yAxisID: 'y'
                     }
                 ]
             },
@@ -275,7 +284,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 scales: {
                     y: {
-                        beginAtZero: false
+                        type: 'linear',
+                        position: 'left',
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'CCL / NCLH ($)'
+                        },
+                        grid: {
+                            drawOnChartArea: true
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        position: 'right',
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'RCL ($)'
+                        },
+                        grid: {
+                            drawOnChartArea: false
+                        }
                     }
                 }
             }

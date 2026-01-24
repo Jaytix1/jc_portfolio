@@ -860,5 +860,86 @@ def logout():
     flash('You have been logged out.')
     return redirect(url_for('home'))
 
+# ============== AUTOMATED PIPELINE SCHEDULER ==============
+
+def setup_scheduler():
+    """Set up APScheduler to run pipeline jobs automatically."""
+    from apscheduler.schedulers.background import BackgroundScheduler
+    from apscheduler.triggers.interval import IntervalTrigger
+    import atexit
+
+    scheduler = BackgroundScheduler()
+
+    def run_pipeline_job(job_type):
+        """Run a specific pipeline job."""
+        try:
+            from HC_Pipeline.main import Pipeline
+            pipeline = Pipeline(app)
+
+            if job_type == 'stocks':
+                pipeline.run_stocks()
+            elif job_type == 'news':
+                pipeline.run_news()
+            elif job_type == 'deals':
+                pipeline.run_deals()
+            elif job_type == 'ships':
+                pipeline.run_ships()
+
+            print(f"[Scheduler] {job_type} pipeline completed at {datetime.now()}")
+        except Exception as e:
+            print(f"[Scheduler] {job_type} pipeline failed: {e}")
+
+    # Schedule jobs:
+    # - Stocks: Every 2 hours (market data updates)
+    # - News: Every 3 hours
+    # - Deals: Every 6 hours
+    # - Ships: Once daily
+
+    scheduler.add_job(
+        func=lambda: run_pipeline_job('stocks'),
+        trigger=IntervalTrigger(hours=2),
+        id='stock_collector',
+        name='Collect stock prices',
+        replace_existing=True
+    )
+
+    scheduler.add_job(
+        func=lambda: run_pipeline_job('news'),
+        trigger=IntervalTrigger(hours=3),
+        id='news_collector',
+        name='Collect cruise news',
+        replace_existing=True
+    )
+
+    scheduler.add_job(
+        func=lambda: run_pipeline_job('deals'),
+        trigger=IntervalTrigger(hours=6),
+        id='deals_collector',
+        name='Collect cruise deals',
+        replace_existing=True
+    )
+
+    scheduler.add_job(
+        func=lambda: run_pipeline_job('ships'),
+        trigger=IntervalTrigger(hours=24),
+        id='ship_collector',
+        name='Collect ship specifications',
+        replace_existing=True
+    )
+
+    scheduler.start()
+    print("[Scheduler] Pipeline scheduler started!")
+    print("  - Stocks: Every 2 hours")
+    print("  - News: Every 3 hours")
+    print("  - Deals: Every 6 hours")
+    print("  - Ships: Every 24 hours")
+
+    # Shut down scheduler when app exits
+    atexit.register(lambda: scheduler.shutdown())
+
+    return scheduler
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Start the scheduler when running the app directly
+    scheduler = setup_scheduler()
+    app.run(debug=True, use_reloader=False)  # use_reloader=False prevents double scheduler

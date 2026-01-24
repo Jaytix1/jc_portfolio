@@ -30,3 +30,236 @@
 2026-01-21 17:57:10,834 - HC_Pipeline - INFO - Fetching feed: Maritime Executive
 2026-01-21 17:57:11,479 - HC_Pipeline - WARNING - Feed Maritime Executive returned error: <unknown>:19:47: not well-formed (invalid token)
 2026-01-21 17:57:11,482 - HC_Pipeline - INFO - News collection complete: 9 processed, 9 added, 0 errors
+2026-01-22 11:11:18,672 - HC_Pipeline - INFO - ==================================================
+2026-01-22 11:11:18,672 - HC_Pipeline - INFO - Starting stock price collection
+2026-01-22 11:13:21,703 - HC_Pipeline - INFO - ==================================================
+2026-01-22 11:13:21,704 - HC_Pipeline - INFO - Starting stock price collection
+2026-01-22 11:13:21,743 - HC_Pipeline - INFO - Starting stock collection for ['CCL', 'RCL', 'NCLH']
+2026-01-22 11:13:25,942 - HC_Pipeline - INFO - Stock collection complete: 15 processed, 15 added, 0 updated
+2026-01-22 11:16:45,768 - HC_Pipeline - INFO - ==================================================
+2026-01-22 11:16:45,768 - HC_Pipeline - INFO - Starting full pipeline run
+2026-01-22 11:16:45,768 - HC_Pipeline - INFO - ==================================================
+2026-01-22 11:16:45,769 - HC_Pipeline - INFO - Starting stock price collection
+2026-01-22 11:16:45,817 - HC_Pipeline - INFO - Starting stock collection for ['CCL', 'RCL', 'NCLH']
+2026-01-22 11:16:46,521 - HC_Pipeline - INFO - Stock collection complete: 15 processed, 0 added, 3 updated
+2026-01-22 11:16:46,539 - HC_Pipeline - INFO - ==================================================
+2026-01-22 11:16:46,539 - HC_Pipeline - INFO - Starting news collection
+2026-01-22 11:17:17,954 - HC_Pipeline - INFO - ==================================================
+2026-01-22 11:17:17,954 - HC_Pipeline - INFO - Starting full pipeline run
+2026-01-22 11:17:17,954 - HC_Pipeline - INFO - ==================================================
+2026-01-22 11:17:17,954 - HC_Pipeline - INFO - Starting stock price collection
+2026-01-22 11:17:17,985 - HC_Pipeline - INFO - Starting stock collection for ['CCL', 'RCL', 'NCLH']
+2026-01-22 11:17:18,586 - HC_Pipeline - INFO - Stock collection complete: 15 processed, 0 added, 3 updated
+2026-01-22 11:17:18,594 - HC_Pipeline - INFO - ==================================================
+2026-01-22 11:17:18,594 - HC_Pipeline - INFO - Starting news collection
+2026-01-22 11:17:18,600 - HC_Pipeline - INFO - Starting news collection from 3 feeds
+2026-01-22 11:17:18,600 - HC_Pipeline - INFO - Fetching feed: CruiseHive
+2026-01-22 11:17:19,085 - HC_Pipeline - INFO - Fetching feed: CruiseCritic
+2026-01-22 11:17:19,562 - HC_Pipeline - WARNING - Feed CruiseCritic returned error: text/html;charset=utf-8 is not an XML media type
+2026-01-22 11:17:19,562 - HC_Pipeline - INFO - Fetching feed: Maritime Executive
+2026-01-22 11:17:20,355 - HC_Pipeline - WARNING - Feed Maritime Executive returned error: <unknown>:19:47: not well-formed (invalid token)
+2026-01-22 11:17:20,361 - HC_Pipeline - INFO - News collection complete: 9 processed, 9 added, 0 errors
+2026-01-22 11:17:20,370 - HC_Pipeline - INFO - ==================================================
+2026-01-22 11:17:20,370 - HC_Pipeline - INFO - Starting deals collection
+2026-01-22 11:17:20,375 - HC_Pipeline - INFO - Starting deals collection from 1 feeds
+2026-01-22 11:17:20,377 - HC_Pipeline - INFO - Fetching deals feed: CruiseCritic Deals
+2026-01-22 11:17:20,989 - HC_Pipeline - WARNING - Deals feed CruiseCritic Deals returned error: text/html; charset=utf-8 is not an XML media type
+2026-01-22 11:17:20,989 - HC_Pipeline - INFO - Deals collection complete: 0 processed, 0 added, 0 errors
+2026-01-22 11:17:20,998 - HC_Pipeline - INFO - ==================================================
+2026-01-22 11:17:20,999 - HC_Pipeline - INFO - Starting ship specification collection
+2026-01-22 11:17:21,004 - HC_Pipeline - INFO - Starting ship specification collection
+2026-01-22 11:17:21,007 - HC_Pipeline - INFO - Found 111 ships without specifications
+2026-01-22 11:17:21,596 - HC_Pipeline - ERROR - Wikipedia API error for Wonder of the Seas: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Wonder+of+the+Seas+Royal+Caribbean+International&srlimit=1
+2026-01-22 11:17:22,145 - HC_Pipeline - ERROR - Wikipedia API error for Symphony of the Seas: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Symphony+of+the+Seas+Royal+Caribbean+International&srlimit=1
+2026-01-22 11:17:22,687 - HC_Pipeline - ERROR - Wikipedia API error for Harmony of the Seas: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Harmony+of+the+Seas+Royal+Caribbean+International&srlimit=1
+2026-01-22 11:17:23,218 - HC_Pipeline - ERROR - Wikipedia API error for Oasis of the Seas: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Oasis+of+the+Seas+Royal+Caribbean+International&srlimit=1
+2026-01-22 11:17:23,775 - HC_Pipeline - ERROR - Wikipedia API error for Allure of the Seas: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Allure+of+the+Seas+Royal+Caribbean+International&srlimit=1
+2026-01-22 11:17:24,315 - HC_Pipeline - ERROR - Wikipedia API error for Quantum of the Seas: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Quantum+of+the+Seas+Royal+Caribbean+International&srlimit=1
+2026-01-22 11:17:24,921 - HC_Pipeline - ERROR - Wikipedia API error for Anthem of the Seas: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Anthem+of+the+Seas+Royal+Caribbean+International&srlimit=1
+2026-01-22 11:17:25,435 - HC_Pipeline - ERROR - Wikipedia API error for Ovation of the Seas: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Ovation+of+the+Seas+Royal+Caribbean+International&srlimit=1
+2026-01-22 11:17:26,001 - HC_Pipeline - ERROR - Wikipedia API error for Spectrum of the Seas: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Spectrum+of+the+Seas+Royal+Caribbean+International&srlimit=1
+2026-01-22 11:17:26,553 - HC_Pipeline - ERROR - Wikipedia API error for Odyssey of the Seas: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Odyssey+of+the+Seas+Royal+Caribbean+International&srlimit=1
+2026-01-22 11:17:27,095 - HC_Pipeline - ERROR - Wikipedia API error for Navigator of the Seas: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Navigator+of+the+Seas+Royal+Caribbean+International&srlimit=1
+2026-01-22 11:17:27,635 - HC_Pipeline - ERROR - Wikipedia API error for Mariner of the Seas: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Mariner+of+the+Seas+Royal+Caribbean+International&srlimit=1
+2026-01-22 11:17:28,196 - HC_Pipeline - ERROR - Wikipedia API error for Adventure of the Seas: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Adventure+of+the+Seas+Royal+Caribbean+International&srlimit=1
+2026-01-22 11:17:28,775 - HC_Pipeline - ERROR - Wikipedia API error for Explorer of the Seas: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Explorer+of+the+Seas+Royal+Caribbean+International&srlimit=1
+2026-01-22 11:17:29,338 - HC_Pipeline - ERROR - Wikipedia API error for Freedom of the Seas: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Freedom+of+the+Seas+Royal+Caribbean+International&srlimit=1
+2026-01-22 11:17:29,895 - HC_Pipeline - ERROR - Wikipedia API error for Liberty of the Seas: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Liberty+of+the+Seas+Royal+Caribbean+International&srlimit=1
+2026-01-22 11:17:30,455 - HC_Pipeline - ERROR - Wikipedia API error for Independence of the Seas: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Independence+of+the+Seas+Royal+Caribbean+International&srlimit=1
+2026-01-22 11:17:31,120 - HC_Pipeline - ERROR - Wikipedia API error for Brilliance of the Seas: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Brilliance+of+the+Seas+Royal+Caribbean+International&srlimit=1
+2026-01-22 11:17:31,660 - HC_Pipeline - ERROR - Wikipedia API error for Serenade of the Seas: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Serenade+of+the+Seas+Royal+Caribbean+International&srlimit=1
+2026-01-22 11:17:32,195 - HC_Pipeline - ERROR - Wikipedia API error for Jewel of the Seas: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Jewel+of+the+Seas+Royal+Caribbean+International&srlimit=1
+2026-01-22 11:17:32,740 - HC_Pipeline - ERROR - Wikipedia API error for Carnival Celebration: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Carnival+Celebration+Carnival+Cruise+Line&srlimit=1
+2026-01-22 11:17:33,295 - HC_Pipeline - ERROR - Wikipedia API error for Carnival Jubilee: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Carnival+Jubilee+Carnival+Cruise+Line&srlimit=1
+2026-01-22 11:17:33,839 - HC_Pipeline - ERROR - Wikipedia API error for Mardi Gras: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Mardi+Gras+Carnival+Cruise+Line&srlimit=1
+2026-01-22 11:17:34,355 - HC_Pipeline - ERROR - Wikipedia API error for Carnival Venezia: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Carnival+Venezia+Carnival+Cruise+Line&srlimit=1
+2026-01-22 11:17:34,905 - HC_Pipeline - ERROR - Wikipedia API error for Carnival Vista: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Carnival+Vista+Carnival+Cruise+Line&srlimit=1
+2026-01-22 11:17:35,435 - HC_Pipeline - ERROR - Wikipedia API error for Carnival Horizon: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Carnival+Horizon+Carnival+Cruise+Line&srlimit=1
+2026-01-22 11:17:36,001 - HC_Pipeline - ERROR - Wikipedia API error for Carnival Panorama: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Carnival+Panorama+Carnival+Cruise+Line&srlimit=1
+2026-01-22 11:17:36,561 - HC_Pipeline - ERROR - Wikipedia API error for Carnival Breeze: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Carnival+Breeze+Carnival+Cruise+Line&srlimit=1
+2026-01-22 11:17:37,094 - HC_Pipeline - ERROR - Wikipedia API error for Carnival Magic: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Carnival+Magic+Carnival+Cruise+Line&srlimit=1
+2026-01-22 11:17:37,634 - HC_Pipeline - ERROR - Wikipedia API error for Carnival Dream: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Carnival+Dream+Carnival+Cruise+Line&srlimit=1
+2026-01-22 11:17:38,175 - HC_Pipeline - ERROR - Wikipedia API error for Carnival Splendor: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Carnival+Splendor+Carnival+Cruise+Line&srlimit=1
+2026-01-22 11:17:38,724 - HC_Pipeline - ERROR - Wikipedia API error for Carnival Pride: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Carnival+Pride+Carnival+Cruise+Line&srlimit=1
+2026-01-22 11:17:39,275 - HC_Pipeline - ERROR - Wikipedia API error for Carnival Legend: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Carnival+Legend+Carnival+Cruise+Line&srlimit=1
+2026-01-22 11:17:39,887 - HC_Pipeline - ERROR - Wikipedia API error for Carnival Spirit: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Carnival+Spirit+Carnival+Cruise+Line&srlimit=1
+2026-01-22 11:17:40,435 - HC_Pipeline - ERROR - Wikipedia API error for Carnival Miracle: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Carnival+Miracle+Carnival+Cruise+Line&srlimit=1
+2026-01-22 11:17:40,995 - HC_Pipeline - ERROR - Wikipedia API error for Carnival Glory: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Carnival+Glory+Carnival+Cruise+Line&srlimit=1
+2026-01-22 11:17:41,537 - HC_Pipeline - ERROR - Wikipedia API error for Carnival Conquest: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Carnival+Conquest+Carnival+Cruise+Line&srlimit=1
+2026-01-22 11:17:42,054 - HC_Pipeline - ERROR - Wikipedia API error for Carnival Liberty: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Carnival+Liberty+Carnival+Cruise+Line&srlimit=1
+2026-01-22 11:17:42,600 - HC_Pipeline - ERROR - Wikipedia API error for Carnival Valor: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Carnival+Valor+Carnival+Cruise+Line&srlimit=1
+2026-01-22 11:17:43,161 - HC_Pipeline - ERROR - Wikipedia API error for Carnival Freedom: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Carnival+Freedom+Carnival+Cruise+Line&srlimit=1
+2026-01-22 11:17:43,694 - HC_Pipeline - ERROR - Wikipedia API error for Norwegian Prima: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Norwegian+Prima+Norwegian+Cruise+Line&srlimit=1
+2026-01-22 11:17:44,255 - HC_Pipeline - ERROR - Wikipedia API error for Norwegian Viva: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Norwegian+Viva+Norwegian+Cruise+Line&srlimit=1
+2026-01-22 11:17:44,855 - HC_Pipeline - ERROR - Wikipedia API error for Norwegian Encore: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Norwegian+Encore+Norwegian+Cruise+Line&srlimit=1
+2026-01-22 11:17:45,590 - HC_Pipeline - ERROR - Wikipedia API error for Norwegian Bliss: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Norwegian+Bliss+Norwegian+Cruise+Line&srlimit=1
+2026-01-22 11:17:46,161 - HC_Pipeline - ERROR - Wikipedia API error for Norwegian Joy: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Norwegian+Joy+Norwegian+Cruise+Line&srlimit=1
+2026-01-22 11:17:46,695 - HC_Pipeline - ERROR - Wikipedia API error for Norwegian Escape: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Norwegian+Escape+Norwegian+Cruise+Line&srlimit=1
+2026-01-22 11:17:47,255 - HC_Pipeline - ERROR - Wikipedia API error for Norwegian Getaway: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Norwegian+Getaway+Norwegian+Cruise+Line&srlimit=1
+2026-01-22 11:17:47,815 - HC_Pipeline - ERROR - Wikipedia API error for Norwegian Breakaway: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Norwegian+Breakaway+Norwegian+Cruise+Line&srlimit=1
+2026-01-22 11:17:48,359 - HC_Pipeline - ERROR - Wikipedia API error for Norwegian Epic: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Norwegian+Epic+Norwegian+Cruise+Line&srlimit=1
+2026-01-22 11:17:48,894 - HC_Pipeline - ERROR - Wikipedia API error for Norwegian Jewel: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Norwegian+Jewel+Norwegian+Cruise+Line&srlimit=1
+2026-01-22 11:17:49,486 - HC_Pipeline - ERROR - Wikipedia API error for Norwegian Pearl: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Norwegian+Pearl+Norwegian+Cruise+Line&srlimit=1
+2026-01-22 11:17:50,035 - HC_Pipeline - ERROR - Wikipedia API error for Norwegian Gem: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Norwegian+Gem+Norwegian+Cruise+Line&srlimit=1
+2026-01-22 11:17:50,584 - HC_Pipeline - ERROR - Wikipedia API error for Norwegian Jade: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Norwegian+Jade+Norwegian+Cruise+Line&srlimit=1
+2026-01-22 11:17:51,114 - HC_Pipeline - ERROR - Wikipedia API error for Norwegian Star: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Norwegian+Star+Norwegian+Cruise+Line&srlimit=1
+2026-01-22 11:17:51,674 - HC_Pipeline - ERROR - Wikipedia API error for Norwegian Dawn: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Norwegian+Dawn+Norwegian+Cruise+Line&srlimit=1
+2026-01-22 11:17:52,261 - HC_Pipeline - ERROR - Wikipedia API error for Norwegian Spirit: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Norwegian+Spirit+Norwegian+Cruise+Line&srlimit=1
+2026-01-22 11:17:52,821 - HC_Pipeline - ERROR - Wikipedia API error for Norwegian Sky: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Norwegian+Sky+Norwegian+Cruise+Line&srlimit=1
+2026-01-22 11:17:53,374 - HC_Pipeline - ERROR - Wikipedia API error for Norwegian Sun: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Norwegian+Sun+Norwegian+Cruise+Line&srlimit=1
+2026-01-22 11:17:53,895 - HC_Pipeline - ERROR - Wikipedia API error for Disney Wish: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Disney+Wish+Disney+Cruise+Line&srlimit=1
+2026-01-22 11:17:54,614 - HC_Pipeline - ERROR - Wikipedia API error for Disney Treasure: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Disney+Treasure+Disney+Cruise+Line&srlimit=1
+2026-01-22 11:17:55,204 - HC_Pipeline - ERROR - Wikipedia API error for Disney Dream: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Disney+Dream+Disney+Cruise+Line&srlimit=1
+2026-01-22 11:17:55,838 - HC_Pipeline - ERROR - Wikipedia API error for Disney Fantasy: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Disney+Fantasy+Disney+Cruise+Line&srlimit=1
+2026-01-22 11:17:56,394 - HC_Pipeline - ERROR - Wikipedia API error for Disney Magic: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Disney+Magic+Disney+Cruise+Line&srlimit=1
+2026-01-22 11:17:56,955 - HC_Pipeline - ERROR - Wikipedia API error for Disney Wonder: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Disney+Wonder+Disney+Cruise+Line&srlimit=1
+2026-01-22 11:17:57,574 - HC_Pipeline - ERROR - Wikipedia API error for Discovery Princess: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Discovery+Princess+Princess+Cruises&srlimit=1
+2026-01-22 11:17:58,117 - HC_Pipeline - ERROR - Wikipedia API error for Enchanted Princess: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Enchanted+Princess+Princess+Cruises&srlimit=1
+2026-01-22 11:17:58,695 - HC_Pipeline - ERROR - Wikipedia API error for Sky Princess: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Sky+Princess+Princess+Cruises&srlimit=1
+2026-01-22 11:17:59,282 - HC_Pipeline - ERROR - Wikipedia API error for Majestic Princess: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Majestic+Princess+Princess+Cruises&srlimit=1
+2026-01-22 11:17:59,836 - HC_Pipeline - ERROR - Wikipedia API error for Regal Princess: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Regal+Princess+Princess+Cruises&srlimit=1
+2026-01-22 11:18:00,394 - HC_Pipeline - ERROR - Wikipedia API error for Royal Princess: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Royal+Princess+Princess+Cruises&srlimit=1
+2026-01-22 11:18:00,920 - HC_Pipeline - ERROR - Wikipedia API error for Caribbean Princess: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Caribbean+Princess+Princess+Cruises&srlimit=1
+2026-01-22 11:18:01,454 - HC_Pipeline - ERROR - Wikipedia API error for Crown Princess: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Crown+Princess+Princess+Cruises&srlimit=1
+2026-01-22 11:18:01,999 - HC_Pipeline - ERROR - Wikipedia API error for Emerald Princess: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Emerald+Princess+Princess+Cruises&srlimit=1
+2026-01-22 11:18:02,559 - HC_Pipeline - ERROR - Wikipedia API error for Ruby Princess: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Ruby+Princess+Princess+Cruises&srlimit=1
+2026-01-22 11:18:03,141 - HC_Pipeline - ERROR - Wikipedia API error for Sapphire Princess: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Sapphire+Princess+Princess+Cruises&srlimit=1
+2026-01-22 11:18:03,675 - HC_Pipeline - ERROR - Wikipedia API error for Island Princess: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Island+Princess+Princess+Cruises&srlimit=1
+2026-01-22 11:18:04,259 - HC_Pipeline - ERROR - Wikipedia API error for Coral Princess: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Coral+Princess+Princess+Cruises&srlimit=1
+2026-01-22 11:18:04,795 - HC_Pipeline - ERROR - Wikipedia API error for Grand Princess: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Grand+Princess+Princess+Cruises&srlimit=1
+2026-01-22 11:18:05,331 - HC_Pipeline - ERROR - Wikipedia API error for Celebrity Beyond: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Celebrity+Beyond+Celebrity+Cruises&srlimit=1
+2026-01-22 11:18:05,875 - HC_Pipeline - ERROR - Wikipedia API error for Celebrity Apex: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Celebrity+Apex+Celebrity+Cruises&srlimit=1
+2026-01-22 11:18:06,435 - HC_Pipeline - ERROR - Wikipedia API error for Celebrity Edge: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Celebrity+Edge+Celebrity+Cruises&srlimit=1
+2026-01-22 11:18:07,006 - HC_Pipeline - ERROR - Wikipedia API error for Celebrity Reflection: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Celebrity+Reflection+Celebrity+Cruises&srlimit=1
+2026-01-22 11:18:07,579 - HC_Pipeline - ERROR - Wikipedia API error for Celebrity Silhouette: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Celebrity+Silhouette+Celebrity+Cruises&srlimit=1
+2026-01-22 11:18:08,155 - HC_Pipeline - ERROR - Wikipedia API error for Celebrity Eclipse: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Celebrity+Eclipse+Celebrity+Cruises&srlimit=1
+2026-01-22 11:18:08,714 - HC_Pipeline - ERROR - Wikipedia API error for Celebrity Equinox: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Celebrity+Equinox+Celebrity+Cruises&srlimit=1
+2026-01-22 11:18:09,290 - HC_Pipeline - ERROR - Wikipedia API error for Celebrity Solstice: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Celebrity+Solstice+Celebrity+Cruises&srlimit=1
+2026-01-22 11:18:09,834 - HC_Pipeline - ERROR - Wikipedia API error for Celebrity Constellation: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Celebrity+Constellation+Celebrity+Cruises&srlimit=1
+2026-01-22 11:18:10,400 - HC_Pipeline - ERROR - Wikipedia API error for Celebrity Summit: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Celebrity+Summit+Celebrity+Cruises&srlimit=1
+2026-01-22 11:18:10,954 - HC_Pipeline - ERROR - Wikipedia API error for Celebrity Infinity: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Celebrity+Infinity+Celebrity+Cruises&srlimit=1
+2026-01-22 11:18:11,514 - HC_Pipeline - ERROR - Wikipedia API error for Celebrity Millennium: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Celebrity+Millennium+Celebrity+Cruises&srlimit=1
+2026-01-22 11:18:12,114 - HC_Pipeline - ERROR - Wikipedia API error for Rotterdam: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Rotterdam+Holland+America+Line&srlimit=1
+2026-01-22 11:18:12,675 - HC_Pipeline - ERROR - Wikipedia API error for Nieuw Statendam: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Nieuw+Statendam+Holland+America+Line&srlimit=1
+2026-01-22 11:18:13,234 - HC_Pipeline - ERROR - Wikipedia API error for Koningsdam: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Koningsdam+Holland+America+Line&srlimit=1
+2026-01-22 11:18:13,802 - HC_Pipeline - ERROR - Wikipedia API error for Noordam: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Noordam+Holland+America+Line&srlimit=1
+2026-01-22 11:18:14,339 - HC_Pipeline - ERROR - Wikipedia API error for Oosterdam: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Oosterdam+Holland+America+Line&srlimit=1
+2026-01-22 11:18:14,873 - HC_Pipeline - ERROR - Wikipedia API error for Westerdam: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Westerdam+Holland+America+Line&srlimit=1
+2026-01-22 11:18:15,419 - HC_Pipeline - ERROR - Wikipedia API error for Zuiderdam: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Zuiderdam+Holland+America+Line&srlimit=1
+2026-01-22 11:18:15,951 - HC_Pipeline - ERROR - Wikipedia API error for Eurodam: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Eurodam+Holland+America+Line&srlimit=1
+2026-01-22 11:18:16,505 - HC_Pipeline - ERROR - Wikipedia API error for Nieuw Amsterdam: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=Nieuw+Amsterdam+Holland+America+Line&srlimit=1
+2026-01-22 11:18:17,075 - HC_Pipeline - ERROR - Wikipedia API error for MSC World Europa: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=MSC+World+Europa+MSC+Cruises&srlimit=1
+2026-01-22 11:18:17,634 - HC_Pipeline - ERROR - Wikipedia API error for MSC Seascape: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=MSC+Seascape+MSC+Cruises&srlimit=1
+2026-01-22 11:18:18,194 - HC_Pipeline - ERROR - Wikipedia API error for MSC Seashore: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=MSC+Seashore+MSC+Cruises&srlimit=1
+2026-01-22 11:18:18,759 - HC_Pipeline - ERROR - Wikipedia API error for MSC Virtuosa: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=MSC+Virtuosa+MSC+Cruises&srlimit=1
+2026-01-22 11:18:19,314 - HC_Pipeline - ERROR - Wikipedia API error for MSC Grandiosa: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=MSC+Grandiosa+MSC+Cruises&srlimit=1
+2026-01-22 11:18:19,976 - HC_Pipeline - ERROR - Wikipedia API error for MSC Bellissima: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=MSC+Bellissima+MSC+Cruises&srlimit=1
+2026-01-22 11:18:20,557 - HC_Pipeline - ERROR - Wikipedia API error for MSC Seaview: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=MSC+Seaview+MSC+Cruises&srlimit=1
+2026-01-22 11:18:21,113 - HC_Pipeline - ERROR - Wikipedia API error for MSC Seaside: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=MSC+Seaside+MSC+Cruises&srlimit=1
+2026-01-22 11:18:21,680 - HC_Pipeline - ERROR - Wikipedia API error for MSC Meraviglia: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=MSC+Meraviglia+MSC+Cruises&srlimit=1
+2026-01-22 11:18:22,240 - HC_Pipeline - ERROR - Wikipedia API error for MSC Divina: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=MSC+Divina+MSC+Cruises&srlimit=1
+2026-01-22 11:18:22,774 - HC_Pipeline - ERROR - Wikipedia API error for MSC Preziosa: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=MSC+Preziosa+MSC+Cruises&srlimit=1
+2026-01-22 11:18:23,313 - HC_Pipeline - ERROR - Wikipedia API error for MSC Splendida: 403 Client Error: Forbidden for url: https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=MSC+Splendida+MSC+Cruises&srlimit=1
+2026-01-22 11:18:23,315 - HC_Pipeline - INFO - Ship collection complete: 111 processed, 0 added, 0 errors
+2026-01-22 11:18:23,321 - HC_Pipeline - INFO - Full pipeline completed in 65.4s
+2026-01-22 11:18:23,321 - HC_Pipeline - INFO - Results: {'stocks': True, 'news': True, 'deals': True, 'ships': True}
+2026-01-22 11:25:24,284 - HC_Pipeline - INFO - ==================================================
+2026-01-22 11:25:24,285 - HC_Pipeline - INFO - Starting deals collection
+2026-01-22 11:25:24,325 - HC_Pipeline - INFO - Starting deals collection
+2026-01-22 11:25:24,327 - HC_Pipeline - INFO - Fetching deals feed: Cruise Deals RSS
+2026-01-22 11:25:25,047 - HC_Pipeline - WARNING - Deals feed Cruise Deals RSS returned error: <unknown>:16:42: not well-formed (invalid token)
+2026-01-22 11:25:25,047 - HC_Pipeline - INFO - Scraping deals from: Carnival Cruises
+2026-01-22 11:25:25,735 - HC_Pipeline - INFO - Found 1 deals from Carnival Cruises
+2026-01-22 11:25:25,737 - HC_Pipeline - INFO - Scraping deals from: Royal Caribbean
+2026-01-22 11:25:26,830 - HC_Pipeline - INFO - Found 2 deals from Royal Caribbean
+2026-01-22 11:25:26,831 - HC_Pipeline - INFO - Scraping deals from: Norwegian Cruise Line
+2026-01-22 11:25:27,621 - HC_Pipeline - INFO - Found 2 deals from Norwegian Cruise Line
+2026-01-22 11:25:27,627 - HC_Pipeline - INFO - Deals collection complete: 14 processed, 5 added, 0 errors
+2026-01-22 11:28:39,974 - HC_Pipeline - INFO - ==================================================
+2026-01-22 11:28:39,974 - HC_Pipeline - INFO - Starting deals collection
+2026-01-22 11:28:40,014 - HC_Pipeline - INFO - Starting deals collection
+2026-01-22 11:28:40,018 - HC_Pipeline - INFO - Fetching deals feed: Cruise Deals RSS
+2026-01-22 11:28:40,490 - HC_Pipeline - WARNING - Deals feed Cruise Deals RSS returned error: <unknown>:16:42: not well-formed (invalid token)
+2026-01-22 11:28:40,490 - HC_Pipeline - INFO - Scraping deals from: Carnival Cruises
+2026-01-22 11:28:41,071 - HC_Pipeline - INFO - Found 0 deals from Carnival Cruises
+2026-01-22 11:28:41,072 - HC_Pipeline - INFO - Scraping deals from: Royal Caribbean
+2026-01-22 11:28:42,682 - HC_Pipeline - INFO - Found 5 deals from Royal Caribbean
+2026-01-22 11:28:42,683 - HC_Pipeline - INFO - Scraping deals from: Norwegian Cruise Line
+2026-01-22 11:28:43,476 - HC_Pipeline - INFO - Found 1 deals from Norwegian Cruise Line
+2026-01-22 11:28:43,477 - HC_Pipeline - INFO - Scraping deals from: Princess Cruises
+2026-01-22 11:28:44,130 - HC_Pipeline - WARNING - Failed to fetch Princess Cruises: 404 Client Error: Not Found for url: https://www.princess.com/cruise-deals-background/
+2026-01-22 11:28:44,132 - HC_Pipeline - INFO - Scraping deals from: MSC Cruises
+2026-01-22 11:28:47,175 - HC_Pipeline - INFO - Found 0 deals from MSC Cruises
+2026-01-22 11:28:47,182 - HC_Pipeline - INFO - Deals collection complete: 9 processed, 6 added, 0 errors
+2026-01-22 11:29:39,391 - HC_Pipeline - INFO - ==================================================
+2026-01-22 11:29:39,391 - HC_Pipeline - INFO - Starting deals collection
+2026-01-22 11:29:39,430 - HC_Pipeline - INFO - Starting deals collection
+2026-01-22 11:29:39,433 - HC_Pipeline - INFO - Fetching deals feed: Cruise Deals RSS
+2026-01-22 11:29:39,878 - HC_Pipeline - WARNING - Deals feed Cruise Deals RSS returned error: <unknown>:16:42: not well-formed (invalid token)
+2026-01-22 11:29:39,878 - HC_Pipeline - INFO - Scraping deals from: Carnival Cruises
+2026-01-22 11:29:40,633 - HC_Pipeline - INFO - Found 0 deals from Carnival Cruises
+2026-01-22 11:29:40,634 - HC_Pipeline - INFO - Scraping deals from: Royal Caribbean
+2026-01-22 11:29:41,736 - HC_Pipeline - INFO - Found 5 deals from Royal Caribbean
+2026-01-22 11:29:41,737 - HC_Pipeline - INFO - Scraping deals from: Norwegian Cruise Line
+2026-01-22 11:29:42,592 - HC_Pipeline - INFO - Found 1 deals from Norwegian Cruise Line
+2026-01-22 11:29:42,593 - HC_Pipeline - INFO - Scraping deals from: Princess Cruises
+2026-01-22 11:29:43,233 - HC_Pipeline - WARNING - Failed to fetch Princess Cruises: 404 Client Error: Not Found for url: https://www.princess.com/cruise-deals-background/
+2026-01-22 11:29:43,234 - HC_Pipeline - INFO - Scraping deals from: MSC Cruises
+2026-01-22 11:29:45,396 - HC_Pipeline - INFO - Found 0 deals from MSC Cruises
+2026-01-22 11:29:45,396 - HC_Pipeline - INFO - Generating sample deals for demonstration
+2026-01-22 11:29:45,409 - HC_Pipeline - INFO - Deals collection complete: 19 processed, 16 added, 0 errors
+2026-01-22 11:34:41,135 - HC_Pipeline - INFO - ==================================================
+2026-01-22 11:34:41,135 - HC_Pipeline - INFO - Starting deals collection
+2026-01-22 11:34:41,186 - HC_Pipeline - INFO - Starting deals collection
+2026-01-22 11:34:41,188 - HC_Pipeline - INFO - Fetching deals feed: Cruise Deals RSS
+2026-01-22 11:34:41,722 - HC_Pipeline - WARNING - Deals feed Cruise Deals RSS returned error: <unknown>:16:42: not well-formed (invalid token)
+2026-01-22 11:34:41,722 - HC_Pipeline - INFO - Scraping deals from: Carnival Cruises
+2026-01-22 11:34:42,674 - HC_Pipeline - INFO - Found 0 deals from Carnival Cruises
+2026-01-22 11:34:42,676 - HC_Pipeline - INFO - Scraping deals from: Royal Caribbean
+2026-01-22 11:34:44,269 - HC_Pipeline - INFO - Found 1 deals from Royal Caribbean
+2026-01-22 11:34:44,270 - HC_Pipeline - INFO - Scraping deals from: Norwegian Cruise Line
+2026-01-22 11:34:45,043 - HC_Pipeline - INFO - Found 0 deals from Norwegian Cruise Line
+2026-01-22 11:34:45,045 - HC_Pipeline - INFO - Scraping deals from: Princess Cruises
+2026-01-22 11:34:45,696 - HC_Pipeline - WARNING - Failed to fetch Princess Cruises: 404 Client Error: Not Found for url: https://www.princess.com/cruise-deals/
+2026-01-22 11:34:45,697 - HC_Pipeline - INFO - Scraping deals from: MSC Cruises
+2026-01-22 11:34:48,760 - HC_Pipeline - INFO - Found 0 deals from MSC Cruises
+2026-01-22 11:34:48,761 - HC_Pipeline - INFO - Generating sample deals for demonstration
+2026-01-22 11:34:48,787 - HC_Pipeline - INFO - Deals collection complete: 19 processed, 11 added, 0 errors
+2026-01-23 13:19:06,177 - HC_Pipeline - INFO - ==================================================
+2026-01-23 13:19:06,177 - HC_Pipeline - INFO - Starting stock price collection
+2026-01-23 14:19:03,359 - HC_Pipeline - INFO - ==================================================
+2026-01-23 14:19:03,359 - HC_Pipeline - INFO - Starting news collection
+2026-01-23 15:19:03,363 - HC_Pipeline - INFO - ==================================================
+2026-01-23 15:19:03,363 - HC_Pipeline - INFO - Starting stock price collection
+2026-01-23 17:19:03,366 - HC_Pipeline - INFO - ==================================================
+2026-01-23 17:19:03,368 - HC_Pipeline - INFO - ==================================================
+2026-01-23 17:19:03,368 - HC_Pipeline - INFO - ==================================================
+2026-01-23 17:19:03,368 - HC_Pipeline - INFO - Starting stock price collection
+2026-01-23 17:19:03,369 - HC_Pipeline - INFO - Starting news collection
+2026-01-23 17:19:03,369 - HC_Pipeline - INFO - Starting deals collection
+2026-01-23 19:19:03,357 - HC_Pipeline - INFO - ==================================================
+2026-01-23 19:19:03,358 - HC_Pipeline - INFO - Starting stock price collection
+2026-01-23 20:19:03,356 - HC_Pipeline - INFO - ==================================================
+2026-01-23 20:19:03,356 - HC_Pipeline - INFO - Starting news collection
+2026-01-23 21:19:03,358 - HC_Pipeline - INFO - ==================================================
+2026-01-23 21:19:03,359 - HC_Pipeline - INFO - Starting stock price collection

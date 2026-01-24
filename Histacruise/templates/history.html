@@ -78,10 +78,13 @@
                     <td>{{ cruise.region.name }}</td>
                     <td>
                         <div style="display: flex; gap: 5px; justify-content: center;">
-                                <button class="action-btn action-primary view-btn" 
+                                <button class="action-btn action-primary view-btn"
                                     data-cruise-id="{{ cruise.cruiseid }}"
                                     data-begin-date="{{ cruise.begindate }}"
                                     data-end-date="{{ cruise.enddate }}"
+                                    data-cruiseline-id="{{ cruise.cruiseline_id }}"
+                                    data-ship-id="{{ cruise.ship_id }}"
+                                    data-region-id="{{ cruise.region_id }}"
                                     data-cruiseline-name="{{ cruise.cruiseline.name }}"
                                     data-ship-name="{{ cruise.ship.name }}"
                                     data-region-name="{{ cruise.region.name }}"
@@ -120,11 +123,23 @@
         <!-- Card View -->
         <div id="cardView" class="cruise-cards-grid" style="display: none;">
             {% for cruise in cruises %}
-            <div class="cruise-card"
+            <div class="cruise-card clickable-card"
+                data-cruise-id="{{ cruise.cruiseid }}"
                 data-cruiseline-id="{{ cruise.cruiseline_id }}"
+                data-ship-id="{{ cruise.ship_id }}"
                 data-region-id="{{ cruise.region_id }}"
                 data-cruiseline-name="{{ cruise.cruiseline.name|lower }}"
-                data-ship-name="{{ cruise.ship.name|lower }}">
+                data-ship-name="{{ cruise.ship.name|lower }}"
+                data-begin-date="{{ cruise.begindate }}"
+                data-end-date="{{ cruise.enddate }}"
+                data-cruiseline-display="{{ cruise.cruiseline.name }}"
+                data-ship-display="{{ cruise.ship.name }}"
+                data-region-display="{{ cruise.region.name }}"
+                data-cabin-number="{{ cruise.cabin_number or 'Not specified' }}"
+                data-deck="{{ cruise.deck or 'Not specified' }}"
+                data-cost="{{ cruise.cost or 'Not specified' }}"
+                data-rating="{{ cruise.rating or 'Not rated' }}"
+                data-notes="{{ cruise.notes or 'No notes' }}">
                 {% if cruise.photos and (cruise.photos|selectattr('is_cover')|first or cruise.photos[0]) %}
                     {% set cover = cruise.photos|selectattr('is_cover')|first or cruise.photos[0] %}
                     <div class="cruise-card-image">
@@ -149,6 +164,9 @@
                         data-cruise-id="{{ cruise.cruiseid }}"
                         data-begin-date="{{ cruise.begindate }}"
                         data-end-date="{{ cruise.enddate }}"
+                        data-cruiseline-id="{{ cruise.cruiseline_id }}"
+                        data-ship-id="{{ cruise.ship_id }}"
+                        data-region-id="{{ cruise.region_id }}"
                         data-cruiseline-name="{{ cruise.cruiseline.name }}"
                         data-ship-name="{{ cruise.ship.name }}"
                         data-region-name="{{ cruise.region.name }}"
@@ -418,7 +436,15 @@
                     </div>
                 </div>
                 
-                <div>
+                <!-- Ports Section -->
+                <div style="margin-top: 20px;">
+                    <h4 style="color: #667eea; margin-bottom: 10px;">Ports Visited</h4>
+                    <div id="view_ports" class="ports-list">
+                        <span class="no-ports">No ports recorded</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px;">
                     <h4 style="color: #667eea; margin-bottom: 10px;">Notes & Memories</h4>
                     <div style="background: white; padding: 15px; border-radius: 8px; min-height: 100px; white-space: pre-wrap;" id="view_notes"></div>
                 </div>
@@ -436,8 +462,9 @@
                 </div>
             </div>
 
-            <div style="text-align: center; margin-top: 20px;">
+            <div class="view-modal-actions">
                 <button class="btn-secondary" id="closeViewBtn">Close</button>
+                <button class="btn-primary" id="editFromViewBtn">Edit Cruise</button>
             </div>
         </div>
     </div>
@@ -653,55 +680,116 @@
 
             // Open view modal and populate with cruise data
             let currentViewCruiseId = null;
+            let currentViewCruiseData = null;
 
             viewBtns.forEach(btn => {
                 btn.addEventListener('click', function() {
-                    currentViewCruiseId = this.dataset.cruiseId;
-                    const beginDate = this.dataset.beginDate;
-                    const endDate = this.dataset.endDate;
-                    const cruiselineName = this.dataset.cruiselineName;
-                    const shipName = this.dataset.shipName;
-                    const regionName = this.dataset.regionName;
-                    const cabinNumber = this.dataset.cabinNumber;
-                    const deck = this.dataset.deck;
-                    const cost = this.dataset.cost;
-                    const rating = this.dataset.rating;
-                    const notes = this.dataset.notes;
-
-                    // Calculate duration
-                    const start = new Date(beginDate);
-                    const end = new Date(endDate);
-                    const duration = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-
-                    // Populate modal
-                    document.getElementById('view_cruiseline').textContent = cruiselineName;
-                    document.getElementById('view_ship').textContent = shipName;
-                    document.getElementById('view_region').textContent = regionName;
-                    document.getElementById('view_begindate').textContent = beginDate;
-                    document.getElementById('view_enddate').textContent = endDate;
-                    document.getElementById('view_duration').textContent = duration;
-                    document.getElementById('view_cabin').textContent = cabinNumber;
-                    document.getElementById('view_deck').textContent = deck;
-                    document.getElementById('view_cost').textContent = cost;
-
-                    // Format rating with stars
-                    let ratingDisplay = '';
-                    if (rating === 'Not rated') {
-                        ratingDisplay = 'Not rated';
-                    } else {
-                        const stars = '⭐'.repeat(parseInt(rating));
-                        ratingDisplay = `${stars} (${rating}/5)`;
-                    }
-                    document.getElementById('view_rating').textContent = ratingDisplay;
-
-                    document.getElementById('view_notes').textContent = notes;
-
-                    // Load photos
-                    loadCruisePhotos(currentViewCruiseId);
-
-                    // Show modal
-                    viewModal.style.display = 'flex';
+                    openViewModal(this);
                 });
+            });
+
+            function openViewModal(btn) {
+                currentViewCruiseId = btn.dataset.cruiseId;
+                const beginDate = btn.dataset.beginDate;
+                const endDate = btn.dataset.endDate;
+                const cruiselineName = btn.dataset.cruiselineName;
+                const shipName = btn.dataset.shipName;
+                const regionName = btn.dataset.regionName;
+                const cabinNumber = btn.dataset.cabinNumber;
+                const deck = btn.dataset.deck;
+                const cost = btn.dataset.cost;
+                const rating = btn.dataset.rating;
+                const notes = btn.dataset.notes;
+
+                // Store cruise data for edit button
+                currentViewCruiseData = {
+                    cruiseId: btn.dataset.cruiseId,
+                    beginDate: btn.dataset.beginDate,
+                    endDate: btn.dataset.endDate,
+                    cruiselineId: btn.dataset.cruiselineId,
+                    shipId: btn.dataset.shipId,
+                    regionId: btn.dataset.regionId,
+                    cabinNumber: btn.dataset.cabinNumber,
+                    deck: btn.dataset.deck,
+                    cost: btn.dataset.cost,
+                    rating: btn.dataset.rating,
+                    notes: btn.dataset.notes
+                };
+
+                // Calculate duration
+                const start = new Date(beginDate);
+                const end = new Date(endDate);
+                const duration = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+
+                // Populate modal
+                document.getElementById('view_cruiseline').textContent = cruiselineName;
+                document.getElementById('view_ship').textContent = shipName;
+                document.getElementById('view_region').textContent = regionName;
+                document.getElementById('view_begindate').textContent = beginDate;
+                document.getElementById('view_enddate').textContent = endDate;
+                document.getElementById('view_duration').textContent = duration;
+                document.getElementById('view_cabin').textContent = cabinNumber;
+                document.getElementById('view_deck').textContent = deck;
+                document.getElementById('view_cost').textContent = cost;
+
+                // Format rating with stars
+                let ratingDisplay = '';
+                if (rating === 'Not rated') {
+                    ratingDisplay = 'Not rated';
+                } else {
+                    const stars = '⭐'.repeat(parseInt(rating));
+                    ratingDisplay = `${stars} (${rating}/5)`;
+                }
+                document.getElementById('view_rating').textContent = ratingDisplay;
+
+                document.getElementById('view_notes').textContent = notes;
+
+                // Load ports
+                loadCruisePortsForView(currentViewCruiseId);
+
+                // Load photos
+                loadCruisePhotos(currentViewCruiseId);
+
+                // Show modal
+                viewModal.style.display = 'flex';
+            }
+
+            // Load ports for view modal
+            function loadCruisePortsForView(cruiseId) {
+                const container = document.getElementById('view_ports');
+                container.innerHTML = '<span class="loading-ports">Loading ports...</span>';
+
+                fetch(`/api/cruise_ports/${cruiseId}`)
+                    .then(response => response.json())
+                    .then(ports => {
+                        if (!ports || ports.length === 0 || ports.error) {
+                            container.innerHTML = '<span class="no-ports" style="color: #999;">No ports recorded</span>';
+                        } else {
+                            container.innerHTML = ports.map((port, index) => `
+                                <span class="port-badge">
+                                    <span class="port-number">${index + 1}</span>
+                                    ${port.port_name}, ${port.country}
+                                </span>
+                            `).join('');
+                        }
+                    })
+                    .catch(err => {
+                        container.innerHTML = '<span class="no-ports" style="color: #999;">No ports recorded</span>';
+                    });
+            }
+
+            // Edit from view modal button
+            document.getElementById('editFromViewBtn').addEventListener('click', function() {
+                if (!currentViewCruiseData) return;
+
+                // Close view modal
+                viewModal.style.display = 'none';
+
+                // Find the corresponding edit button and trigger it
+                const editBtn = document.querySelector(`.edit-btn[data-cruise-id="${currentViewCruiseData.cruiseId}"]`);
+                if (editBtn) {
+                    editBtn.click();
+                }
             });
 
             // Load photos for a cruise
@@ -1000,6 +1088,20 @@
                     tableViewBtn.classList.remove('active');
                 });
             }
+
+            // ===== CLICKABLE CRUISE CARDS =====
+            document.querySelectorAll('.cruise-card.clickable-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    // Don't trigger if clicking on action buttons
+                    if (e.target.closest('.cruise-card-actions')) return;
+
+                    // Find the view button in this card and trigger it
+                    const viewBtn = this.querySelector('.view-btn');
+                    if (viewBtn) {
+                        openViewModal(viewBtn);
+                    }
+                });
+            });
 
             // Initial sort by begin date (newest first)
             sortTable('begindate');

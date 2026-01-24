@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cruise Price Predictor | Joshua Cundiff</title>
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        .project-hero {
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0a192f 0%, #112240 50%, #1a365d 100%);
+            position: relative;
+            overflow: hidden;
+            padding: 120px 20px 80px;
+        }
+
+        .project-hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(78, 205, 196, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(155, 89, 182, 0.15) 0%, transparent 50%);
+        }
+
+        .project-hero-content {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+        }
+
+        .project-hero-label {
+            color: #9B59B6;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .project-hero-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            color: #e6f1ff;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .project-hero-subtitle {
+            font-size: 1.25rem;
+            color: #8892b0;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            line-height: 1.6;
+        }
+
+        .project-tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-top: 2rem;
+        }
+
+        .tech-badge {
+            background: rgba(155, 89, 182, 0.1);
+            color: #9B59B6;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            border: 1px solid rgba(155, 89, 182, 0.3);
+        }
+
+        .accuracy-badge {
+            background: linear-gradient(135deg, #4ECDC4, #44A08D);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            display: inline-block;
+        }
+
+        .project-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #233554, transparent);
+            margin: 4rem 0;
+        }
+
+        .process-section {
+            margin-bottom: 4rem;
+        }
+
+        .process-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .process-number {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #9B59B6, #8E44AD);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .process-title {
+            font-size: 1.75rem;
+            color: #e6f1ff;
+        }
+
+        .process-content {
+            background: #112240;
+            border-radius: 12px;
+            padding: 2rem;
+            border-left: 4px solid #9B59B6;
+        }
+
+        .process-content p {
+            color: #8892b0;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .highlight-box {
+            background: rgba(155, 89, 182, 0.1);
+            border: 1px solid rgba(155, 89, 182, 0.3);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .highlight-box.teal {
+            background: rgba(78, 205, 196, 0.1);
+            border-color: rgba(78, 205, 196, 0.3);
+        }
+
+        .highlight-box.teal h4 {
+            color: #4ECDC4;
+        }
+
+        .highlight-box.teal li::before {
+            color: #4ECDC4;
+        }
+
+        .highlight-box h4 {
+            color: #9B59B6;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .highlight-box ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .highlight-box li {
+            color: #a8b2d1;
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .highlight-box li::before {
+            content: '>';
+            position: absolute;
+            left: 0;
+            color: #9B59B6;
+            font-family: 'Fira Code', monospace;
+        }
+
+        /* Visualization Sections */
+        .viz-section {
+            margin: 4rem 0;
+        }
+
+        .viz-section-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .viz-section-title {
+            font-size: 1.4rem;
+            color: #e6f1ff;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .viz-section-title .icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #4ECDC4, #44A08D);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .viz-section-subtitle {
+            color: #8892b0;
+            font-size: 1rem;
+        }
+
+        .viz-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .viz-container.reverse {
+            direction: rtl;
+        }
+
+        .viz-container.reverse > * {
+            direction: ltr;
+        }
+
+        .viz-container.full-width {
+            grid-template-columns: 1fr;
+        }
+
+        .viz-image-wrapper {
+            background: #112240;
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .viz-image-wrapper:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .viz-image-wrapper img {
+            width: 100%;
+            border-radius: 8px;
+        }
+
+        .viz-image-caption {
+            text-align: center;
+            color: #8892b0;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+            font-style: italic;
+        }
+
+        .viz-explanation {
+            background: #112240;
+            border-radius: 12px;
+            padding: 2rem;
+        }
+
+        .viz-explanation h4 {
+            color: #4ECDC4;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .viz-explanation p {
+            color: #8892b0;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .viz-explanation p:last-child {
+            margin-bottom: 0;
+        }
+
+        .insight-callout {
+            background: linear-gradient(135deg, rgba(78, 205, 196, 0.1), rgba(68, 160, 141, 0.05));
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-top: 1.5rem;
+        }
+
+        .insight-callout-title {
+            color: #4ECDC4;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .insight-callout p {
+            color: #a8b2d1;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(78, 205, 196, 0.05);
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4ECDC4;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #8892b0;
+            margin-top: 0.25rem;
+        }
+
+        /* Model Cards */
+        .model-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .model-card {
+            background: linear-gradient(135deg, #112240 0%, #1a365d 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border-top: 3px solid;
+            transition: transform 0.3s ease;
+        }
+
+        .model-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .model-card:nth-child(1) { border-color: #4ECDC4; }
+        .model-card:nth-child(2) { border-color: #9B59B6; }
+        .model-card:nth-child(3) { border-color: #F39C12; }
+        .model-card:nth-child(4) { border-color: #FF6B6B; }
+        .model-card:nth-child(5) { border-color: #3498DB; }
+
+        .model-card.winner {
+            border-color: #4ECDC4;
+            background: linear-gradient(135deg, rgba(78, 205, 196, 0.15), rgba(68, 160, 141, 0.1));
+        }
+
+        .model-name {
+            color: #e6f1ff;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .model-score {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #4ECDC4;
+        }
+
+        .model-label {
+            color: #8892b0;
+            font-size: 0.8rem;
+        }
+
+        /* Prediction Cards */
+        .prediction-examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .prediction-card {
+            background: #112240;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border-left: 4px solid #4ECDC4;
+            transition: transform 0.3s ease;
+        }
+
+        .prediction-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .prediction-card:nth-child(2) { border-color: #9B59B6; }
+        .prediction-card:nth-child(3) { border-color: #F39C12; }
+        .prediction-card:nth-child(4) { border-color: #FF6B6B; }
+
+        .prediction-title {
+            color: #e6f1ff;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .prediction-details {
+            color: #8892b0;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .prediction-price {
+            color: #4ECDC4;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .prediction-perperson {
+            color: #8892b0;
+            font-size: 0.85rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #9B59B6;
+            text-decoration: none;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            padding: 1rem 2rem;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #a855f7;
+        }
+
+        .back-link svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(10, 25, 47, 0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        @media (max-width: 900px) {
+            .viz-container {
+                grid-template-columns: 1fr;
+            }
+            .viz-container.reverse {
+                direction: ltr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .project-content {
+                padding: 2rem 1rem;
+            }
+            .process-header {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="../../index.html" class="nav-logo">
+                <span class="logo-bracket">&lt;</span>JC<span class="logo-bracket">/&gt;</span>
+            </a>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="../../index.html#projects" class="nav-link">All Projects</a></li>
+                <li class="nav-item"><a href="../../index.html#contact" class="nav-link">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <a href="../../index.html#projects" class="back-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Back to Projects
+    </a>
+
+    <section class="project-hero">
+        <div class="project-hero-content">
+            <p class="project-hero-label">Machine Learning Project</p>
+            <h1 class="project-hero-title">Cruise Price Predictor</h1>
+            <p class="project-hero-subtitle">
+                A machine learning model that predicts cruise vacation prices based on destination,
+                cruise line, cabin type, duration, and booking timing. Trained on 5,000 cruise records
+                with 93.5% accuracy.
+            </p>
+            <div class="accuracy-badge">93.5% Prediction Accuracy (R2 Score: 0.935)</div>
+            <div class="project-tech-stack">
+                <span class="tech-badge">Python</span>
+                <span class="tech-badge">Scikit-learn</span>
+                <span class="tech-badge">Pandas</span>
+                <span class="tech-badge">Gradient Boosting</span>
+                <span class="tech-badge">Feature Engineering</span>
+                <span class="tech-badge">Data Visualization</span>
+            </div>
+        </div>
+    </section>
+
+    <main class="project-content">
+
+        <!-- Section 1: The Problem -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">1</div>
+                <h2 class="process-title">The Problem</h2>
+            </div>
+            <div class="process-content">
+                <p>
+                    Cruise pricing is notoriously complex and opaque. Prices vary dramatically based on
+                    dozens of factors: the cruise line, destination, time of year, cabin type, how far
+                    in advance you book, and even the age of the ship. For travelers, this makes it
+                    nearly impossible to know if they're getting a good deal.
+                </p>
+                <p>
+                    <strong>The goal:</strong> Build a machine learning model that can accurately predict
+                    cruise prices, helping travelers understand what drives costs and find the best value
+                    for their budget.
+                </p>
+
+                <div class="highlight-box">
+                    <h4>Key Questions to Answer</h4>
+                    <ul>
+                        <li>What factors most influence cruise pricing?</li>
+                        <li>When is the best time to book for the lowest prices?</li>
+                        <li>Which cruise lines offer the best value?</li>
+                        <li>How much does cabin type really affect price?</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Section 2: Data & Features -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">2</div>
+                <h2 class="process-title">Data & Feature Engineering</h2>
+            </div>
+            <div class="process-content">
+                <p>
+                    The model was trained on <strong>5,000 cruise records</strong> with realistic pricing
+                    patterns based on industry data. Each record includes 9 features that capture the
+                    key factors affecting cruise prices.
+                </p>
+
+                <div class="highlight-box">
+                    <h4>Features Used</h4>
+                    <ul>
+                        <li><strong>Cruise Line:</strong> 8 major lines (Carnival, Royal Caribbean, Disney, etc.)</li>
+                        <li><strong>Destination:</strong> 8 regions (Caribbean, Alaska, Mediterranean, etc.)</li>
+                        <li><strong>Cabin Type:</strong> Interior, Ocean View, Balcony, Suite</li>
+                        <li><strong>Duration:</strong> Number of nights (3-14)</li>
+                        <li><strong>Departure Port:</strong> 10 major US ports</li>
+                        <li><strong>Departure Month:</strong> Captures seasonal pricing</li>
+                        <li><strong>Days Until Departure:</strong> Booking window timing</li>
+                        <li><strong>Ship Age:</strong> Newer ships command premium prices</li>
+                        <li><strong>Passengers:</strong> Number of travelers (1-4)</li>
+                    </ul>
+                </div>
+
+                <p>
+                    The data was preprocessed using <strong>StandardScaler</strong> for numerical features
+                    and <strong>OneHotEncoder</strong> for categorical variables, creating a robust
+                    feature set for model training.
+                </p>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Section 3: Model Training -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">3</div>
+                <h2 class="process-title">Model Training & Selection</h2>
+            </div>
+            <div class="process-content">
+                <p>
+                    Five different regression models were trained and evaluated using 5-fold cross-validation
+                    to find the best performer. The goal was to minimize prediction error while avoiding overfitting.
+                </p>
+
+                <div class="model-results">
+                    <div class="model-card winner">
+                        <div class="model-name">Gradient Boosting</div>
+                        <div class="model-score">93.5%</div>
+                        <div class="model-label">R2 Score - Winner</div>
+                    </div>
+                    <div class="model-card">
+                        <div class="model-name">Random Forest</div>
+                        <div class="model-score">87.9%</div>
+                        <div class="model-label">R2 Score</div>
+                    </div>
+                    <div class="model-card">
+                        <div class="model-name">Linear Regression</div>
+                        <div class="model-score">77.8%</div>
+                        <div class="model-label">R2 Score</div>
+                    </div>
+                    <div class="model-card">
+                        <div class="model-name">Ridge Regression</div>
+                        <div class="model-score">77.8%</div>
+                        <div class="model-label">R2 Score</div>
+                    </div>
+                    <div class="model-card">
+                        <div class="model-name">Lasso Regression</div>
+                        <div class="model-score">77.8%</div>
+                        <div class="model-label">R2 Score</div>
+                    </div>
+                </div>
+
+                <p>
+                    <strong>Gradient Boosting</strong> emerged as the clear winner with a 93.5% R2 score
+                    and Mean Absolute Error of just $4,209 - meaning predictions are typically within
+                    $4,200 of actual prices. The ensemble methods (Gradient Boosting, Random Forest)
+                    significantly outperformed linear models, indicating non-linear relationships in the data.
+                </p>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Section 4: Visualizations - Model Performance -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">4</div>
+                <h2 class="process-title">Model Performance Analysis</h2>
+            </div>
+
+            <!-- Chart 1: Overall Analysis -->
+            <div class="viz-section">
+                <div class="viz-section-header">
+                    <h3 class="viz-section-title">
+                        <span class="icon">1</span>
+                        Overall Model Performance Dashboard
+                    </h3>
+                    <p class="viz-section-subtitle">Comprehensive view of model accuracy and price patterns</p>
+                </div>
+
+                <div class="viz-container full-width">
+                    <div class="viz-image-wrapper" onclick="openLightbox('images/model_analysis.png')">
+                        <img src="images/model_analysis.png" alt="Model Analysis Dashboard">
+                        <p class="viz-image-caption">Click to enlarge</p>
+                    </div>
+                </div>
+
+                <div class="viz-explanation" style="margin-top: 1.5rem;">
+                    <h4>What This Chart Shows</h4>
+                    <p>
+                        This dashboard provides four key views of our model's performance:
+                    </p>
+                    <p>
+                        <strong>Top Left - Price Distribution:</strong> Shows how cruise prices are distributed across our dataset.
+                        The distribution is right-skewed, with most cruises priced between $10,000-$40,000, but a long tail
+                        extending to luxury options over $200,000. The mean price is $30,934.
+                    </p>
+                    <p>
+                        <strong>Top Right - Model Comparison:</strong> Compares R2 scores across all five models tested.
+                        Gradient Boosting clearly dominates at 93.5%, followed by Random Forest at 87.9%. The three linear
+                        models cluster around 77.8%, showing the importance of capturing non-linear relationships.
+                    </p>
+                    <p>
+                        <strong>Bottom Left - Actual vs Predicted:</strong> Each dot represents a cruise booking. Points close
+                        to the red diagonal line indicate accurate predictions. The tight clustering shows our model performs
+                        well across all price ranges, with slight variance at very high prices.
+                    </p>
+                    <p>
+                        <strong>Bottom Right - Price by Destination:</strong> Reveals that South Pacific and Northern Europe
+                        cruises command the highest prices (often longer, more exotic itineraries), while Bahamas and Mexico
+                        offer the most budget-friendly options.
+                    </p>
+
+                    <div class="stat-grid">
+                        <div class="stat-item">
+                            <div class="stat-value">93.5%</div>
+                            <div class="stat-label">Accuracy</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">$4,209</div>
+                            <div class="stat-label">Avg Error</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">5,000</div>
+                            <div class="stat-label">Records</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">5</div>
+                            <div class="stat-label">Models Tested</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Section 5: Feature Importance -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">5</div>
+                <h2 class="process-title">Feature Importance Analysis</h2>
+            </div>
+
+            <div class="viz-section">
+                <div class="viz-section-header">
+                    <h3 class="viz-section-title">
+                        <span class="icon">2</span>
+                        What Drives Cruise Prices?
+                    </h3>
+                    <p class="viz-section-subtitle">Understanding which factors matter most in pricing</p>
+                </div>
+
+                <div class="viz-container">
+                    <div class="viz-image-wrapper" onclick="openLightbox('images/feature_importance.png')">
+                        <img src="images/feature_importance.png" alt="Feature Importance Chart">
+                        <p class="viz-image-caption">Click to enlarge</p>
+                    </div>
+
+                    <div class="viz-explanation">
+                        <h4>Reading the Chart</h4>
+                        <p>
+                            This horizontal bar chart shows the relative importance of each feature in predicting
+                            cruise prices. Longer bars indicate features that have more influence on the final prediction.
+                        </p>
+                        <p>
+                            <strong>Duration (40% importance)</strong> is by far the most important factor. This makes
+                            intuitive sense - a 14-night cruise costs significantly more than a 4-night cruise
+                            regardless of other factors.
+                        </p>
+                        <p>
+                            <strong>Suite Cabin (19%)</strong> ranks second, showing that cabin upgrades have a
+                            dramatic impact on price. Suites can cost 2-3x more than interior cabins.
+                        </p>
+                        <p>
+                            <strong>Passengers (15%)</strong> comes third - more travelers means higher total cost,
+                            though there are economies of scale (third and fourth passengers often pay less per person).
+                        </p>
+
+                        <div class="insight-callout">
+                            <div class="insight-callout-title">
+                                <span>Key Insight</span>
+                            </div>
+                            <p>
+                                Disney Cruise Line appears as a standalone feature at 5% importance, showing it commands
+                                premium pricing regardless of other factors - the "Disney tax" is real!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Section 6: Price Factors Deep Dive -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">6</div>
+                <h2 class="process-title">Price Factors Deep Dive</h2>
+            </div>
+
+            <div class="viz-section">
+                <div class="viz-section-header">
+                    <h3 class="viz-section-title">
+                        <span class="icon">3</span>
+                        How Each Factor Affects Price
+                    </h3>
+                    <p class="viz-section-subtitle">Detailed breakdown of pricing patterns</p>
+                </div>
+
+                <div class="viz-container full-width">
+                    <div class="viz-image-wrapper" onclick="openLightbox('images/price_factors.png')">
+                        <img src="images/price_factors.png" alt="Price Factors Analysis">
+                        <p class="viz-image-caption">Click to enlarge</p>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
+                    <div class="viz-explanation">
+                        <h4>Cabin Type Impact</h4>
+                        <p>
+                            The top-left chart shows a clear pricing tier structure. Interior cabins average $20,036,
+                            while Suites jump to $48,189 - a <strong>140% increase</strong>. Ocean View and Balcony
+                            fall in between at $25,045 and $29,853 respectively.
+                        </p>
+                        <p>
+                            <strong>Tip:</strong> Ocean View offers only a 25% premium over Interior but adds
+                            natural light and a window - often the best value upgrade.
+                        </p>
+                    </div>
+
+                    <div class="viz-explanation">
+                        <h4>Cruise Line Pricing</h4>
+                        <p>
+                            Disney commands the highest average prices, followed by Celebrity and Holland America.
+                            Carnival and MSC offer the most budget-friendly options.
+                        </p>
+                        <p>
+                            <strong>Note:</strong> Price doesn't always equal quality - Carnival's lower prices
+                            reflect their target market (families, first-timers) rather than inferior service.
+                        </p>
+                    </div>
+
+                    <div class="viz-explanation">
+                        <h4>Duration Effect</h4>
+                        <p>
+                            The bottom-left chart shows an almost linear relationship between cruise length and price.
+                            A 3-night cruise averages ~$8,000 while a 14-night cruise exceeds $60,000. However,
+                            the per-night cost actually decreases slightly on longer cruises.
+                        </p>
+                    </div>
+
+                    <div class="viz-explanation">
+                        <h4>Booking Window</h4>
+                        <p>
+                            Surprisingly, <strong>last-minute bookings (under 2 weeks)</strong> offer the lowest
+                            average prices! Booking 3-6 months out is actually the most expensive window.
+                        </p>
+                        <p>
+                            <strong>Strategy:</strong> Book very early (6+ months) for selection, or wait for
+                            last-minute deals if you're flexible.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="highlight-box teal" style="margin-top: 2rem;">
+                    <h4>Actionable Insights for Travelers</h4>
+                    <ul>
+                        <li>Choose shorter cruises (3-5 nights) for budget trips - dramatically lower total cost</li>
+                        <li>Ocean View cabins offer the best value-for-money upgrade</li>
+                        <li>Consider Carnival or MSC for 30-40% savings vs premium lines</li>
+                        <li>Be flexible on dates - last-minute deals can save 15-20%</li>
+                        <li>Avoid booking 3-6 months out unless you need specific cabin selection</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Section 7: Example Predictions -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">7</div>
+                <h2 class="process-title">Model Predictions in Action</h2>
+            </div>
+            <div class="process-content">
+                <p>
+                    Here's how the trained model performs on different cruise scenarios. These examples
+                    demonstrate the model's ability to capture the nuances of cruise pricing across
+                    different configurations.
+                </p>
+
+                <div class="prediction-examples">
+                    <div class="prediction-card">
+                        <div class="prediction-title">Budget Caribbean Getaway</div>
+                        <div class="prediction-details">
+                            Carnival Cruise Line<br>
+                            Caribbean, 5 nights<br>
+                            Interior cabin, 2 passengers<br>
+                            Departing in 60 days
+                        </div>
+                        <div class="prediction-price">$4,000</div>
+                        <div class="prediction-perperson">$2,000 per person</div>
+                    </div>
+                    <div class="prediction-card">
+                        <div class="prediction-title">Luxury Alaska Adventure</div>
+                        <div class="prediction-details">
+                            Celebrity Cruises<br>
+                            Alaska, 10 nights<br>
+                            Suite cabin, 2 passengers<br>
+                            Departing in 120 days
+                        </div>
+                        <div class="prediction-price">$56,090</div>
+                        <div class="prediction-perperson">$28,045 per person</div>
+                    </div>
+                    <div class="prediction-card">
+                        <div class="prediction-title">Disney Family Magic</div>
+                        <div class="prediction-details">
+                            Disney Cruise Line<br>
+                            Bahamas, 4 nights<br>
+                            Balcony cabin, 4 passengers<br>
+                            Departing in 180 days
+                        </div>
+                        <div class="prediction-price">$16,310</div>
+                        <div class="prediction-perperson">$4,078 per person</div>
+                    </div>
+                    <div class="prediction-card">
+                        <div class="prediction-title">Mediterranean Romance</div>
+                        <div class="prediction-details">
+                            Princess Cruises<br>
+                            Mediterranean, 12 nights<br>
+                            Balcony cabin, 2 passengers<br>
+                            Departing in 90 days
+                        </div>
+                        <div class="prediction-price">$46,230</div>
+                        <div class="prediction-perperson">$23,115 per person</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- Section 8: Technical Details -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">8</div>
+                <h2 class="process-title">Technical Implementation</h2>
+            </div>
+            <div class="process-content">
+                <div class="highlight-box">
+                    <h4>Tech Stack</h4>
+                    <ul>
+                        <li><strong>Python 3.13:</strong> Core programming language</li>
+                        <li><strong>Pandas & NumPy:</strong> Data manipulation and numerical computing</li>
+                        <li><strong>Scikit-learn:</strong> ML models, preprocessing pipelines, cross-validation</li>
+                        <li><strong>Matplotlib & Seaborn:</strong> Data visualization</li>
+                        <li><strong>Joblib:</strong> Model serialization for deployment</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Project Structure</h4>
+                    <ul>
+                        <li><strong>generate_dataset.py:</strong> Creates realistic cruise pricing data with industry-accurate patterns</li>
+                        <li><strong>train_model.py:</strong> Trains 5 ML models with cross-validation, generates visualizations</li>
+                        <li><strong>predict.py:</strong> Interactive CLI for making predictions with the trained model</li>
+                        <li><strong>cruise_price_model.joblib:</strong> Serialized Gradient Boosting model for deployment</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box teal">
+                    <h4>Future Enhancements</h4>
+                    <ul>
+                        <li>Flask/FastAPI web interface for browser-based predictions</li>
+                        <li>Integration with Histacruise for personalized price recommendations</li>
+                        <li>Web scraping real cruise prices for continuous model retraining</li>
+                        <li>Price alert system that notifies users when deals appear</li>
+                        <li>Comparison tool showing predicted vs actual prices from cruise websites</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p class="footer-text">Designed & Built by Joshua Cundiff</p>
+        </div>
+    </footer>
+
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+        <button class="lightbox-close">&times;</button>
+        <img id="lightbox-img" src="" alt="Enlarged visualization">
+    </div>
+
+    <script>
+        function openLightbox(src) {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeLightbox();
+        });
+    </script>
+</body>
+</html>

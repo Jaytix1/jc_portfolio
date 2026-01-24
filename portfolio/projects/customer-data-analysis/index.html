@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Data Analysis | Joshua Cundiff</title>
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* Project Page Specific Styles */
+        .project-hero {
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0a192f 0%, #112240 50%, #1a365d 100%);
+            position: relative;
+            overflow: hidden;
+            padding: 120px 20px 80px;
+        }
+
+        .project-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(78, 205, 196, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 107, 107, 0.1) 0%, transparent 50%);
+        }
+
+        .project-hero-content {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+        }
+
+        .project-hero-label {
+            color: #4ECDC4;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .project-hero-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            color: #e6f1ff;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .project-hero-subtitle {
+            font-size: 1.25rem;
+            color: #8892b0;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            line-height: 1.6;
+        }
+
+        .project-tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-top: 2rem;
+        }
+
+        .tech-badge {
+            background: rgba(78, 205, 196, 0.1);
+            color: #4ECDC4;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            border: 1px solid rgba(78, 205, 196, 0.3);
+        }
+
+        .project-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .process-section {
+            margin-bottom: 5rem;
+        }
+
+        .process-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .process-number {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #4ECDC4, #44A08D);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .process-title {
+            font-size: 1.75rem;
+            color: #e6f1ff;
+        }
+
+        .process-content {
+            background: #112240;
+            border-radius: 12px;
+            padding: 2rem;
+            border-left: 4px solid #4ECDC4;
+        }
+
+        .process-content p {
+            color: #8892b0;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .process-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .highlight-box {
+            background: rgba(78, 205, 196, 0.1);
+            border: 1px solid rgba(78, 205, 196, 0.3);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .highlight-box h4 {
+            color: #4ECDC4;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .highlight-box ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .highlight-box li {
+            color: #a8b2d1;
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .highlight-box li::before {
+            content: '>';
+            position: absolute;
+            left: 0;
+            color: #4ECDC4;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .code-block {
+            background: #0a192f;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .code-block pre {
+            margin: 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: #a8b2d1;
+        }
+
+        .code-block .comment {
+            color: #5c6b7a;
+        }
+
+        .code-block .keyword {
+            color: #c792ea;
+        }
+
+        .code-block .string {
+            color: #c3e88d;
+        }
+
+        .code-block .number {
+            color: #f78c6c;
+        }
+
+        /* Visualization Gallery */
+        .viz-gallery {
+            margin: 3rem 0;
+        }
+
+        .viz-gallery-title {
+            color: #e6f1ff;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .viz-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .viz-card {
+            background: #112240;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .viz-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .viz-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .viz-card-content {
+            padding: 1.25rem;
+        }
+
+        .viz-card-title {
+            color: #e6f1ff;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .viz-card-desc {
+            color: #8892b0;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Featured Dashboard */
+        .featured-viz {
+            background: #112240;
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 3rem 0;
+        }
+
+        .featured-viz img {
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .featured-viz-caption {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #8892b0;
+            font-style: italic;
+        }
+
+        /* Key Insights Section */
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .insight-card {
+            background: linear-gradient(135deg, #112240 0%, #1a365d 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border-top: 3px solid;
+        }
+
+        .insight-card:nth-child(1) { border-color: #4ECDC4; }
+        .insight-card:nth-child(2) { border-color: #FF6B6B; }
+        .insight-card:nth-child(3) { border-color: #F39C12; }
+        .insight-card:nth-child(4) { border-color: #9B59B6; }
+
+        .insight-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .insight-title {
+            color: #e6f1ff;
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .insight-text {
+            color: #8892b0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Segments Table */
+        .segments-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        .segments-table th,
+        .segments-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #233554;
+        }
+
+        .segments-table th {
+            background: #0a192f;
+            color: #4ECDC4;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .segments-table td {
+            color: #a8b2d1;
+        }
+
+        .segments-table tr:hover td {
+            background: rgba(78, 205, 196, 0.05);
+        }
+
+        .segment-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .segment-premium { background: rgba(78, 205, 196, 0.2); color: #4ECDC4; }
+        .segment-careful { background: rgba(233, 30, 99, 0.2); color: #E91E63; }
+        .segment-standard { background: rgba(243, 156, 18, 0.2); color: #F39C12; }
+        .segment-budget { background: rgba(255, 107, 107, 0.2); color: #FF6B6B; }
+        .segment-conservative { background: rgba(155, 89, 182, 0.2); color: #9B59B6; }
+
+        /* Back Link */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #4ECDC4;
+            text-decoration: none;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            padding: 1rem 2rem;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #64ffda;
+        }
+
+        .back-link svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 25, 47, 0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox-close:hover {
+            color: #4ECDC4;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .project-content {
+                padding: 2rem 1rem;
+            }
+
+            .process-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .viz-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .segments-table {
+                font-size: 0.85rem;
+            }
+
+            .segments-table th,
+            .segments-table td {
+                padding: 0.75rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="../../index.html" class="nav-logo">
+                <span class="logo-bracket">&lt;</span>JC<span class="logo-bracket">/&gt;</span>
+            </a>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="../../index.html#projects" class="nav-link">All Projects</a></li>
+                <li class="nav-item"><a href="../../index.html#contact" class="nav-link">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Back Link -->
+    <a href="../../index.html#projects" class="back-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Back to Projects
+    </a>
+
+    <!-- Project Hero -->
+    <section class="project-hero">
+        <div class="project-hero-content">
+            <p class="project-hero-label">Data Analysis Project</p>
+            <h1 class="project-hero-title">Customer Data Analysis & Segmentation</h1>
+            <p class="project-hero-subtitle">
+                A comprehensive analysis of 2,000 customer records to uncover spending patterns,
+                demographic insights, and actionable business recommendations through data cleaning,
+                exploration, and visualization.
+            </p>
+            <div class="project-tech-stack">
+                <span class="tech-badge">Python</span>
+                <span class="tech-badge">Pandas</span>
+                <span class="tech-badge">NumPy</span>
+                <span class="tech-badge">Matplotlib</span>
+                <span class="tech-badge">Data Cleaning</span>
+                <span class="tech-badge">Statistical Analysis</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="project-content">
+
+        <!-- Featured Dashboard -->
+        <div class="featured-viz">
+            <img src="images/viz_00_dashboard.png" alt="Customer Analytics Executive Dashboard" onclick="openLightbox(this.src)">
+            <p class="featured-viz-caption">Executive Dashboard - Key metrics and insights at a glance</p>
+        </div>
+
+        <!-- Process Section 1: The Data -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">1</div>
+                <h2 class="process-title">Understanding the Data</h2>
+            </div>
+            <div class="process-content">
+                <p>
+                    The project began with a raw dataset of <strong>2,000 customer records</strong> containing
+                    demographic information, income levels, and spending behavior scores. The goal was to
+                    transform this data into actionable insights for business stakeholders.
+                </p>
+
+                <div class="highlight-box">
+                    <h4>Dataset Features</h4>
+                    <ul>
+                        <li>CustomerID - Unique identifier for each customer</li>
+                        <li>Gender - Male/Female classification</li>
+                        <li>Age - Customer age (0-99 years)</li>
+                        <li>Annual Income ($) - Yearly earnings</li>
+                        <li>Spending Score (1-100) - Behavior-based spending metric</li>
+                        <li>Profession - Customer's occupation</li>
+                        <li>Work Experience - Years in workforce</li>
+                        <li>Family Size - Number of family members</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Process Section 2: Data Cleaning -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">2</div>
+                <h2 class="process-title">Data Cleaning & Preparation</h2>
+            </div>
+            <div class="process-content">
+                <p>
+                    Raw data is rarely perfect. Before any analysis could begin, I performed thorough
+                    data cleaning to ensure accuracy and reliability of results.
+                </p>
+
+                <div class="highlight-box">
+                    <h4>Cleaning Steps Performed</h4>
+                    <ul>
+                        <li><strong>Duplicate Check:</strong> Verified no duplicate records existed</li>
+                        <li><strong>Missing Values:</strong> Found 35 missing profession values - filled with mode (Artist)</li>
+                        <li><strong>Invalid Data:</strong> Removed 2 records with spending scores outside valid range (1-100)</li>
+                        <li><strong>Text Standardization:</strong> Normalized gender and profession formatting</li>
+                        <li><strong>Outlier Detection:</strong> Identified 5 work experience outliers using IQR method</li>
+                        <li><strong>Data Type Optimization:</strong> Converted categorical columns for memory efficiency</li>
+                    </ul>
+                </div>
+
+                <div class="code-block">
+                    <pre><span class="comment"># Example: Handling missing values with reasoning</span>
+<span class="keyword">if</span> missing_values > <span class="number">0</span>:
+    mode_value = df[<span class="string">'Profession'</span>].mode()[<span class="number">0</span>]
+    df[<span class="string">'Profession'</span>].fillna(mode_value, inplace=<span class="keyword">True</span>)
+    <span class="comment"># Mode preserves most common category distribution</span></pre>
+                </div>
+
+                <p>
+                    <strong>Result:</strong> 1,998 clean records ready for analysis (only 0.1% data loss).
+                </p>
+            </div>
+        </section>
+
+        <!-- Process Section 3: Exploration -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">3</div>
+                <h2 class="process-title">Exploratory Data Analysis</h2>
+            </div>
+            <div class="process-content">
+                <p>
+                    With clean data in hand, I explored the dataset to understand distributions,
+                    relationships, and patterns that would inform the segmentation strategy.
+                </p>
+
+                <div class="viz-gallery">
+                    <h3 class="viz-gallery-title">Demographic Analysis</h3>
+                    <div class="viz-grid">
+                        <div class="viz-card" onclick="openLightbox('images/viz_01_demographics.png')">
+                            <img src="images/viz_01_demographics.png" alt="Customer Demographics">
+                            <div class="viz-card-content">
+                                <h4 class="viz-card-title">Demographics Overview</h4>
+                                <p class="viz-card-desc">Gender split, age distribution, and profession breakdown of our customer base.</p>
+                            </div>
+                        </div>
+                        <div class="viz-card" onclick="openLightbox('images/viz_02_income.png')">
+                            <img src="images/viz_02_income.png" alt="Income Analysis">
+                            <div class="viz-card-content">
+                                <h4 class="viz-card-title">Income Analysis</h4>
+                                <p class="viz-card-desc">Distribution of annual income across brackets and professions.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Key Demographic Findings</h4>
+                    <ul>
+                        <li>59.3% Female, 40.7% Male customer base</li>
+                        <li>Average age: 49 years with bimodal distribution (peaks at young adults and 55+)</li>
+                        <li>Top professions: Artist (31%), Healthcare (17%), Entertainment (12%)</li>
+                        <li>63.4% of customers earn above $90K annually</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Process Section 4: Pattern Discovery -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">4</div>
+                <h2 class="process-title">Pattern Discovery & Correlation Analysis</h2>
+            </div>
+            <div class="process-content">
+                <p>
+                    One of the most important discoveries came from analyzing the relationships
+                    between variables. The correlation analysis revealed a counterintuitive finding.
+                </p>
+
+                <div class="viz-gallery">
+                    <div class="viz-grid">
+                        <div class="viz-card" onclick="openLightbox('images/viz_05_correlations.png')">
+                            <img src="images/viz_05_correlations.png" alt="Correlation Matrix">
+                            <div class="viz-card-content">
+                                <h4 class="viz-card-title">Correlation Heatmap</h4>
+                                <p class="viz-card-desc">Relationships between all numeric variables in the dataset.</p>
+                            </div>
+                        </div>
+                        <div class="viz-card" onclick="openLightbox('images/viz_03_spending.png')">
+                            <img src="images/viz_03_spending.png" alt="Spending Behavior">
+                            <div class="viz-card-content">
+                                <h4 class="viz-card-title">Spending Behavior</h4>
+                                <p class="viz-card-desc">Analysis of spending scores across demographics and professions.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="insight-card" style="border-color: #FF6B6B; margin: 2rem 0;">
+                    <div class="insight-title">Critical Finding: Income Does NOT Predict Spending</div>
+                    <div class="insight-text">
+                        The correlation between Annual Income and Spending Score is only <strong>0.02</strong> -
+                        essentially no relationship. This challenges the common assumption that high earners
+                        are high spenders. Business strategies targeting only high-income customers may be
+                        missing significant opportunities.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Process Section 5: Segmentation -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">5</div>
+                <h2 class="process-title">Customer Segmentation</h2>
+            </div>
+            <div class="process-content">
+                <p>
+                    Based on the income vs. spending analysis, I created a segmentation model that
+                    identifies five distinct customer personas, each requiring different business strategies.
+                </p>
+
+                <div class="viz-gallery">
+                    <div class="viz-grid">
+                        <div class="viz-card" onclick="openLightbox('images/viz_04_segmentation.png')">
+                            <img src="images/viz_04_segmentation.png" alt="Customer Segmentation">
+                            <div class="viz-card-content">
+                                <h4 class="viz-card-title">Segmentation Analysis</h4>
+                                <p class="viz-card-desc">Five distinct customer segments based on income and spending behavior.</p>
+                            </div>
+                        </div>
+                        <div class="viz-card" onclick="openLightbox('images/viz_06_high_value.png')">
+                            <img src="images/viz_06_high_value.png" alt="High Value Profile">
+                            <div class="viz-card-content">
+                                <h4 class="viz-card-title">High-Value Customer Profile</h4>
+                                <p class="viz-card-desc">Deep dive into the characteristics of top 20% spenders.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="segments-table">
+                    <thead>
+                        <tr>
+                            <th>Segment</th>
+                            <th>% of Customers</th>
+                            <th>Avg Income</th>
+                            <th>Avg Spending</th>
+                            <th>Strategy</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="segment-badge segment-premium">Premium</span></td>
+                            <td>33.9%</td>
+                            <td>$121,842</td>
+                            <td>80.2/100</td>
+                            <td>VIP loyalty programs, retention focus</td>
+                        </tr>
+                        <tr>
+                            <td><span class="segment-badge segment-careful">Careful</span></td>
+                            <td>31.4%</td>
+                            <td>$121,546</td>
+                            <td>20.7/100</td>
+                            <td>Value-focused campaigns, quality emphasis</td>
+                        </tr>
+                        <tr>
+                            <td><span class="segment-badge segment-standard">Standard</span></td>
+                            <td>30.6%</td>
+                            <td>$99,444</td>
+                            <td>49.9/100</td>
+                            <td>Balanced marketing approach</td>
+                        </tr>
+                        <tr>
+                            <td><span class="segment-badge segment-budget">Budget Enthusiast</span></td>
+                            <td>2.1%</td>
+                            <td>$20,366</td>
+                            <td>79.8/100</td>
+                            <td>Affordable options, financing programs</td>
+                        </tr>
+                        <tr>
+                            <td><span class="segment-badge segment-conservative">Conservative</span></td>
+                            <td>2.0%</td>
+                            <td>$20,650</td>
+                            <td>20.7/100</td>
+                            <td>Lower priority, basic engagement</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Process Section 6: Insights -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">6</div>
+                <h2 class="process-title">Key Insights & Recommendations</h2>
+            </div>
+            <div class="process-content">
+                <p>
+                    The analysis revealed several actionable insights that can directly impact
+                    business strategy and marketing efforts.
+                </p>
+
+                <div class="insights-grid">
+                    <div class="insight-card">
+                        <div class="insight-icon">🎯</div>
+                        <div class="insight-title">Target Younger Demographics</div>
+                        <div class="insight-text">
+                            Customers aged 18-25 have the highest spending score (53.6) compared to
+                            other age groups. Focus marketing on this demographic for higher conversion.
+                        </div>
+                    </div>
+                    <div class="insight-card">
+                        <div class="insight-icon">💰</div>
+                        <div class="insight-title">Untapped High-Income Segment</div>
+                        <div class="insight-text">
+                            31.4% of customers have high income but low spending. Targeted campaigns
+                            emphasizing value and quality could unlock this significant revenue potential.
+                        </div>
+                    </div>
+                    <div class="insight-card">
+                        <div class="insight-icon">🎨</div>
+                        <div class="insight-title">Artists Are Top Spenders</div>
+                        <div class="insight-text">
+                            34% of high-value customers are Artists. Consider profession-targeted
+                            marketing campaigns and partnerships in creative industries.
+                        </div>
+                    </div>
+                    <div class="insight-card">
+                        <div class="insight-icon">👥</div>
+                        <div class="insight-title">Gender Balance in Marketing</div>
+                        <div class="insight-text">
+                            Female customers show slightly higher spending (51.1 avg) and make up
+                            59% of the customer base. Ensure marketing appeals to this demographic.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tools & Methodology -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">7</div>
+                <h2 class="process-title">Tools & Methodology</h2>
+            </div>
+            <div class="process-content">
+                <div class="highlight-box">
+                    <h4>Technical Stack</h4>
+                    <ul>
+                        <li><strong>Python 3.13:</strong> Primary programming language</li>
+                        <li><strong>Pandas:</strong> Data manipulation and analysis</li>
+                        <li><strong>NumPy:</strong> Numerical computations</li>
+                        <li><strong>Matplotlib:</strong> Data visualization</li>
+                        <li><strong>SciPy:</strong> Statistical analysis (KDE plots)</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Deliverables</h4>
+                    <ul>
+                        <li>Cleaned dataset (Customers_cleaned.csv)</li>
+                        <li>Segmented dataset with labels (Customers_segmented.csv)</li>
+                        <li>7 publication-ready visualizations</li>
+                        <li>Executive dashboard for stakeholder presentations</li>
+                        <li>Comprehensive analysis report with recommendations</li>
+                        <li>Reusable Python scripts for future analysis</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p class="footer-text">
+                Designed & Built by Joshua Cundiff
+            </p>
+        </div>
+    </footer>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+        <button class="lightbox-close">&times;</button>
+        <img id="lightbox-img" src="" alt="Enlarged visualization">
+    </div>
+
+    <script>
+        function openLightbox(src) {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeLightbox();
+        });
+    </script>
+</body>
+</html>

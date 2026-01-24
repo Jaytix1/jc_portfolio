@@ -13,7 +13,7 @@
         typingStrings: [
             'Data Analyst',
             'Full Stack Developer',
-            'Computer Science Student',
+            'Computer Scientist',
             'Problem Solver'
         ],
         typingSpeed: 80,
