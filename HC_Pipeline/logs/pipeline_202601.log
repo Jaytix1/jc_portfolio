@@ -263,3 +263,25 @@
 2026-01-23 20:19:03,356 - HC_Pipeline - INFO - Starting news collection
 2026-01-23 21:19:03,358 - HC_Pipeline - INFO - ==================================================
 2026-01-23 21:19:03,359 - HC_Pipeline - INFO - Starting stock price collection
+2026-01-25 15:19:03,354 - HC_Pipeline - INFO - ==================================================
+2026-01-25 15:19:03,355 - HC_Pipeline - INFO - Starting stock price collection
+2026-01-25 17:19:03,363 - HC_Pipeline - INFO - ==================================================
+2026-01-25 17:19:03,363 - HC_Pipeline - INFO - ==================================================
+2026-01-25 17:19:03,363 - HC_Pipeline - INFO - ==================================================
+2026-01-25 17:19:03,363 - HC_Pipeline - INFO - Starting stock price collection
+2026-01-25 17:19:03,363 - HC_Pipeline - INFO - Starting news collection
+2026-01-25 17:19:03,363 - HC_Pipeline - INFO - Starting deals collection
+2026-01-25 19:19:03,360 - HC_Pipeline - INFO - ==================================================
+2026-01-25 19:19:03,360 - HC_Pipeline - INFO - Starting stock price collection
+2026-01-25 20:19:03,356 - HC_Pipeline - INFO - ==================================================
+2026-01-25 20:19:03,356 - HC_Pipeline - INFO - Starting news collection
+2026-01-29 09:19:03,365 - HC_Pipeline - INFO - ==================================================
+2026-01-29 09:19:03,365 - HC_Pipeline - INFO - Starting stock price collection
+2026-01-29 11:19:03,368 - HC_Pipeline - INFO - ==================================================
+2026-01-29 11:19:03,370 - HC_Pipeline - INFO - ==================================================
+2026-01-29 11:19:03,370 - HC_Pipeline - INFO - ==================================================
+2026-01-29 11:19:03,370 - HC_Pipeline - INFO - ==================================================
+2026-01-29 11:19:03,370 - HC_Pipeline - INFO - Starting stock price collection
+2026-01-29 11:19:03,370 - HC_Pipeline - INFO - Starting ship specification collection
+2026-01-29 11:19:03,370 - HC_Pipeline - INFO - Starting news collection
+2026-01-29 11:19:03,370 - HC_Pipeline - INFO - Starting deals collection
