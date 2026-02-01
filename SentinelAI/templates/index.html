@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SentinelAI - Code Review Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SentinelAI</h1>
+            <p class="tagline">AI-Powered Code Review for Students & Teams</p>
+        </header>
+
+        <main>
+            <div class="editor-section">
+                <div class="editor-header">
+                    <label for="language">Language:</label>
+                    <select id="language">
+                        <option value="python">Python</option>
+                        <option value="javascript">JavaScript</option>
+                        <option value="java">Java</option>
+                        <option value="cpp">C++</option>
+                        <option value="csharp">C#</option>
+                        <option value="go">Go</option>
+                        <option value="rust">Rust</option>
+                        <option value="html">HTML</option>
+                        <option value="css">CSS</option>
+                        <option value="sql">SQL</option>
+                    </select>
+                </div>
+                <textarea id="code-input" placeholder="Paste your code here for review..."></textarea>
+                <button id="review-btn" onclick="submitReview()">
+                    <span class="btn-text">Review Code</span>
+                    <span class="btn-loader hidden"></span>
+                </button>
+            </div>
+
+            <div class="review-section">
+                <h2>Review Results</h2>
+                <div id="review-output" class="review-output">
+                    <p class="placeholder-text">Your code review will appear here...</p>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Built by Joshua C. | Powered by Claude AI</p>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
