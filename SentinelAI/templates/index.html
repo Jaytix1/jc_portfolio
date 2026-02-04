@@ -3,51 +3,373 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SentinelAI - Code Review Assistant</title>
+    <title>SentinelAI - Intelligent Code Analysis</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>SentinelAI</h1>
-            <p class="tagline">AI-Powered Code Review for Students & Teams</p>
-        </header>
-
-        <main>
-            <div class="editor-section">
-                <div class="editor-header">
-                    <label for="language">Language:</label>
-                    <select id="language">
-                        <option value="python">Python</option>
-                        <option value="javascript">JavaScript</option>
-                        <option value="java">Java</option>
-                        <option value="cpp">C++</option>
-                        <option value="csharp">C#</option>
-                        <option value="go">Go</option>
-                        <option value="rust">Rust</option>
-                        <option value="html">HTML</option>
-                        <option value="css">CSS</option>
-                        <option value="sql">SQL</option>
-                    </select>
+    <div class="app-container">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-brand">
+                <div class="logo">
+                    <svg viewBox="0 0 40 40" class="logo-icon">
+                        <defs>
+                            <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#58a6ff"/>
+                                <stop offset="100%" style="stop-color:#a371f7"/>
+                            </linearGradient>
+                            <linearGradient id="eyeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#79b8ff"/>
+                                <stop offset="100%" style="stop-color:#c4a5f9"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- Shield shape -->
+                        <path d="M20 2 L36 8 L36 18 C36 28 28 36 20 38 C12 36 4 28 4 18 L4 8 Z"
+                              fill="url(#shieldGradient)" opacity="0.9"/>
+                        <!-- Inner shield highlight -->
+                        <path d="M20 5 L33 10 L33 18 C33 26 26 33 20 35 C14 33 7 26 7 18 L7 10 Z"
+                              fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+                        <!-- AI Eye -->
+                        <ellipse cx="20" cy="18" rx="8" ry="6" fill="#0d1117" opacity="0.8"/>
+                        <ellipse cx="20" cy="18" rx="6" ry="4.5" fill="none" stroke="url(#eyeGradient)" stroke-width="1.5"/>
+                        <circle cx="20" cy="18" r="3" fill="url(#eyeGradient)"/>
+                        <circle cx="21" cy="17" r="1" fill="white" opacity="0.8"/>
+                        <!-- Scan lines -->
+                        <line x1="10" y1="26" x2="30" y2="26" stroke="url(#eyeGradient)" stroke-width="1" opacity="0.5"/>
+                        <line x1="12" y1="29" x2="28" y2="29" stroke="url(#eyeGradient)" stroke-width="1" opacity="0.3"/>
+                    </svg>
+                    <span class="logo-text">SentinelAI</span>
                 </div>
-                <textarea id="code-input" placeholder="Paste your code here for review..."></textarea>
-                <button id="review-btn" onclick="submitReview()">
-                    <span class="btn-text">Review Code</span>
-                    <span class="btn-loader hidden"></span>
+            </div>
+            <div class="nav-links">
+                <button class="nav-btn" id="history-toggle" onclick="toggleHistory()">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                    </svg>
+                    History
+                    <span class="history-badge" id="history-count">0</span>
+                </button>
+                <span class="nav-status">
+                    <span class="status-dot"></span>
+                    Ready to analyze
+                </span>
+            </div>
+        </nav>
+
+        <!-- History Sidebar -->
+        <aside class="history-sidebar" id="history-sidebar">
+            <div class="history-header">
+                <h3>Analysis History</h3>
+                <button class="history-close" onclick="toggleHistory()">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
                 </button>
             </div>
+            <div class="history-actions">
+                <button class="btn-clear-history" onclick="clearHistory()">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    Clear All
+                </button>
+            </div>
+            <div class="history-list" id="history-list">
+                <div class="history-empty">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <p>No history yet</p>
+                    <span>Your analyses will appear here</span>
+                </div>
+            </div>
+        </aside>
 
-            <div class="review-section">
-                <h2>Review Results</h2>
+        <!-- Hero Section -->
+        <header class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">Intelligent Code Analysis</h1>
+                <p class="hero-subtitle">Detect bugs, security vulnerabilities, and performance issues with AI-powered precision</p>
+                <div class="hero-features">
+                    <div class="feature-tag">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
+                        </svg>
+                        Error Detection
+                    </div>
+                    <div class="feature-tag">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        Security Analysis
+                    </div>
+                    <div class="feature-tag">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
+                        </svg>
+                        Performance Tips
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="editor-panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <svg viewBox="0 0 20 20" fill="currentColor" class="panel-icon">
+                            <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                        Code Editor
+                    </div>
+                    <div class="language-selector">
+                        <label for="language">Language</label>
+                        <select id="language">
+                            <option value="python">Python</option>
+                            <option value="javascript">JavaScript</option>
+                            <option value="typescript">TypeScript</option>
+                            <option value="java">Java</option>
+                            <option value="cpp">C++</option>
+                            <option value="csharp">C#</option>
+                            <option value="go">Go</option>
+                            <option value="rust">Rust</option>
+                            <option value="php">PHP</option>
+                            <option value="ruby">Ruby</option>
+                            <option value="html">HTML</option>
+                            <option value="css">CSS</option>
+                            <option value="sql">SQL</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- File Upload Zone -->
+                <div class="file-upload-zone" id="file-upload-zone">
+                    <input type="file" id="file-input" multiple accept=".py,.js,.ts,.java,.cpp,.c,.cs,.go,.rs,.php,.rb,.html,.css,.sql,.txt,.jsx,.tsx,.vue,.swift,.kt,.scala,.sh,.bash,.ps1,.json,.xml,.yaml,.yml,.md" hidden>
+                    <div class="upload-content">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="upload-icon">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        <p class="upload-text">Drop files here or <span class="upload-link" onclick="document.getElementById('file-input').click()">browse</span></p>
+                        <p class="upload-hint">Supports multiple files - analyze them all at once</p>
+                    </div>
+                </div>
+
+                <!-- File Tabs (shown when files are uploaded) -->
+                <div class="file-tabs" id="file-tabs"></div>
+
+                <div class="editor-wrapper">
+                    <textarea id="code-input" placeholder="// Paste your code here for analysis...&#10;&#10;function example() {&#10;    // SentinelAI will check for:&#10;    // - Logic errors and bugs&#10;    // - Security vulnerabilities&#10;    // - Performance optimizations&#10;    // - Best practices&#10;}"></textarea>
+                    <div class="editor-footer">
+                        <span class="char-count"><span id="char-count">0</span> characters</span>
+                        <span class="shortcut-hint">Ctrl + Enter to submit</span>
+                    </div>
+                </div>
+                <div class="editor-actions">
+                    <button id="review-btn" onclick="submitReview()">
+                        <svg viewBox="0 0 20 20" fill="currentColor" class="btn-icon">
+                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="btn-text">Analyze Code</span>
+                        <span class="btn-loader hidden"></span>
+                    </button>
+                    <button id="analyze-all-btn" class="btn-secondary hidden" onclick="analyzeAllFiles()">
+                        <svg viewBox="0 0 20 20" fill="currentColor" class="btn-icon">
+                            <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2h-1.528A6 6 0 004 9.528V4z"/>
+                            <path fill-rule="evenodd" d="M8 10a4 4 0 00-3.446 6.032l-1.261 1.26a1 1 0 101.414 1.415l1.261-1.261A4 4 0 108 10zm-2 4a2 2 0 114 0 2 2 0 01-4 0z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="btn-text">Analyze All Files</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="results-panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <svg viewBox="0 0 20 20" fill="currentColor" class="panel-icon">
+                            <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm2 10a1 1 0 10-2 0v3a1 1 0 102 0v-3zm2-3a1 1 0 011 1v5a1 1 0 11-2 0v-5a1 1 0 011-1zm4-1a1 1 0 10-2 0v7a1 1 0 102 0V8z" clip-rule="evenodd"/>
+                        </svg>
+                        Analysis Results
+                    </div>
+                    <button class="btn-save-result hidden" id="save-result-btn" onclick="saveCurrentResult()">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"/>
+                        </svg>
+                        Save
+                    </button>
+                </div>
                 <div id="review-output" class="review-output">
-                    <p class="placeholder-text">Your code review will appear here...</p>
+                    <div class="placeholder-state">
+                        <svg viewBox="0 0 80 80" class="placeholder-icon">
+                            <circle cx="40" cy="40" r="35" fill="none" stroke="currentColor" stroke-width="2" opacity="0.2"/>
+                            <path d="M40 20 L40 45" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity="0.3"/>
+                            <circle cx="40" cy="55" r="3" fill="currentColor" opacity="0.3"/>
+                        </svg>
+                        <p class="placeholder-title">Ready to Analyze</p>
+                        <p class="placeholder-text">Paste your code, upload files, or drag & drop to get detailed feedback on errors, security, and performance.</p>
+                    </div>
                 </div>
             </div>
         </main>
 
-        <footer>
-            <p>Built by Joshua C. | Powered by Claude AI</p>
+        <!-- About Section -->
+        <section class="about-section">
+            <div class="about-container">
+                <!-- What is SentinelAI -->
+                <div class="about-header">
+                    <h2 class="about-title">What is SentinelAI?</h2>
+                    <p class="about-description">
+                        SentinelAI is an intelligent code analysis tool designed for developers, students, and teams
+                        who want to write better, safer, and more efficient code. Powered by advanced AI, it reviews
+                        your code and provides actionable feedback across multiple dimensions.
+                    </p>
+                </div>
+
+                <!-- Features Grid -->
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon bug-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                                <path d="M12 8v4M12 16h.01"/>
+                            </svg>
+                        </div>
+                        <h3>Bug Detection</h3>
+                        <p>Catches logic errors, off-by-one mistakes, null pointer issues, and runtime exceptions before they reach production.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon security-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                <path d="M9 12l2 2 4-4"/>
+                            </svg>
+                        </div>
+                        <h3>Security Analysis</h3>
+                        <p>Identifies vulnerabilities like SQL injection, XSS, hardcoded secrets, and insecure data handling patterns.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon performance-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                            </svg>
+                        </div>
+                        <h3>Performance Tips</h3>
+                        <p>Spots inefficient algorithms, unnecessary loops, memory leaks, and suggests optimizations for faster code.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon practices-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+                            </svg>
+                        </div>
+                        <h3>Best Practices</h3>
+                        <p>Recommends cleaner code patterns, proper naming conventions, and adherence to language-specific standards.</p>
+                    </div>
+                </div>
+
+                <!-- Example Showcase -->
+                <div class="examples-section">
+                    <h2 class="examples-title">See It In Action</h2>
+                    <div class="example-showcase">
+                        <div class="example-card">
+                            <div class="example-header">
+                                <span class="example-label input-label">Input</span>
+                                <span class="example-lang">Python</span>
+                            </div>
+                            <pre class="example-code"><code class="language-python">def get_user(id):
+    query = "SELECT * FROM users WHERE id = " + id
+    result = db.execute(query)
+    return result
+
+def calculate_average(numbers):
+    total = 0
+    for i in range(len(numbers)):
+        total = total + numbers[i]
+    average = total / len(numbers)
+    return average</code></pre>
+                        </div>
+                        <div class="example-arrow">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </div>
+                        <div class="example-card output-card">
+                            <div class="example-header">
+                                <span class="example-label output-label">Analysis</span>
+                            </div>
+                            <div class="example-output">
+                                <div class="issue-item critical">
+                                    <span class="issue-badge">Security</span>
+                                    <strong>SQL Injection Vulnerability</strong>
+                                    <p>String concatenation in SQL query allows injection attacks. Use parameterized queries instead.</p>
+                                </div>
+                                <div class="issue-item warning">
+                                    <span class="issue-badge">Bug</span>
+                                    <strong>Division by Zero</strong>
+                                    <p>No check for empty list before division. Will crash if numbers is empty.</p>
+                                </div>
+                                <div class="issue-item info">
+                                    <span class="issue-badge">Performance</span>
+                                    <strong>Inefficient Loop</strong>
+                                    <p>Use <code>for num in numbers</code> instead of indexing. More Pythonic and faster.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Use Cases -->
+                <div class="use-cases">
+                    <h2 class="use-cases-title">Perfect For</h2>
+                    <div class="use-cases-grid">
+                        <div class="use-case">
+                            <span class="use-case-icon">&#127891;</span>
+                            <h4>Students</h4>
+                            <p>Learn best practices and catch mistakes while learning to code</p>
+                        </div>
+                        <div class="use-case">
+                            <span class="use-case-icon">&#128187;</span>
+                            <h4>Developers</h4>
+                            <p>Quick code reviews before commits and pull requests</p>
+                        </div>
+                        <div class="use-case">
+                            <span class="use-case-icon">&#128101;</span>
+                            <h4>Teams</h4>
+                            <p>Maintain consistent code quality across your projects</p>
+                        </div>
+                        <div class="use-case">
+                            <span class="use-case-icon">&#128640;</span>
+                            <h4>Startups</h4>
+                            <p>Ship secure, efficient code without a dedicated security team</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <svg viewBox="0 0 24 24" class="footer-logo">
+                        <path d="M12 2 L22 6 L22 12 C22 18 17 22 12 23 C7 22 2 18 2 12 L2 6 Z"
+                              fill="currentColor" opacity="0.3"/>
+                        <circle cx="12" cy="11" r="3" fill="currentColor" opacity="0.5"/>
+                    </svg>
+                    <span>SentinelAI</span>
+                </div>
+                <div class="footer-info">
+                    <span>Built by Joshua C.</span>
+                    <span class="footer-divider">|</span>
+                    <span>Powered by Claude AI</span>
+                </div>
+            </div>
         </footer>
     </div>
 

@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SentinelAI - AI Code Analyzer | Joshua Cundiff</title>
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* Project Page Specific Styles */
+        .project-hero {
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0a0e14 0%, #0d1117 50%, #161b22 100%);
+            position: relative;
+            overflow: hidden;
+            padding: 120px 20px 80px;
+        }
+
+        .project-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(88, 166, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(163, 113, 247, 0.1) 0%, transparent 50%);
+        }
+
+        .project-hero-content {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+        }
+
+        .project-logo {
+            margin-bottom: 1.5rem;
+        }
+
+        .project-logo svg {
+            filter: drop-shadow(0 0 20px rgba(88, 166, 255, 0.4))
+                    drop-shadow(0 0 40px rgba(163, 113, 247, 0.2));
+            animation: logoFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .project-hero-label {
+            color: #58a6ff;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .project-hero-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            color: #e6edf3;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+            background: linear-gradient(135deg, #e6edf3 0%, #58a6ff 50%, #a371f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .project-hero-subtitle {
+            font-size: 1.25rem;
+            color: #8b949e;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            line-height: 1.6;
+        }
+
+        .project-tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-top: 2rem;
+        }
+
+        .tech-badge {
+            background: rgba(88, 166, 255, 0.1);
+            color: #58a6ff;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            border: 1px solid rgba(88, 166, 255, 0.3);
+        }
+
+        .project-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .process-section {
+            margin-bottom: 5rem;
+        }
+
+        .process-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .process-number {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #58a6ff, #a371f7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .process-title {
+            font-size: 1.75rem;
+            color: #e6edf3;
+        }
+
+        .process-content {
+            background: #0d1117;
+            border-radius: 12px;
+            padding: 2rem;
+            border-left: 4px solid #58a6ff;
+        }
+
+        .process-content p {
+            color: #8b949e;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .process-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .highlight-box {
+            background: rgba(88, 166, 255, 0.1);
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .highlight-box h4 {
+            color: #58a6ff;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .highlight-box ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .highlight-box li {
+            color: #a8b2d1;
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .highlight-box li::before {
+            content: '>';
+            position: absolute;
+            left: 0;
+            color: #58a6ff;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .code-block {
+            background: #0a0e14;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            border: 1px solid #30363d;
+        }
+
+        .code-block pre {
+            margin: 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: #a8b2d1;
+        }
+
+        .code-block .comment {
+            color: #6e7681;
+        }
+
+        .code-block .keyword {
+            color: #ff7b72;
+        }
+
+        .code-block .string {
+            color: #a5d6ff;
+        }
+
+        .code-block .function {
+            color: #d2a8ff;
+        }
+
+        /* Visualization Gallery */
+        .viz-gallery {
+            margin: 3rem 0;
+        }
+
+        .viz-gallery-title {
+            color: #e6edf3;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .viz-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .viz-card {
+            background: #161b22;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            border: 1px solid #30363d;
+        }
+
+        .viz-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(88, 166, 255, 0.15);
+            border-color: #58a6ff;
+        }
+
+        .viz-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .viz-card-content {
+            padding: 1.25rem;
+        }
+
+        .viz-card-title {
+            color: #e6edf3;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .viz-card-desc {
+            color: #8b949e;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Featured Screenshot */
+        .featured-viz {
+            background: #161b22;
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 3rem 0;
+            border: 1px solid #30363d;
+        }
+
+        .featured-viz img {
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .featured-viz-caption {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #8b949e;
+            font-style: italic;
+        }
+
+        /* Feature Cards */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #161b22 0%, #0d1117 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border-top: 3px solid;
+            border: 1px solid #30363d;
+        }
+
+        .feature-card:nth-child(1) { border-top-color: #f85149; }
+        .feature-card:nth-child(2) { border-top-color: #58a6ff; }
+        .feature-card:nth-child(3) { border-top-color: #d29922; }
+        .feature-card:nth-child(4) { border-top-color: #3fb950; }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            color: #e6edf3;
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-text {
+            color: #8b949e;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Architecture Diagram */
+        .architecture-flow {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            padding: 2rem;
+            background: #0a0e14;
+            border-radius: 12px;
+            border: 1px solid #30363d;
+        }
+
+        .arch-box {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            text-align: center;
+            min-width: 140px;
+        }
+
+        .arch-box.highlight {
+            border-color: #58a6ff;
+            background: rgba(88, 166, 255, 0.1);
+        }
+
+        .arch-box-title {
+            color: #e6edf3;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .arch-box-subtitle {
+            color: #8b949e;
+            font-size: 0.75rem;
+        }
+
+        .arch-arrow {
+            color: #58a6ff;
+            font-size: 1.5rem;
+        }
+
+        /* Back Link */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #58a6ff;
+            text-decoration: none;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            padding: 1rem 2rem;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #79b8ff;
+        }
+
+        .back-link svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 14, 20, 0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox-close:hover {
+            color: #58a6ff;
+        }
+
+        /* Phase Divider */
+        .phase-divider {
+            text-align: center;
+            padding: 4rem 2rem;
+            margin: 3rem 0;
+            position: relative;
+            background: linear-gradient(135deg, rgba(88, 166, 255, 0.05) 0%, rgba(163, 113, 247, 0.05) 100%);
+            border-top: 1px solid rgba(88, 166, 255, 0.2);
+            border-bottom: 1px solid rgba(88, 166, 255, 0.2);
+            border-radius: 16px;
+        }
+
+        .phase-divider::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, #58a6ff, #a371f7);
+            border-radius: 2px;
+        }
+
+        .phase-label {
+            font-family: 'Fira Code', monospace;
+            color: #58a6ff;
+            font-size: 0.85rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .phase-title {
+            font-size: clamp(1.8rem, 3vw, 2.5rem);
+            background: linear-gradient(135deg, #58a6ff, #a371f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .phase-subtitle {
+            color: #8b949e;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Platform Architecture Diagram */
+        .platform-architecture {
+            background: #0a0e14;
+            border: 1px solid #30363d;
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin: 2rem 0;
+        }
+
+        .platform-layers {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .platform-layer {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .layer-label {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.7rem;
+            color: #6e7681;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 80px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .layer-boxes {
+            display: flex;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .layer-box {
+            flex: 1;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .layer-box:hover {
+            border-color: #58a6ff;
+            transform: translateY(-2px);
+        }
+
+        .layer-box.primary {
+            border-color: #58a6ff;
+            background: rgba(88, 166, 255, 0.08);
+        }
+
+        .layer-box.accent {
+            border-color: #a371f7;
+            background: rgba(163, 113, 247, 0.08);
+        }
+
+        .layer-box-title {
+            color: #e6edf3;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .layer-box-sub {
+            color: #6e7681;
+            font-size: 0.7rem;
+            margin-top: 0.2rem;
+        }
+
+        .layer-connector {
+            text-align: center;
+            color: #30363d;
+            font-size: 1.2rem;
+            padding: 0 0 0 90px;
+        }
+
+        /* Terminal Block */
+        .terminal-block {
+            background: #0a0e14;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+        }
+
+        .terminal-header {
+            background: #161b22;
+            padding: 0.6rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid #30363d;
+        }
+
+        .terminal-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .terminal-dot.red { background: #f85149; }
+        .terminal-dot.yellow { background: #d29922; }
+        .terminal-dot.green { background: #3fb950; }
+
+        .terminal-title {
+            color: #6e7681;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+
+        .terminal-body {
+            padding: 1.25rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            line-height: 1.8;
+        }
+
+        .terminal-body .prompt {
+            color: #3fb950;
+        }
+
+        .terminal-body .command {
+            color: #e6edf3;
+        }
+
+        .terminal-body .output {
+            color: #8b949e;
+        }
+
+        .terminal-body .highlight-text {
+            color: #58a6ff;
+        }
+
+        .terminal-body .success {
+            color: #3fb950;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .project-content {
+                padding: 2rem 1rem;
+            }
+
+            .process-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .viz-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .architecture-flow {
+                flex-direction: column;
+            }
+
+            .arch-arrow {
+                transform: rotate(90deg);
+            }
+
+            .layer-label {
+                display: none;
+            }
+
+            .layer-boxes {
+                flex-direction: column;
+            }
+
+            .layer-connector {
+                padding-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="../../index.html" class="nav-logo">
+                <span class="logo-bracket">&lt;</span>JC<span class="logo-bracket">/&gt;</span>
+            </a>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="../../index.html#projects" class="nav-link">All Projects</a></li>
+                <li class="nav-item"><a href="../../index.html#contact" class="nav-link">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Back Link -->
+    <a href="../../index.html#projects" class="back-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Back to Projects
+    </a>
+
+    <!-- Project Hero -->
+    <section class="project-hero">
+        <div class="project-hero-content">
+            <!-- SentinelAI Logo -->
+            <div class="project-logo">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="100" height="100">
+                    <defs>
+                        <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#58a6ff"/>
+                            <stop offset="100%" style="stop-color:#a371f7"/>
+                        </linearGradient>
+                        <linearGradient id="eyeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#79b8ff"/>
+                            <stop offset="100%" style="stop-color:#c4a5f9"/>
+                        </linearGradient>
+                    </defs>
+                    <!-- Shield shape -->
+                    <path d="M20 2 L36 8 L36 18 C36 28 28 36 20 38 C12 36 4 28 4 18 L4 8 Z"
+                          fill="url(#shieldGradient)" opacity="0.9"/>
+                    <!-- Inner shield highlight -->
+                    <path d="M20 5 L33 10 L33 18 C33 26 26 33 20 35 C14 33 7 26 7 18 L7 10 Z"
+                          fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+                    <!-- AI Eye -->
+                    <ellipse cx="20" cy="18" rx="8" ry="6" fill="#0d1117" opacity="0.8"/>
+                    <ellipse cx="20" cy="18" rx="6" ry="4.5" fill="none" stroke="url(#eyeGradient)" stroke-width="1.5"/>
+                    <circle cx="20" cy="18" r="3" fill="url(#eyeGradient)"/>
+                    <circle cx="21" cy="17" r="1" fill="white" opacity="0.8"/>
+                    <!-- Scan lines -->
+                    <line x1="10" y1="26" x2="30" y2="26" stroke="url(#eyeGradient)" stroke-width="1" opacity="0.5"/>
+                    <line x1="12" y1="29" x2="28" y2="29" stroke="url(#eyeGradient)" stroke-width="1" opacity="0.3"/>
+                </svg>
+            </div>
+            <p class="project-hero-label">AI-Powered Developer Tool</p>
+            <h1 class="project-hero-title">SentinelAI</h1>
+            <p class="project-hero-subtitle">
+                A self-hosted AI platform powered by locally-run large language models via Ollama.
+                Features SentinelChat for general AI assistance and SentinelCode for intelligent
+                code analysis - all running on your own hardware with zero API dependencies.
+            </p>
+            <div class="project-tech-stack">
+                <span class="tech-badge">Python</span>
+                <span class="tech-badge">Flask</span>
+                <span class="tech-badge">Claude API</span>
+                <span class="tech-badge">JavaScript</span>
+                <span class="tech-badge">Marked.js</span>
+                <span class="tech-badge">Highlight.js</span>
+                <span class="tech-badge">Ollama</span>
+                <span class="tech-badge">Mistral LLM</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="project-content">
+
+        <!-- Featured Screenshot -->
+        <div class="featured-viz">
+            <img src="images/banner.png" alt="SentinelAI Main Interface" onclick="openLightbox(this.src)">
+            <p class="featured-viz-caption">SentinelAI's professional dark-themed interface with code editor and analysis panel</p>
+        </div>
+
+        <!-- Process Section 1: The Problem -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">1</div>
+                <h2 class="process-title">The Problem</h2>
+            </div>
+            <div class="process-content">
+                <p>
+                    Code review is essential for maintaining quality, but it's often inconsistent and time-consuming.
+                    Students learning to code frequently make the same mistakes without understanding <em>why</em>
+                    their code is problematic. Traditional linters catch syntax errors but miss logic bugs,
+                    security vulnerabilities, and performance anti-patterns.
+                </p>
+                <p>
+                    I wanted to build a tool that goes beyond simple syntax checking - one that analyzes code
+                    like an experienced developer would, explaining not just <strong>what's wrong</strong>,
+                    but <strong>why it matters</strong> and <strong>how to fix it</strong>.
+                </p>
+            </div>
+        </section>
+
+        <!-- Process Section 2: The Solution -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">2</div>
+                <h2 class="process-title">The Solution</h2>
+            </div>
+            <div class="process-content">
+                <p>
+                    SentinelAI combines the power of Claude AI with a clean, professional web interface
+                    to deliver comprehensive code analysis across five key dimensions.
+                </p>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🐛</div>
+                        <div class="feature-title">Bug Detection</div>
+                        <div class="feature-text">
+                            Catches logic errors, off-by-one mistakes, null pointer issues,
+                            and runtime exceptions before they reach production.
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔒</div>
+                        <div class="feature-title">Security Analysis</div>
+                        <div class="feature-text">
+                            Identifies SQL injection, XSS vulnerabilities, hardcoded secrets,
+                            and insecure data handling patterns.
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <div class="feature-title">Performance Tips</div>
+                        <div class="feature-text">
+                            Spots inefficient algorithms, unnecessary loops, memory leaks,
+                            and suggests optimizations for faster code.
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📋</div>
+                        <div class="feature-title">Best Practices</div>
+                        <div class="feature-text">
+                            Recommends cleaner patterns, proper naming conventions, and
+                            adherence to language-specific standards.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Process Section 3: Architecture -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">3</div>
+                <h2 class="process-title">Technical Architecture</h2>
+            </div>
+            <div class="process-content">
+                <p>
+                    The application follows a clean client-server architecture with the Flask backend
+                    handling API communication and the frontend providing a responsive, real-time experience.
+                </p>
+
+                <div class="architecture-flow">
+                    <div class="arch-box">
+                        <div class="arch-box-title">User</div>
+                        <div class="arch-box-subtitle">Pastes Code</div>
+                    </div>
+                    <span class="arch-arrow">→</span>
+                    <div class="arch-box">
+                        <div class="arch-box-title">Frontend</div>
+                        <div class="arch-box-subtitle">JavaScript</div>
+                    </div>
+                    <span class="arch-arrow">→</span>
+                    <div class="arch-box">
+                        <div class="arch-box-title">Flask API</div>
+                        <div class="arch-box-subtitle">/review</div>
+                    </div>
+                    <span class="arch-arrow">→</span>
+                    <div class="arch-box highlight">
+                        <div class="arch-box-title">Claude AI</div>
+                        <div class="arch-box-subtitle">Analysis</div>
+                    </div>
+                    <span class="arch-arrow">→</span>
+                    <div class="arch-box">
+                        <div class="arch-box-title">Markdown</div>
+                        <div class="arch-box-subtitle">Response</div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <pre><span class="comment"># Flask endpoint handling code analysis</span>
+<span class="keyword">@app</span>.route(<span class="string">'/review'</span>, methods=[<span class="string">'POST'</span>])
+<span class="keyword">def</span> <span class="function">review_code</span>():
+    data = request.get_json()
+    code = data.get(<span class="string">'code'</span>)
+    language = data.get(<span class="string">'language'</span>)
+
+    <span class="comment"># Send to Claude with analysis prompt</span>
+    response = client.messages.create(
+        model=<span class="string">"claude-sonnet-4-20250514"</span>,
+        max_tokens=<span class="number">2048</span>,
+        messages=[{<span class="string">"role"</span>: <span class="string">"user"</span>, <span class="string">"content"</span>: prompt}]
+    )
+
+    <span class="keyword">return</span> jsonify({<span class="string">'review'</span>: response.content})</pre>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Key Technical Decisions</h4>
+                    <ul>
+                        <li><strong>Flask:</strong> Lightweight Python framework perfect for API-focused applications</li>
+                        <li><strong>Claude Sonnet:</strong> Optimal balance of intelligence and response speed</li>
+                        <li><strong>Marked.js:</strong> Renders Claude's markdown responses with full formatting</li>
+                        <li><strong>Highlight.js:</strong> Syntax highlighting for code blocks in responses</li>
+                        <li><strong>CSS Variables:</strong> Dark theme with consistent design tokens</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Process Section 4: UI/UX Design -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">4</div>
+                <h2 class="process-title">UI/UX Design</h2>
+            </div>
+            <div class="process-content">
+                <p>
+                    The interface was designed with developers in mind - a professional dark theme that's
+                    easy on the eyes during long coding sessions, with clear visual hierarchy and
+                    intuitive interactions.
+                </p>
+
+                <div class="viz-gallery">
+                    <div class="viz-grid">
+                        <div class="viz-card" onclick="openLightbox('images/banner.png')">
+                            <img src="images/banner.png" alt="Main Interface">
+                            <div class="viz-card-content">
+                                <h4 class="viz-card-title">Main Interface</h4>
+                                <p class="viz-card-desc">Two-panel layout with code editor on the left and analysis results on the right.</p>
+                            </div>
+                        </div>
+                        <div class="viz-card" onclick="openLightbox('images/example-section.png')">
+                            <img src="images/example-section.png" alt="About Section">
+                            <div class="viz-card-content">
+                                <h4 class="viz-card-title">About & Examples</h4>
+                                <p class="viz-card-desc">Educational section showcasing features and example analysis output.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Design Features</h4>
+                    <ul>
+                        <li><strong>Multi-File Upload:</strong> Drag & drop or browse to upload multiple files at once</li>
+                        <li><strong>File Tabs:</strong> Switch between uploaded files with visual indicators for analyzed files</li>
+                        <li><strong>Analysis History:</strong> Save and revisit past analyses stored in browser localStorage</li>
+                        <li><strong>Responsive Layout:</strong> Works on desktop, tablet, and mobile devices</li>
+                        <li><strong>Real-time Feedback:</strong> Loading animations and character counter</li>
+                        <li><strong>Keyboard Shortcuts:</strong> Ctrl+Enter to submit code quickly</li>
+                        <li><strong>Syntax Highlighting:</strong> Both in editor and analysis results</li>
+                        <li><strong>13+ Languages:</strong> Python, JavaScript, TypeScript, Java, C++, and more</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Process Section 5: Advanced Features -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">5</div>
+                <h2 class="process-title">Advanced Features</h2>
+            </div>
+            <div class="process-content">
+                <p>
+                    Beyond basic code analysis, SentinelAI includes powerful workflow features
+                    that make it practical for real development scenarios.
+                </p>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">📁</div>
+                        <div class="feature-title">Multi-File Upload</div>
+                        <div class="feature-text">
+                            Drag and drop multiple files at once, or browse to select them.
+                            Auto-detects language from 25+ file extensions including .py, .js, .ts, .java, .cpp, and more.
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🗂️</div>
+                        <div class="feature-title">File Tabs</div>
+                        <div class="feature-text">
+                            Switch between uploaded files with intuitive tabs. Green indicators
+                            show which files have been analyzed. Remove files individually with one click.
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📜</div>
+                        <div class="feature-title">Analysis History</div>
+                        <div class="feature-text">
+                            Save analysis results to browser localStorage. Revisit past reviews anytime,
+                            with timestamps and code previews. Stores up to 50 entries.
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <div class="feature-title">Batch Analysis</div>
+                        <div class="feature-text">
+                            Analyze all uploaded files with one click. Progress indicator shows
+                            which file is being processed. Results are cached per file.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <pre><span class="comment">// File handling with automatic language detection</span>
+<span class="keyword">const</span> extensionToLanguage = {
+    <span class="string">'py'</span>: <span class="string">'python'</span>,
+    <span class="string">'js'</span>: <span class="string">'javascript'</span>,
+    <span class="string">'ts'</span>: <span class="string">'typescript'</span>,
+    <span class="string">'java'</span>: <span class="string">'java'</span>,
+    <span class="string">'cpp'</span>: <span class="string">'cpp'</span>,
+    <span class="comment">// ... 20+ more extensions</span>
+};
+
+<span class="comment">// History stored in localStorage</span>
+<span class="keyword">function</span> <span class="function">saveToHistory</span>(result) {
+    <span class="keyword">const</span> history = JSON.parse(localStorage.getItem(<span class="string">'sentinelai_history'</span>));
+    history.unshift({ id: Date.now(), ...result });
+    localStorage.setItem(<span class="string">'sentinelai_history'</span>, JSON.stringify(history));
+}</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Process Section 6: Analysis Approach -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">6</div>
+                <h2 class="process-title">The Analysis Approach</h2>
+            </div>
+            <div class="process-content">
+                <p>
+                    What sets SentinelAI apart is its educational approach. Instead of just flagging issues,
+                    it explains each problem using a three-part structure that helps developers learn and improve.
+                </p>
+
+                <div class="highlight-box">
+                    <h4>For Each Issue Found:</h4>
+                    <ul>
+                        <li><strong>WHAT:</strong> Clear description of the problem identified</li>
+                        <li><strong>WHY:</strong> Educational explanation of why this matters</li>
+                        <li><strong>HOW:</strong> Concrete code example showing the fix</li>
+                    </ul>
+                </div>
+
+                <div class="code-block">
+                    <pre><span class="comment"># Example: SentinelAI analyzing vulnerable code</span>
+
+<span class="comment"># User's Code:</span>
+query = <span class="string">"SELECT * FROM users WHERE id = "</span> + user_id
+
+<span class="comment"># SentinelAI Output:</span>
+<span class="comment"># WHAT: SQL Injection Vulnerability</span>
+<span class="comment"># WHY: String concatenation allows attackers to inject</span>
+<span class="comment">#      malicious SQL commands, potentially exposing or</span>
+<span class="comment">#      destroying your entire database.</span>
+<span class="comment"># HOW: Use parameterized queries instead:</span>
+
+query = <span class="string">"SELECT * FROM users WHERE id = %s"</span>
+cursor.execute(query, (user_id,))</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Process Section 7: Target Users -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">7</div>
+                <h2 class="process-title">Who It's For</h2>
+            </div>
+            <div class="process-content">
+                <p>
+                    SentinelAI was built with multiple user groups in mind, each benefiting from
+                    the tool in different ways.
+                </p>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🎓</div>
+                        <div class="feature-title">Students</div>
+                        <div class="feature-text">
+                            Learn best practices and catch mistakes while learning to code.
+                            The educational explanations accelerate the learning process.
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💻</div>
+                        <div class="feature-title">Developers</div>
+                        <div class="feature-text">
+                            Quick code reviews before commits and pull requests.
+                            Catch issues early in the development cycle.
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">👥</div>
+                        <div class="feature-title">Teams</div>
+                        <div class="feature-text">
+                            Maintain consistent code quality across projects.
+                            Supplement human code review with AI-powered checks.
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🚀</div>
+                        <div class="feature-title">Startups</div>
+                        <div class="feature-text">
+                            Ship secure, efficient code without a dedicated security team.
+                            Affordable alternative to enterprise code analysis tools.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- PHASE 2: Self-Hosted AI Platform            -->
+        <!-- ============================================ -->
+
+        <div class="phase-divider">
+            <p class="phase-label">Phase 2</p>
+            <h2 class="phase-title">Self-Hosted AI Platform</h2>
+            <p class="phase-subtitle">
+                Expanding SentinelAI from a cloud API tool into a fully self-hosted AI platform
+                powered by local large language models via Ollama.
+            </p>
+        </div>
+
+        <!-- Process Section 8: The Evolution -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">8</div>
+                <h2 class="process-title">From API to Self-Hosted</h2>
+            </div>
+            <div class="process-content">
+                <p>
+                    The initial version of SentinelAI relied on the Claude API for all AI capabilities.
+                    While powerful, this approach requires API keys, incurs per-request costs, and depends on
+                    external servers. Phase 2 introduces a self-hosted alternative using
+                    <strong>Ollama</strong> to run open-source large language models entirely on local hardware.
+                </p>
+                <p>
+                    This evolution demonstrates a deeper understanding of AI infrastructure - not just
+                    consuming APIs, but deploying and managing models, designing modular architectures,
+                    and building systems that work independently of third-party services.
+                </p>
+
+                <div class="highlight-box">
+                    <h4>Why Self-Hosted?</h4>
+                    <ul>
+                        <li><strong>Full Ownership:</strong> No API keys, no rate limits, no recurring costs</li>
+                        <li><strong>Privacy:</strong> Code and conversations never leave your machine</li>
+                        <li><strong>Offline Capable:</strong> Works without an internet connection</li>
+                        <li><strong>Customizable:</strong> Swap models, fine-tune behavior, control everything</li>
+                        <li><strong>Portfolio Value:</strong> Demonstrates real AI engineering, not just API calls</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Process Section 9: Platform Architecture -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">9</div>
+                <h2 class="process-title">Platform Architecture</h2>
+            </div>
+            <div class="process-content">
+                <p>
+                    The SentinelAI Platform follows a modular architecture where the core Flask backend
+                    routes requests to specialized modules, each powered by local LLMs through Ollama.
+                </p>
+
+                <div class="platform-architecture">
+                    <div class="platform-layers">
+                        <div class="platform-layer">
+                            <span class="layer-label">UI</span>
+                            <div class="layer-boxes">
+                                <div class="layer-box">
+                                    <div class="layer-box-title">Unified Web Interface</div>
+                                    <div class="layer-box-sub">Module Tabs &middot; Chat &middot; Code Editor</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="layer-connector">&#9660;</div>
+
+                        <div class="platform-layer">
+                            <span class="layer-label">Backend</span>
+                            <div class="layer-boxes">
+                                <div class="layer-box primary">
+                                    <div class="layer-box-title">Flask API Server</div>
+                                    <div class="layer-box-sub">Port 5002 &middot; RESTful Endpoints</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="layer-connector">&#9660;</div>
+
+                        <div class="platform-layer">
+                            <span class="layer-label">Modules</span>
+                            <div class="layer-boxes">
+                                <div class="layer-box primary">
+                                    <div class="layer-box-title">SentinelChat</div>
+                                    <div class="layer-box-sub">General AI Assistant</div>
+                                </div>
+                                <div class="layer-box primary">
+                                    <div class="layer-box-title">SentinelCode</div>
+                                    <div class="layer-box-sub">Code Analysis</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="layer-connector">&#9660;</div>
+
+                        <div class="platform-layer">
+                            <span class="layer-label">AI Engine</span>
+                            <div class="layer-boxes">
+                                <div class="layer-box accent">
+                                    <div class="layer-box-title">Ollama Runtime</div>
+                                    <div class="layer-box-sub">localhost:11434</div>
+                                </div>
+                                <div class="layer-box">
+                                    <div class="layer-box-title">Claude API</div>
+                                    <div class="layer-box-sub">Optional Fallback</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="layer-connector">&#9660;</div>
+
+                        <div class="platform-layer">
+                            <span class="layer-label">Models</span>
+                            <div class="layer-boxes">
+                                <div class="layer-box accent">
+                                    <div class="layer-box-title">Mistral 7B</div>
+                                    <div class="layer-box-sub">4.4 GB &middot; Local</div>
+                                </div>
+                                <div class="layer-box">
+                                    <div class="layer-box-title">Swappable</div>
+                                    <div class="layer-box-sub">LLaMA &middot; Phi &middot; Others</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <pre><span class="comment"># Modular Flask backend with Ollama integration</span>
+<span class="keyword">from</span> modules.chat <span class="keyword">import</span> <span class="function">chat</span>, <span class="function">stream_chat</span>, <span class="function">get_available_models</span>
+<span class="keyword">from</span> modules.code <span class="keyword">import</span> <span class="function">analyze_code</span>
+
+<span class="keyword">@app</span>.route(<span class="string">'/api/chat'</span>, methods=[<span class="string">'POST'</span>])
+<span class="keyword">def</span> <span class="function">api_chat</span>():
+    result = chat(messages, model=<span class="string">"mistral"</span>, persona=<span class="string">"default"</span>)
+    <span class="keyword">return</span> jsonify({<span class="string">'response'</span>: result[<span class="string">'response'</span>]})
+
+<span class="keyword">@app</span>.route(<span class="string">'/api/code/review'</span>, methods=[<span class="string">'POST'</span>])
+<span class="keyword">def</span> <span class="function">api_code_review</span>():
+    result = analyze_code(code, language, model=<span class="string">"mistral"</span>)
+    <span class="keyword">return</span> jsonify({<span class="string">'review'</span>: result[<span class="string">'review'</span>]})</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Process Section 10: SentinelChat & SentinelCode -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">10</div>
+                <h2 class="process-title">Modules: Chat & Code</h2>
+            </div>
+            <div class="process-content">
+                <p>
+                    The platform is organized into specialized modules that can be extended independently.
+                    Each module connects to the same Ollama backend but serves a different purpose.
+                </p>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">💬</div>
+                        <div class="feature-title">SentinelChat</div>
+                        <div class="feature-text">
+                            A general-purpose AI chat assistant. Supports conversation history stored in localStorage,
+                            multiple AI personas (Default, Creative, Technical), markdown rendering with syntax
+                            highlighting, and model switching between any installed Ollama models.
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔍</div>
+                        <div class="feature-title">SentinelCode</div>
+                        <div class="feature-text">
+                            The evolved code analysis engine. Can run entirely on local Ollama models or fall back
+                            to the Claude API via a toggle switch. Same educational WHAT/WHY/HOW format, now with
+                            engine badges showing which AI backend processed the analysis.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Chat Features</h4>
+                    <ul>
+                        <li><strong>Conversation Sidebar:</strong> Browse, create, and delete chat sessions</li>
+                        <li><strong>AI Personas:</strong> Switch between Default, Creative, and Technical modes</li>
+                        <li><strong>Prompt Suggestions:</strong> Quick-start buttons on the welcome screen</li>
+                        <li><strong>Typing Indicators:</strong> Animated dots while the model generates a response</li>
+                        <li><strong>Markdown Rendering:</strong> Full formatting with code blocks and syntax highlighting</li>
+                        <li><strong>Model Selector:</strong> Switch between installed Ollama models from the navbar</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Process Section 11: Local AI Infrastructure -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">11</div>
+                <h2 class="process-title">Local AI Infrastructure</h2>
+            </div>
+            <div class="process-content">
+                <p>
+                    Setting up a self-hosted AI stack involves installing the Ollama runtime, pulling
+                    model weights, and configuring the application to communicate with the local inference server.
+                </p>
+
+                <div class="terminal-block">
+                    <div class="terminal-header">
+                        <span class="terminal-dot red"></span>
+                        <span class="terminal-dot yellow"></span>
+                        <span class="terminal-dot green"></span>
+                        <span class="terminal-title">Terminal - SentinelAI Setup</span>
+                    </div>
+                    <div class="terminal-body">
+                        <span class="prompt">$</span> <span class="command">winget install Ollama.Ollama</span><br>
+                        <span class="output">Successfully installed Ollama v0.15.4</span><br><br>
+                        <span class="prompt">$</span> <span class="command">ollama pull mistral</span><br>
+                        <span class="output">pulling manifest...</span><br>
+                        <span class="output">pulling f5074b1221da... 100% ▕██████████████████▏ 4.4 GB</span><br>
+                        <span class="success">success</span><br><br>
+                        <span class="prompt">$</span> <span class="command">ollama list</span><br>
+                        <span class="output">NAME         SIZE     MODIFIED</span><br>
+                        <span class="highlight-text">mistral      4.4 GB   just now</span><br><br>
+                        <span class="prompt">$</span> <span class="command">cd SentinelAI-Platform && python app.py</span><br>
+                        <span class="output"> * Running on <span class="highlight-text">http://127.0.0.1:5002</span></span><br>
+                        <span class="success"> * Ollama connected - 1 model available</span>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Infrastructure Details</h4>
+                    <ul>
+                        <li><strong>Ollama:</strong> Open-source runtime for deploying LLMs locally</li>
+                        <li><strong>Mistral 7B:</strong> 7 billion parameter model, 4.4 GB on disk, runs on consumer hardware</li>
+                        <li><strong>REST API:</strong> Ollama exposes localhost:11434 - the Flask backend communicates via HTTP</li>
+                        <li><strong>Model Management:</strong> Pull, list, and swap models via Ollama CLI</li>
+                        <li><strong>Health Monitoring:</strong> Real-time connection status shown in the navbar</li>
+                        <li><strong>Hybrid Engine:</strong> Toggle between local Ollama and cloud Claude API per request</li>
+                    </ul>
+                </div>
+
+                <div class="code-block">
+                    <pre><span class="comment"># Chat module communicating with local Ollama</span>
+<span class="keyword">import</span> requests
+
+OLLAMA_URL = <span class="string">"http://localhost:11434"</span>
+
+<span class="keyword">def</span> <span class="function">chat</span>(messages, model=<span class="string">"mistral"</span>, persona=<span class="string">"default"</span>):
+    response = requests.post(
+        f<span class="string">"{OLLAMA_URL}/api/chat"</span>,
+        json={
+            <span class="string">"model"</span>: model,
+            <span class="string">"messages"</span>: [
+                {<span class="string">"role"</span>: <span class="string">"system"</span>, <span class="string">"content"</span>: SYSTEM_PROMPTS[persona]},
+                *messages
+            ],
+            <span class="string">"stream"</span>: <span class="keyword">False</span>
+        }
+    )
+    <span class="keyword">return</span> response.json()[<span class="string">"message"</span>][<span class="string">"content"</span>]
+
+<span class="keyword">def</span> <span class="function">get_available_models</span>():
+    <span class="comment">"""Fetch all locally installed models."""</span>
+    response = requests.get(f<span class="string">"{OLLAMA_URL}/api/tags"</span>)
+    <span class="keyword">return</span> [m[<span class="string">"name"</span>] <span class="keyword">for</span> m <span class="keyword">in</span> response.json()[<span class="string">"models"</span>]]</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Process Section 12: Tech Stack -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">12</div>
+                <h2 class="process-title">Technical Stack</h2>
+            </div>
+            <div class="process-content">
+                <div class="highlight-box">
+                    <h4>Backend</h4>
+                    <ul>
+                        <li><strong>Python 3.13:</strong> Core programming language</li>
+                        <li><strong>Flask 3.0:</strong> Lightweight web framework</li>
+                        <li><strong>Anthropic SDK:</strong> Official Claude API client</li>
+                        <li><strong>python-dotenv:</strong> Environment variable management</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>Frontend</h4>
+                    <ul>
+                        <li><strong>Vanilla JavaScript:</strong> No framework overhead</li>
+                        <li><strong>Marked.js:</strong> Markdown parsing and rendering</li>
+                        <li><strong>Highlight.js:</strong> Code syntax highlighting</li>
+                        <li><strong>CSS Custom Properties:</strong> Themeable design system</li>
+                    </ul>
+                </div>
+
+                <div class="highlight-box">
+                    <h4>AI Integration</h4>
+                    <ul>
+                        <li><strong>Ollama:</strong> Self-hosted LLM runtime for local inference</li>
+                        <li><strong>Mistral 7B:</strong> Open-source large language model</li>
+                        <li><strong>Claude Sonnet 4:</strong> Cloud API for code analysis fallback</li>
+                        <li><strong>Structured Prompts:</strong> Consistent analysis format</li>
+                        <li><strong>Multi-language Support:</strong> 15 programming languages</li>
+                        <li><strong>Hybrid Engine:</strong> Local-first with optional cloud fallback</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Process Section 13: Future Plans -->
+        <section class="process-section">
+            <div class="process-header">
+                <div class="process-number">13</div>
+                <h2 class="process-title">Future Enhancements</h2>
+            </div>
+            <div class="process-content">
+                <p>
+                    SentinelAI is a living project with plans for continued improvement and expansion.
+                </p>
+
+                <div class="highlight-box">
+                    <h4>Planned Features</h4>
+                    <ul>
+                        <li><strong>Model Fine-Tuning:</strong> Train custom models on specific codebases and domains</li>
+                        <li><strong>RAG Integration:</strong> Feed custom documents and knowledge bases into conversations</li>
+                        <li><strong>Additional Modules:</strong> SentinelData (data analysis), SentinelDocs (documentation generation)</li>
+                        <li><strong>IDE Extensions:</strong> VS Code and JetBrains plugins</li>
+                        <li><strong>Export Reports:</strong> Download analysis results as PDF or Markdown</li>
+                        <li><strong>GitHub Integration:</strong> Analyze code directly from repositories</li>
+                        <li><strong>Multi-Model Comparison:</strong> Run same prompt across models and compare outputs</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p class="footer-text">
+                Designed & Built by Joshua Cundiff
+            </p>
+        </div>
+    </footer>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+        <button class="lightbox-close">&times;</button>
+        <img id="lightbox-img" src="" alt="Enlarged screenshot">
+    </div>
+
+    <script>
+        function openLightbox(src) {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeLightbox();
+        });
+    </script>
+</body>
+</html>
