@@ -54,10 +54,10 @@ a:hover {
 .banner {
     width: 100%;
     max-width: 1500px;
-    max-height: 750px;
+    max-height: 350px;
     border-radius: 0px;
     object-fit: cover;
-    object-position: top;
+    object-position: center;
 }
 
 .smallbanner {
@@ -566,19 +566,19 @@ button.action-btn {
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    margin: 20px 0;
+    gap: 15px;
+    margin: 15px 0;
 }
 
 .stats-grid.secondary {
     grid-template-columns: repeat(2, 1fr);
-    max-width: 600px;
-    margin: 20px auto;
+    max-width: 500px;
+    margin: 15px auto;
 }
 
 .stat-card {
     background: white;
-    padding: 25px;
+    padding: 15px;
     border-radius: 10px;
     text-align: center;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
@@ -586,39 +586,39 @@ button.action-btn {
 }
 
 .stat-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-3px);
 }
 
 .stat-card.small {
-    padding: 15px;
+    padding: 12px;
 }
 
 .stat-icon {
-    font-size: 2.5em;
-    margin-bottom: 10px;
+    font-size: 1.8em;
+    margin-bottom: 8px;
 }
 
 .stat-card h3 {
     color: #16318c;
-    font-size: 1em;
-    margin-bottom: 10px;
+    font-size: 0.85em;
+    margin-bottom: 8px;
     border: none;
 }
 
 .stat-card h4 {
     color: #16318c;
-    font-size: 0.9em;
+    font-size: 0.8em;
     margin-bottom: 5px;
 }
 
 .stat-number {
-    font-size: 2.5em;
+    font-size: 1.8em;
     font-weight: bold;
     color: #667eea;
 }
 
 .stat-number-small {
-    font-size: 1.5em;
+    font-size: 1.3em;
     font-weight: bold;
     color: #667eea;
 }
@@ -683,17 +683,23 @@ button.action-btn {
 /* Budget Section */
 .budget-section {
     background: white;
-    padding: 25px;
+    padding: 20px;
     border-radius: 10px;
-    margin: 30px 0;
+    margin: 20px 0;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+}
+
+.budget-section.enhanced {
+    max-width: 100%;
 }
 
 .budget-section h3 {
     color: #16318c;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     border-bottom: 2px solid #667eea;
     padding-bottom: 10px;
+    font-size: 1.1em;
 }
 
 .budget-bar-container {
@@ -732,6 +738,155 @@ button.action-btn {
 
 .budget-setup {
     text-align: center;
+}
+
+/* Budget Circle Display */
+.budget-display.enhanced {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.budget-visual {
+    flex-shrink: 0;
+}
+
+.budget-circle-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+
+.budget-circle {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.budget-circle-bg {
+    fill: none;
+    stroke: #eee;
+    stroke-width: 3;
+}
+
+.budget-circle-progress {
+    fill: none;
+    stroke-width: 3;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.5s ease;
+}
+
+.budget-circle-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.budget-percentage {
+    display: block;
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #667eea;
+}
+
+.budget-circle-progress.over + .budget-circle-text .budget-percentage {
+    color: #dc3545;
+}
+
+.budget-label {
+    display: block;
+    font-size: 0.75em;
+    color: #666;
+}
+
+.budget-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.budget-stat {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.budget-stat:last-child {
+    border-bottom: none;
+}
+
+.budget-stat-label {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.budget-stat-value {
+    font-weight: bold;
+    color: #333;
+}
+
+.budget-stat-value.spent {
+    color: #667eea;
+}
+
+.budget-stat-value.remaining {
+    color: #28a745;
+}
+
+.budget-stat-value.over {
+    color: #dc3545;
+}
+
+.budget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.budget-header h3 {
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.budget-edit-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+}
+
+.budget-edit-btn:hover {
+    background: #5a6fd6;
+}
+
+.budget-edit-form {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.budget-form-inline {
+    background: transparent;
+    padding: 0;
+    margin: 0;
+}
+
+.budget-form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
 }
 
 .budget-form {
@@ -828,10 +983,19 @@ button.action-btn {
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    max-height: 350px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-container canvas {
+    max-height: 280px !important;
+    width: 100% !important;
 }
 
 .chart-container.wide {
-    max-width: 800px;
+    max-width: 500px;
+    max-height: 350px;
     margin: 0 auto;
 }
 
@@ -841,6 +1005,7 @@ button.action-btn {
     margin-bottom: 15px;
     font-size: 1.1em;
     border: none;
+    flex-shrink: 0;
 }
 
 /* No Data Message */

@@ -1,0 +1,1 @@
+This folder contains the source code to a pipeline that will be used to analyze, track, and visualize cruise data via a data engineered pipeline.

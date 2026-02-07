@@ -3,10 +3,208 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from datetime import datetime
+from datetime import datetime, timedelta
+from functools import wraps
 import os
+import re
 
 app = Flask(__name__)
+
+
+# ============== VALIDATION CONSTANTS ==============
+
+# Cruise duration limits
+MIN_CRUISE_NIGHTS = 1
+MAX_CRUISE_NIGHTS = 180
+WARN_CRUISE_NIGHTS = 30  # Warn if cruise is longer than this
+
+# Cost limits
+MIN_COST = 0
+MAX_COST = 100000
+WARN_COST = 20000  # Warn if cost exceeds this
+
+# Rating limits
+MIN_RATING = 1
+MAX_RATING = 5
+
+# Budget limits
+MIN_BUDGET = 0
+MAX_BUDGET = 500000
+
+# Port coordinate limits
+MIN_LATITUDE = -90
+MAX_LATITUDE = 90
+MIN_LONGITUDE = -180
+MAX_LONGITUDE = 180
+
+# Text field limits
+MAX_CABIN_NUMBER_LENGTH = 10
+MAX_DECK_LENGTH = 20
+MAX_NOTES_LENGTH = 5000
+MAX_PORT_NAME_LENGTH = 100
+
+# Photo limits
+MAX_PHOTOS_PER_CRUISE = 50
+
+# Date limits
+MAX_FUTURE_YEARS = 2  # Can't add cruises more than 2 years in the future
+
+# Cabin types
+CABIN_TYPES = [
+    ('interior', 'Interior'),
+    ('oceanview', 'Ocean View'),
+    ('balcony', 'Balcony'),
+    ('suite', 'Suite'),
+    ('haven', 'Haven/Luxury Suite'),
+    ('studio', 'Studio (Solo)')
+]
+
+
+# ============== VALIDATION FUNCTIONS ==============
+
+def validate_cruise_dates(begindate, enddate):
+    """Validate cruise dates and return (is_valid, errors, warnings)."""
+    errors = []
+    warnings = []
+
+    # Check end date is after begin date
+    if enddate <= begindate:
+        errors.append("End date must be after begin date.")
+        return False, errors, warnings
+
+    # Calculate duration
+    duration = (enddate - begindate).days
+
+    # Check minimum duration
+    if duration < MIN_CRUISE_NIGHTS:
+        errors.append(f"Cruise must be at least {MIN_CRUISE_NIGHTS} night(s).")
+
+    # Check maximum duration
+    if duration > MAX_CRUISE_NIGHTS:
+        errors.append(f"Cruise duration cannot exceed {MAX_CRUISE_NIGHTS} nights. You entered {duration} nights.")
+
+    # Warning for long cruises
+    if duration > WARN_CRUISE_NIGHTS and duration <= MAX_CRUISE_NIGHTS:
+        warnings.append(f"This is a {duration}-night cruise. Please verify this is correct.")
+
+    # Check not too far in the future
+    max_future_date = datetime.now().date() + timedelta(days=MAX_FUTURE_YEARS * 365)
+    if begindate > max_future_date:
+        errors.append(f"Cruise begin date cannot be more than {MAX_FUTURE_YEARS} years in the future.")
+
+    return len(errors) == 0, errors, warnings
+
+
+def validate_ship_cruiseline(ship_id, cruiseline_id):
+    """Validate that the ship belongs to the selected cruise line."""
+    ship = Ship.query.get(ship_id)
+    if not ship:
+        return False, "Invalid ship selected."
+
+    if ship.cruiseline_id != int(cruiseline_id):
+        cruiseline = CruiseLine.query.get(cruiseline_id)
+        return False, f"'{ship.name}' does not belong to {cruiseline.name if cruiseline else 'the selected cruise line'}. Please select a ship from {cruiseline.name if cruiseline else 'the correct cruise line'}."
+
+    return True, None
+
+
+def validate_cost(cost):
+    """Validate cruise cost and return (is_valid, error, warning)."""
+    if cost is None:
+        return True, None, None
+
+    try:
+        cost = float(cost)
+    except (ValueError, TypeError):
+        return False, "Cost must be a valid number.", None
+
+    if cost < MIN_COST:
+        return False, "Cost cannot be negative.", None
+
+    if cost > MAX_COST:
+        return False, f"Cost cannot exceed ${MAX_COST:,}. Please verify the amount.", None
+
+    warning = None
+    if cost > WARN_COST:
+        warning = f"Cost of ${cost:,.2f} is unusually high. Please verify this is correct."
+
+    return True, None, warning
+
+
+def validate_rating(rating):
+    """Validate cruise rating."""
+    if rating is None or rating == '':
+        return True, None
+
+    try:
+        rating = int(rating)
+    except (ValueError, TypeError):
+        return False, "Rating must be a whole number."
+
+    if rating < MIN_RATING or rating > MAX_RATING:
+        return False, f"Rating must be between {MIN_RATING} and {MAX_RATING} stars."
+
+    return True, None
+
+
+def validate_budget(budget):
+    """Validate yearly budget."""
+    if budget is None:
+        return True, None
+
+    try:
+        budget = float(budget)
+    except (ValueError, TypeError):
+        return False, "Budget must be a valid number."
+
+    if budget < MIN_BUDGET:
+        return False, "Budget cannot be negative."
+
+    if budget > MAX_BUDGET:
+        return False, f"Budget cannot exceed ${MAX_BUDGET:,}."
+
+    return True, None
+
+
+def validate_port_coordinates(latitude, longitude):
+    """Validate port coordinates are realistic."""
+    errors = []
+
+    try:
+        lat = float(latitude)
+        lng = float(longitude)
+    except (ValueError, TypeError):
+        return False, ["Coordinates must be valid numbers."]
+
+    if lat < MIN_LATITUDE or lat > MAX_LATITUDE:
+        errors.append(f"Latitude must be between {MIN_LATITUDE} and {MAX_LATITUDE}.")
+
+    if lng < MIN_LONGITUDE or lng > MAX_LONGITUDE:
+        errors.append(f"Longitude must be between {MIN_LONGITUDE} and {MAX_LONGITUDE}.")
+
+    return len(errors) == 0, errors
+
+
+def validate_text_field(value, field_name, max_length):
+    """Validate text field length."""
+    if value is None or value == '':
+        return True, None
+
+    if len(value) > max_length:
+        return False, f"{field_name} cannot exceed {max_length} characters."
+
+    return True, None
+
+
+def sanitize_text(text):
+    """Basic text sanitization to prevent XSS."""
+    if text is None:
+        return None
+    # Remove any script tags and dangerous patterns
+    text = re.sub(r'<script[^>]*>.*?</script>', '', text, flags=re.IGNORECASE | re.DOTALL)
+    text = re.sub(r'javascript:', '', text, flags=re.IGNORECASE)
+    text = re.sub(r'on\w+\s*=', '', text, flags=re.IGNORECASE)
+    return text.strip()
 
 # Use absolute path for database to ensure consistency
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -79,9 +277,10 @@ class CruiseHistory(db.Model):
     ship_id = db.Column(db.Integer, db.ForeignKey('ship.id'), nullable=False)
     region_id = db.Column(db.Integer, db.ForeignKey('region.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    
-    # New optional fields
+
+    # Optional fields
     cabin_number = db.Column(db.String(20), nullable=True)
+    cabin_type = db.Column(db.String(30), nullable=True)  # interior, oceanview, balcony, suite, etc.
     deck = db.Column(db.String(50), nullable=True)
     cost = db.Column(db.Float, nullable=True)
     notes = db.Column(db.Text, nullable=True)
@@ -336,22 +535,100 @@ def about():
 @app.route('/add_cruise', methods=['POST'])
 @login_required
 def add_cruise():
-    begindate = request.form['begindate']
-    enddate = request.form['enddate']
-    cruiseline_id = request.form['cruiseline_id']
-    ship_id = request.form['ship_id']
-    region_id = request.form['region_id']
+    errors = []
+    warnings = []
+
+    # Get form data
+    begindate = request.form.get('begindate')
+    enddate = request.form.get('enddate')
+    cruiseline_id = request.form.get('cruiseline_id')
+    ship_id = request.form.get('ship_id')
+    region_id = request.form.get('region_id')
 
     # Optional fields
-    cabin_number = request.form.get('cabin_number', '')
-    deck = request.form.get('deck', '')
+    cabin_number = request.form.get('cabin_number', '').strip()
+    cabin_type = request.form.get('cabin_type', '').strip()
+    deck = request.form.get('deck', '').strip()
     cost = request.form.get('cost', None)
-    notes = request.form.get('notes', '')
+    notes = request.form.get('notes', '').strip()
     rating = request.form.get('rating', None)
 
-    begindate_obj = datetime.strptime(begindate, '%Y-%m-%d').date()
-    enddate_obj = datetime.strptime(enddate, '%Y-%m-%d').date()
+    # Validate required fields
+    if not all([begindate, enddate, cruiseline_id, ship_id, region_id]):
+        flash('Please fill in all required fields.', 'error')
+        return redirect(url_for('history'))
 
+    # Parse dates
+    try:
+        begindate_obj = datetime.strptime(begindate, '%Y-%m-%d').date()
+        enddate_obj = datetime.strptime(enddate, '%Y-%m-%d').date()
+    except ValueError:
+        flash('Invalid date format.', 'error')
+        return redirect(url_for('history'))
+
+    # Validate dates
+    dates_valid, date_errors, date_warnings = validate_cruise_dates(begindate_obj, enddate_obj)
+    errors.extend(date_errors)
+    warnings.extend(date_warnings)
+
+    # Validate ship belongs to cruise line
+    ship_valid, ship_error = validate_ship_cruiseline(ship_id, cruiseline_id)
+    if not ship_valid:
+        errors.append(ship_error)
+
+    # Validate cost
+    if cost and cost.strip():
+        cost_valid, cost_error, cost_warning = validate_cost(cost)
+        if not cost_valid:
+            errors.append(cost_error)
+        if cost_warning:
+            warnings.append(cost_warning)
+        cost = float(cost) if cost_valid and cost.strip() else None
+    else:
+        cost = None
+
+    # Validate rating
+    if rating and rating.strip():
+        rating_valid, rating_error = validate_rating(rating)
+        if not rating_valid:
+            errors.append(rating_error)
+        rating = int(rating) if rating_valid and rating.strip() else None
+    else:
+        rating = None
+
+    # Validate text fields
+    cabin_valid, cabin_error = validate_text_field(cabin_number, 'Cabin number', MAX_CABIN_NUMBER_LENGTH)
+    if not cabin_valid:
+        errors.append(cabin_error)
+
+    deck_valid, deck_error = validate_text_field(deck, 'Deck', MAX_DECK_LENGTH)
+    if not deck_valid:
+        errors.append(deck_error)
+
+    notes_valid, notes_error = validate_text_field(notes, 'Notes', MAX_NOTES_LENGTH)
+    if not notes_valid:
+        errors.append(notes_error)
+
+    # Sanitize text inputs
+    cabin_number = sanitize_text(cabin_number)
+    deck = sanitize_text(deck)
+    notes = sanitize_text(notes)
+
+    # Validate cabin type if provided
+    if cabin_type and cabin_type not in [ct[0] for ct in CABIN_TYPES]:
+        errors.append("Invalid cabin type selected.")
+
+    # If there are errors, flash them and redirect
+    if errors:
+        for error in errors:
+            flash(error, 'error')
+        return redirect(url_for('history'))
+
+    # Show warnings but continue
+    for warning in warnings:
+        flash(warning, 'warning')
+
+    # Create the cruise
     new_cruise = CruiseHistory(
         begindate=begindate_obj,
         enddate=enddate_obj,
@@ -359,20 +636,26 @@ def add_cruise():
         ship_id=ship_id,
         region_id=region_id,
         cabin_number=cabin_number if cabin_number else None,
+        cabin_type=cabin_type if cabin_type else None,
         deck=deck if deck else None,
-        cost=float(cost) if cost else None,
+        cost=cost,
         notes=notes if notes else None,
-        rating=int(rating) if rating else None,
+        rating=rating,
         user_id=current_user.id
     )
 
     db.session.add(new_cruise)
     db.session.flush()  # Get the cruise ID before committing
 
-    # Handle ports
+    # Handle ports - check for duplicates
     port_ids = request.form.getlist('port_ids[]')
+    seen_ports = set()
     for order, port_id in enumerate(port_ids, 1):
         if port_id:
+            if port_id in seen_ports:
+                flash(f'Duplicate port removed from itinerary.', 'warning')
+                continue
+            seen_ports.add(port_id)
             cruise_port = CruisePort(
                 cruise_id=new_cruise.cruiseid,
                 port_id=int(port_id),
@@ -382,23 +665,39 @@ def add_cruise():
 
     db.session.commit()
 
-    flash('Cruise added successfully!')
+    flash('Cruise added successfully!', 'success')
     return redirect(url_for('history'))
 
 @app.route('/delete_cruise/<int:cruise_id>', methods=['POST'])
 @login_required
 def delete_cruise(cruise_id):
     cruise = CruiseHistory.query.get_or_404(cruise_id)
-    
+
     # Make sure the cruise belongs to the current user
     if cruise.user_id != current_user.id:
-        flash('You do not have permission to delete this cruise.')
+        flash('You do not have permission to delete this cruise.', 'error')
         return redirect(url_for('history'))
-    
+
+    # Delete associated photos (files and records)
+    photos = CruisePhoto.query.filter_by(cruise_id=cruise_id).all()
+    for photo in photos:
+        # Delete the file
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], photo.filename)
+        if os.path.exists(filepath):
+            try:
+                os.remove(filepath)
+            except OSError:
+                pass  # File might already be deleted
+        db.session.delete(photo)
+
+    # Delete associated cruise ports
+    CruisePort.query.filter_by(cruise_id=cruise_id).delete()
+
+    # Delete the cruise
     db.session.delete(cruise)
     db.session.commit()
-    
-    flash('Cruise deleted successfully!')
+
+    flash('Cruise and all associated data deleted successfully!', 'success')
     return redirect(url_for('history'))
 
 @app.route('/edit_cruise/<int:cruise_id>', methods=['POST'])
@@ -407,38 +706,125 @@ def edit_cruise(cruise_id):
     cruise = CruiseHistory.query.get_or_404(cruise_id)
 
     if cruise.user_id != current_user.id:
-        flash('You do not have permission to edit this cruise.')
+        flash('You do not have permission to edit this cruise.', 'error')
         return redirect(url_for('history'))
 
-    begindate = request.form['begindate']
-    enddate = request.form['enddate']
-    cruiseline_id = request.form['cruiseline_id']
-    ship_id = request.form['ship_id']
-    region_id = request.form['region_id']
+    errors = []
+    warnings = []
+
+    # Get form data
+    begindate = request.form.get('begindate')
+    enddate = request.form.get('enddate')
+    cruiseline_id = request.form.get('cruiseline_id')
+    ship_id = request.form.get('ship_id')
+    region_id = request.form.get('region_id')
 
     # Optional fields
-    cabin_number = request.form.get('cabin_number', '')
-    deck = request.form.get('deck', '')
+    cabin_number = request.form.get('cabin_number', '').strip()
+    cabin_type = request.form.get('cabin_type', '').strip()
+    deck = request.form.get('deck', '').strip()
     cost = request.form.get('cost', None)
-    notes = request.form.get('notes', '')
+    notes = request.form.get('notes', '').strip()
     rating = request.form.get('rating', None)
 
-    cruise.begindate = datetime.strptime(begindate, '%Y-%m-%d').date()
-    cruise.enddate = datetime.strptime(enddate, '%Y-%m-%d').date()
+    # Validate required fields
+    if not all([begindate, enddate, cruiseline_id, ship_id, region_id]):
+        flash('Please fill in all required fields.', 'error')
+        return redirect(url_for('history'))
+
+    # Parse dates
+    try:
+        begindate_obj = datetime.strptime(begindate, '%Y-%m-%d').date()
+        enddate_obj = datetime.strptime(enddate, '%Y-%m-%d').date()
+    except ValueError:
+        flash('Invalid date format.', 'error')
+        return redirect(url_for('history'))
+
+    # Validate dates
+    dates_valid, date_errors, date_warnings = validate_cruise_dates(begindate_obj, enddate_obj)
+    errors.extend(date_errors)
+    warnings.extend(date_warnings)
+
+    # Validate ship belongs to cruise line
+    ship_valid, ship_error = validate_ship_cruiseline(ship_id, cruiseline_id)
+    if not ship_valid:
+        errors.append(ship_error)
+
+    # Validate cost
+    if cost and cost.strip():
+        cost_valid, cost_error, cost_warning = validate_cost(cost)
+        if not cost_valid:
+            errors.append(cost_error)
+        if cost_warning:
+            warnings.append(cost_warning)
+        cost = float(cost) if cost_valid and cost.strip() else None
+    else:
+        cost = None
+
+    # Validate rating
+    if rating and rating.strip():
+        rating_valid, rating_error = validate_rating(rating)
+        if not rating_valid:
+            errors.append(rating_error)
+        rating = int(rating) if rating_valid and rating.strip() else None
+    else:
+        rating = None
+
+    # Validate text fields
+    cabin_valid, cabin_error = validate_text_field(cabin_number, 'Cabin number', MAX_CABIN_NUMBER_LENGTH)
+    if not cabin_valid:
+        errors.append(cabin_error)
+
+    deck_valid, deck_error = validate_text_field(deck, 'Deck', MAX_DECK_LENGTH)
+    if not deck_valid:
+        errors.append(deck_error)
+
+    notes_valid, notes_error = validate_text_field(notes, 'Notes', MAX_NOTES_LENGTH)
+    if not notes_valid:
+        errors.append(notes_error)
+
+    # Sanitize text inputs
+    cabin_number = sanitize_text(cabin_number)
+    deck = sanitize_text(deck)
+    notes = sanitize_text(notes)
+
+    # Validate cabin type if provided
+    if cabin_type and cabin_type not in [ct[0] for ct in CABIN_TYPES]:
+        errors.append("Invalid cabin type selected.")
+
+    # If there are errors, flash them and redirect
+    if errors:
+        for error in errors:
+            flash(error, 'error')
+        return redirect(url_for('history'))
+
+    # Show warnings but continue
+    for warning in warnings:
+        flash(warning, 'warning')
+
+    # Update the cruise
+    cruise.begindate = begindate_obj
+    cruise.enddate = enddate_obj
     cruise.cruiseline_id = cruiseline_id
     cruise.ship_id = ship_id
     cruise.region_id = region_id
     cruise.cabin_number = cabin_number if cabin_number else None
+    cruise.cabin_type = cabin_type if cabin_type else None
     cruise.deck = deck if deck else None
-    cruise.cost = float(cost) if cost else None
+    cruise.cost = cost
     cruise.notes = notes if notes else None
-    cruise.rating = int(rating) if rating else None
+    cruise.rating = rating
 
-    # Handle ports - remove old ones and add new
+    # Handle ports - remove old ones and add new (with duplicate check)
     CruisePort.query.filter_by(cruise_id=cruise_id).delete()
     port_ids = request.form.getlist('port_ids[]')
+    seen_ports = set()
     for order, port_id in enumerate(port_ids, 1):
         if port_id:
+            if port_id in seen_ports:
+                flash(f'Duplicate port removed from itinerary.', 'warning')
+                continue
+            seen_ports.add(port_id)
             cruise_port = CruisePort(
                 cruise_id=cruise_id,
                 port_id=int(port_id),
@@ -448,7 +834,7 @@ def edit_cruise(cruise_id):
 
     db.session.commit()
 
-    flash('Cruise updated successfully!')
+    flash('Cruise updated successfully!', 'success')
     return redirect(url_for('history'))
 
 @app.route('/history')
@@ -460,7 +846,13 @@ def history():
     regions = Region.query.order_by(Region.name).all()
     ports = Port.query.order_by(Port.country, Port.name).all()
 
-    return render_template('history.html', cruises=cruises, cruiselines=cruiselines, ships=ships, regions=regions, ports=ports)
+    return render_template('history.html',
+                           cruises=cruises,
+                           cruiselines=cruiselines,
+                           ships=ships,
+                           regions=regions,
+                           ports=ports,
+                           cabin_types=CABIN_TYPES)
 
 @app.route('/statistics')
 @login_required
@@ -471,6 +863,7 @@ def statistics():
     cruiseline_counts = {}
     region_counts = {}
     ship_counts = {}
+    cabin_type_counts = {}
     total_days = 0
     total_cost = 0
     cruises_with_cost = 0
@@ -490,6 +883,11 @@ def statistics():
         # Ship counts
         ship_name = cruise.ship.name
         ship_counts[ship_name] = ship_counts.get(ship_name, 0) + 1
+
+        # Cabin type counts
+        if cruise.cabin_type:
+            cabin_type_label = dict(CABIN_TYPES).get(cruise.cabin_type, cruise.cabin_type)
+            cabin_type_counts[cabin_type_label] = cabin_type_counts.get(cabin_type_label, 0) + 1
 
         # Days calculation
         delta = cruise.enddate - cruise.begindate
@@ -555,6 +953,7 @@ def statistics():
         cruiseline_counts=cruiseline_counts,
         region_counts=region_counts,
         ship_counts=ship_counts,
+        cabin_type_counts=cabin_type_counts,
         total_days=total_days,
         total_cruises=len(cruises),
         total_cost=total_cost,
@@ -579,14 +978,44 @@ def statistics():
 @app.route('/set_budget', methods=['POST'])
 @login_required
 def set_budget():
-    budget = request.form.get('yearly_budget', type=float)
+    budget = request.form.get('yearly_budget')
+
+    # Handle empty budget (clearing)
+    if not budget or budget.strip() == '':
+        pref = UserPreference.query.filter_by(user_id=current_user.id).first()
+        if pref:
+            pref.yearly_budget = None
+            db.session.commit()
+        flash('Budget cleared.', 'success')
+        return redirect(url_for('statistics'))
+
+    # Validate budget
+    budget_valid, budget_error = validate_budget(budget)
+    if not budget_valid:
+        flash(budget_error, 'error')
+        return redirect(url_for('statistics'))
+
+    budget = float(budget)
+
     pref = UserPreference.query.filter_by(user_id=current_user.id).first()
     if not pref:
         pref = UserPreference(user_id=current_user.id)
         db.session.add(pref)
     pref.yearly_budget = budget
     db.session.commit()
-    flash('Budget updated successfully!')
+    flash(f'Budget set to ${budget:,.2f}!', 'success')
+    return redirect(url_for('statistics'))
+
+
+@app.route('/clear_budget', methods=['POST'])
+@login_required
+def clear_budget():
+    """Clear the yearly budget."""
+    pref = UserPreference.query.filter_by(user_id=current_user.id).first()
+    if pref:
+        pref.yearly_budget = None
+        db.session.commit()
+    flash('Budget cleared.', 'success')
     return redirect(url_for('statistics'))
 
 @app.route('/toggle_dark_mode', methods=['POST'])
@@ -715,17 +1144,76 @@ def api_cruise_ports(cruise_id):
 @app.route('/add_port', methods=['POST'])
 @login_required
 def add_port():
-    name = request.form['name']
-    city = request.form.get('city', '')
-    country = request.form['country']
-    latitude = float(request.form['latitude'])
-    longitude = float(request.form['longitude'])
+    name = request.form.get('name', '').strip()
+    city = request.form.get('city', '').strip()
+    country = request.form.get('country', '').strip()
+    latitude = request.form.get('latitude')
+    longitude = request.form.get('longitude')
 
-    port = Port(name=name, city=city if city else None, country=country,
-                latitude=latitude, longitude=longitude)
+    # Validate required fields
+    if not name or not country:
+        return jsonify({'error': 'Port name and country are required.'}), 400
+
+    # Validate name length
+    name_valid, name_error = validate_text_field(name, 'Port name', MAX_PORT_NAME_LENGTH)
+    if not name_valid:
+        return jsonify({'error': name_error}), 400
+
+    # Validate coordinates
+    if not latitude or not longitude:
+        return jsonify({'error': 'Coordinates are required.'}), 400
+
+    coords_valid, coord_errors = validate_port_coordinates(latitude, longitude)
+    if not coords_valid:
+        return jsonify({'error': ' '.join(coord_errors)}), 400
+
+    # Check for duplicate port (same name and country)
+    existing = Port.query.filter_by(name=name, country=country).first()
+    if existing:
+        return jsonify({'error': f'Port "{name}" in {country} already exists.', 'id': existing.id}), 409
+
+    # Sanitize text
+    name = sanitize_text(name)
+    city = sanitize_text(city)
+    country = sanitize_text(country)
+
+    port = Port(
+        name=name,
+        city=city if city else None,
+        country=country,
+        latitude=float(latitude),
+        longitude=float(longitude)
+    )
     db.session.add(port)
     db.session.commit()
-    return jsonify({'id': port.id, 'name': port.name})
+    return jsonify({'id': port.id, 'name': port.name, 'country': port.country})
+
+
+@app.route('/api/ships/<int:cruiseline_id>')
+@login_required
+def api_ships_by_cruiseline(cruiseline_id):
+    """Get ships belonging to a specific cruise line."""
+    ships = Ship.query.filter_by(cruiseline_id=cruiseline_id).order_by(Ship.name).all()
+    return jsonify([{
+        'id': s.id,
+        'name': s.name,
+        'cruiseline_id': s.cruiseline_id
+    } for s in ships])
+
+
+@app.route('/api/validate_ship', methods=['POST'])
+@login_required
+def api_validate_ship():
+    """Validate that a ship belongs to a cruise line."""
+    data = request.get_json()
+    ship_id = data.get('ship_id')
+    cruiseline_id = data.get('cruiseline_id')
+
+    if not ship_id or not cruiseline_id:
+        return jsonify({'valid': False, 'error': 'Missing ship_id or cruiseline_id'})
+
+    valid, error = validate_ship_cruiseline(ship_id, cruiseline_id)
+    return jsonify({'valid': valid, 'error': error})
 
 @app.route('/cruise_photos/<int:cruise_id>')
 @login_required
@@ -751,11 +1239,25 @@ def upload_photos(cruise_id):
     if cruise.user_id != current_user.id:
         return jsonify({'error': 'Unauthorized'}), 403
 
+    # Check current photo count
+    current_photo_count = CruisePhoto.query.filter_by(cruise_id=cruise_id).count()
+
+    files = request.files.getlist('photos')
+
+    # Validate photo limit
+    if current_photo_count + len(files) > MAX_PHOTOS_PER_CRUISE:
+        remaining = MAX_PHOTOS_PER_CRUISE - current_photo_count
+        return jsonify({
+            'error': f'Photo limit exceeded. You can only upload {remaining} more photo(s). Maximum is {MAX_PHOTOS_PER_CRUISE} per cruise.',
+            'current_count': current_photo_count,
+            'max_allowed': MAX_PHOTOS_PER_CRUISE
+        }), 400
+
     # Ensure upload directory exists
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-    files = request.files.getlist('photos')
     uploaded = []
+    skipped = []
 
     for file in files:
         if file and allowed_file(file.filename):
@@ -774,9 +1276,19 @@ def upload_photos(cruise_id):
                 'filename': unique_filename,
                 'original': filename
             })
+        elif file and file.filename:
+            skipped.append({
+                'filename': file.filename,
+                'reason': 'Invalid file type. Allowed: png, jpg, jpeg, gif, webp'
+            })
 
     db.session.commit()
-    return jsonify({'uploaded': uploaded, 'count': len(uploaded)})
+    return jsonify({
+        'uploaded': uploaded,
+        'count': len(uploaded),
+        'skipped': skipped,
+        'total_photos': current_photo_count + len(uploaded)
+    })
 
 @app.route('/set_cover_photo/<int:photo_id>', methods=['POST'])
 @login_required

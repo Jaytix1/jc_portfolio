@@ -16,7 +16,7 @@ Review the following code and provide feedback in these categories:
 
 1. **Bugs & Errors**: Logic errors, potential runtime issues, off-by-one errors
 2. **Security**: Vulnerabilities like SQL injection, XSS, hardcoded secrets
-3. **Best Practices**: Code style, naming conventions, DRY principle
+3. **Best Practices**: Code style, naming conventions,is  DRY principle
 4. **Performance**: Inefficiencies, unnecessary operations, optimization opportunities
 5. **Readability**: Comments, structure, complexity
 

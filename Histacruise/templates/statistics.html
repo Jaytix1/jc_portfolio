@@ -233,6 +233,16 @@
             </div>
         </div>
 
+        <!-- Cabin Type Distribution -->
+        {% if cabin_type_counts %}
+        <div class="charts-row single">
+            <div class="chart-container wide">
+                <h3>Cabin Type Breakdown</h3>
+                <canvas id="cabinTypeChart"></canvas>
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Cost by Cruise Line Chart -->
         {% if avg_cost_by_cruiseline %}
         <div class="charts-row single">
@@ -363,6 +373,30 @@
                         ticks: {
                             callback: function(value) { return '$' + value.toLocaleString(); }
                         }
+                    }
+                }
+            }
+        });
+        {% endif %}
+
+        {% if cabin_type_counts %}
+        // Cabin Type Doughnut Chart
+        new Chart(document.getElementById('cabinTypeChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: {{ cabin_type_counts.keys() | list | tojson }},
+                datasets: [{
+                    data: {{ cabin_type_counts.values() | list | tojson }},
+                    backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    title: {
+                        display: true,
+                        text: 'Types of cabins you have sailed in'
                     }
                 }
             }

@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python app.py:*)",
+      "Bash(pip install:*)",
+      "Bash(start http://127.0.0.1:5001)",
+      "Bash(tree:*)",
+      "Bash(ls:*)",
+      "Bash(winget install:*)",
+      "Bash(export PATH=\"$PATH:/c/Users/joshu/AppData/Local/Programs/Ollama\")",
+      "Bash(ollama pull:*)",
+      "Bash(ollama list:*)",
+      "Bash(curl:*)",
+      "Bash(git add:*)",
+      "Bash(git reset:*)",
+      "Bash(python:*)",
+      "Bash(start python app.py)"
+    ]
+  }
+}

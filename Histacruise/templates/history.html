@@ -3,6 +3,21 @@
 {% block title %}My Cruise History{% endblock %}
 
 {% block content %}
+    <style>
+        .duration-display {
+            font-weight: 500;
+        }
+        .duration-display.success {
+            color: #28a745;
+        }
+        .duration-display.warning {
+            color: #ffc107;
+        }
+        .duration-display.error {
+            color: #dc3545;
+        }
+    </style>
+
     <h2>My Cruise History</h2>
     
     <div class="history-controls">
@@ -89,13 +104,14 @@
                                     data-ship-name="{{ cruise.ship.name }}"
                                     data-region-name="{{ cruise.region.name }}"
                                     data-cabin-number="{{ cruise.cabin_number or 'Not specified' }}"
+                                    data-cabin-type="{{ cruise.cabin_type or 'Not specified' }}"
                                     data-deck="{{ cruise.deck or 'Not specified' }}"
                                     data-cost="{{ cruise.cost or 'Not specified' }}"
                                     data-rating="{{ cruise.rating or 'Not rated' }}"
                                     data-notes="{{ cruise.notes or 'No notes' }}">
                                 View
                             </button>
-                            <button class="action-btn action-primary edit-btn" 
+                            <button class="action-btn action-primary edit-btn"
                                     data-cruise-id="{{ cruise.cruiseid }}"
                                     data-begin-date="{{ cruise.begindate }}"
                                     data-end-date="{{ cruise.enddate }}"
@@ -103,6 +119,7 @@
                                     data-ship-id="{{ cruise.ship_id }}"
                                     data-region-id="{{ cruise.region_id }}"
                                     data-cabin-number="{{ cruise.cabin_number or '' }}"
+                                    data-cabin-type="{{ cruise.cabin_type or '' }}"
                                     data-deck="{{ cruise.deck or '' }}"
                                     data-cost="{{ cruise.cost or '' }}"
                                     data-rating="{{ cruise.rating or '' }}"
@@ -136,6 +153,7 @@
                 data-ship-display="{{ cruise.ship.name }}"
                 data-region-display="{{ cruise.region.name }}"
                 data-cabin-number="{{ cruise.cabin_number or 'Not specified' }}"
+                data-cabin-type="{{ cruise.cabin_type or 'Not specified' }}"
                 data-deck="{{ cruise.deck or 'Not specified' }}"
                 data-cost="{{ cruise.cost or 'Not specified' }}"
                 data-rating="{{ cruise.rating or 'Not rated' }}"
@@ -171,6 +189,7 @@
                         data-ship-name="{{ cruise.ship.name }}"
                         data-region-name="{{ cruise.region.name }}"
                         data-cabin-number="{{ cruise.cabin_number or 'Not specified' }}"
+                        data-cabin-type="{{ cruise.cabin_type or 'Not specified' }}"
                         data-deck="{{ cruise.deck or 'Not specified' }}"
                         data-cost="{{ cruise.cost or 'Not specified' }}"
                         data-rating="{{ cruise.rating or 'Not rated' }}"
@@ -183,6 +202,7 @@
                         data-ship-id="{{ cruise.ship_id }}"
                         data-region-id="{{ cruise.region_id }}"
                         data-cabin-number="{{ cruise.cabin_number or '' }}"
+                        data-cabin-type="{{ cruise.cabin_type or '' }}"
                         data-deck="{{ cruise.deck or '' }}"
                         data-cost="{{ cruise.cost or '' }}"
                         data-rating="{{ cruise.rating or '' }}"
@@ -250,18 +270,28 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div>
                         <label for="cabin_number">Cabin Number:</label>
-                        <input type="text" id="cabin_number" name="cabin_number" placeholder="e.g., 8234">
+                        <input type="text" id="cabin_number" name="cabin_number" placeholder="e.g., 8234" maxlength="10">
                     </div>
-                    
+
                     <div>
-                        <label for="deck">Deck:</label>
-                        <input type="text" id="deck" name="deck" placeholder="e.g., Deck 8">
+                        <label for="cabin_type">Cabin Type:</label>
+                        <select id="cabin_type" name="cabin_type">
+                            <option value="">-- Select Type --</option>
+                            {% for value, label in cabin_types %}
+                                <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
-                
+
+                <div>
+                    <label for="deck">Deck:</label>
+                    <input type="text" id="deck" name="deck" placeholder="e.g., Deck 8" maxlength="20">
+                </div>
+
                 <div>
                     <label for="cost">Total Cost ($):</label>
-                    <input type="number" id="cost" name="cost" step="0.01" placeholder="e.g., 1500.00">
+                    <input type="number" id="cost" name="cost" step="0.01" min="0" max="100000" placeholder="e.g., 1500.00">
                 </div>
                 
                 <div>
@@ -360,18 +390,28 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div>
                         <label for="edit_cabin_number">Cabin Number:</label>
-                        <input type="text" id="edit_cabin_number" name="cabin_number" placeholder="e.g., 8234">
+                        <input type="text" id="edit_cabin_number" name="cabin_number" placeholder="e.g., 8234" maxlength="10">
                     </div>
-                    
+
                     <div>
-                        <label for="edit_deck">Deck:</label>
-                        <input type="text" id="edit_deck" name="deck" placeholder="e.g., Deck 8">
+                        <label for="edit_cabin_type">Cabin Type:</label>
+                        <select id="edit_cabin_type" name="cabin_type">
+                            <option value="">-- Select Type --</option>
+                            {% for value, label in cabin_types %}
+                                <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
-                
+
+                <div>
+                    <label for="edit_deck">Deck:</label>
+                    <input type="text" id="edit_deck" name="deck" placeholder="e.g., Deck 8" maxlength="20">
+                </div>
+
                 <div>
                     <label for="edit_cost">Total Cost ($):</label>
-                    <input type="number" id="edit_cost" name="cost" step="0.01" placeholder="e.g., 1500.00">
+                    <input type="number" id="edit_cost" name="cost" step="0.01" min="0" max="100000" placeholder="e.g., 1500.00">
                 </div>
                 
                 <div>
@@ -430,6 +470,7 @@
                     <div>
                         <h4 style="color: #667eea; margin-bottom: 10px;">Cabin Details</h4>
                         <p><strong>Cabin Number:</strong> <span id="view_cabin"></span></p>
+                        <p><strong>Cabin Type:</strong> <span id="view_cabin_type"></span></p>
                         <p><strong>Deck:</strong> <span id="view_deck"></span></p>
                         <p><strong>Total Cost:</strong> $<span id="view_cost"></span></p>
                         <p><strong>Rating:</strong> <span id="view_rating"></span></p>
@@ -551,12 +592,12 @@
 
             cruiselineSelect.addEventListener('change', function() {
                 const selectedCruiselineId = parseInt(this.value);
-                
+
                 shipSelect.innerHTML = '<option value="">-- Select Ship --</option>';
-                
+
                 if (selectedCruiselineId) {
                     const filteredShips = allShips.filter(ship => ship.cruiseline_id === selectedCruiselineId);
-                    
+
                     filteredShips.forEach(ship => {
                         const option = document.createElement('option');
                         option.value = ship.id;
@@ -565,6 +606,84 @@
                     });
                 }
             });
+
+            // ===== DATE VALIDATION & DURATION CALCULATOR =====
+            const VALIDATION_CONSTANTS = {
+                MIN_CRUISE_NIGHTS: 1,
+                MAX_CRUISE_NIGHTS: 180,
+                WARN_CRUISE_NIGHTS: 30,
+                MAX_FUTURE_YEARS: 2
+            };
+
+            function validateDatesAndShowDuration(beginInput, endInput, durationDisplay) {
+                const beginDate = new Date(beginInput.value);
+                const endDate = new Date(endInput.value);
+
+                if (!beginInput.value || !endInput.value) {
+                    if (durationDisplay) durationDisplay.textContent = '';
+                    return;
+                }
+
+                const duration = Math.ceil((endDate - beginDate) / (1000 * 60 * 60 * 24));
+
+                let message = '';
+                let messageClass = '';
+
+                if (endDate <= beginDate) {
+                    message = 'End date must be after begin date';
+                    messageClass = 'error';
+                } else if (duration < VALIDATION_CONSTANTS.MIN_CRUISE_NIGHTS) {
+                    message = `Cruise must be at least ${VALIDATION_CONSTANTS.MIN_CRUISE_NIGHTS} night`;
+                    messageClass = 'error';
+                } else if (duration > VALIDATION_CONSTANTS.MAX_CRUISE_NIGHTS) {
+                    message = `${duration} nights exceeds maximum of ${VALIDATION_CONSTANTS.MAX_CRUISE_NIGHTS}`;
+                    messageClass = 'error';
+                } else if (duration > VALIDATION_CONSTANTS.WARN_CRUISE_NIGHTS) {
+                    message = `${duration} nights - Are you sure? This is a long cruise.`;
+                    messageClass = 'warning';
+                } else {
+                    message = `${duration} night${duration !== 1 ? 's' : ''}`;
+                    messageClass = 'success';
+                }
+
+                // Check if too far in the future
+                const maxFutureDate = new Date();
+                maxFutureDate.setFullYear(maxFutureDate.getFullYear() + VALIDATION_CONSTANTS.MAX_FUTURE_YEARS);
+                if (beginDate > maxFutureDate) {
+                    message = 'Begin date cannot be more than 2 years in the future';
+                    messageClass = 'error';
+                }
+
+                if (durationDisplay) {
+                    durationDisplay.textContent = message;
+                    durationDisplay.className = 'duration-display ' + messageClass;
+                }
+            }
+
+            // Add duration display elements after date inputs
+            function addDurationDisplay(begindateId, enddateId) {
+                const endInput = document.getElementById(enddateId);
+                const beginInput = document.getElementById(begindateId);
+
+                // Create duration display element if not exists
+                let durationDisplay = endInput.parentElement.querySelector('.duration-display');
+                if (!durationDisplay) {
+                    durationDisplay = document.createElement('span');
+                    durationDisplay.className = 'duration-display';
+                    durationDisplay.style.cssText = 'display: block; margin-top: 5px; font-size: 0.9em;';
+                    endInput.parentElement.appendChild(durationDisplay);
+                }
+
+                // Add event listeners
+                beginInput.addEventListener('change', () => validateDatesAndShowDuration(beginInput, endInput, durationDisplay));
+                endInput.addEventListener('change', () => validateDatesAndShowDuration(beginInput, endInput, durationDisplay));
+            }
+
+            // Initialize for add form
+            addDurationDisplay('begindate', 'enddate');
+
+            // Initialize for edit form
+            addDurationDisplay('edit_begindate', 'edit_enddate');
 
             // ===== EDIT CRUISE MODAL =====
             const editModal = document.getElementById('editCruiseModal');
@@ -586,27 +705,29 @@
                     const shipId = this.dataset.shipId;
                     const regionId = this.dataset.regionId;
                     const cabinNumber = this.dataset.cabinNumber;
+                    const cabinType = this.dataset.cabinType;
                     const deck = this.dataset.deck;
                     const cost = this.dataset.cost;
                     const rating = this.dataset.rating;
                     const notes = this.dataset.notes;
-                    
+
                     // Set form action
                     editForm.action = `/edit_cruise/${cruiseId}`;
-                    
+
                     // Populate basic fields
                     document.getElementById('edit_begindate').value = beginDate;
                     document.getElementById('edit_enddate').value = endDate;
                     document.getElementById('edit_cruiseline_id').value = cruiselineId;
                     document.getElementById('edit_region_id').value = regionId;
-                    
+
                     // Populate optional fields
                     document.getElementById('edit_cabin_number').value = cabinNumber;
+                    document.getElementById('edit_cabin_type').value = cabinType || '';
                     document.getElementById('edit_deck').value = deck;
                     document.getElementById('edit_cost').value = cost;
                     document.getElementById('edit_rating').value = rating;
                     document.getElementById('edit_notes').value = notes;
-                    
+
                     // Filter and select ship
                     filterEditShips(parseInt(cruiselineId), parseInt(shipId));
 
@@ -688,6 +809,16 @@
                 });
             });
 
+            // Cabin type display mapping
+            const cabinTypeLabels = {
+                'interior': 'Interior',
+                'oceanview': 'Ocean View',
+                'balcony': 'Balcony',
+                'suite': 'Suite',
+                'haven': 'Haven/Luxury Suite',
+                'studio': 'Studio (Solo)'
+            };
+
             function openViewModal(btn) {
                 currentViewCruiseId = btn.dataset.cruiseId;
                 const beginDate = btn.dataset.beginDate;
@@ -696,6 +827,7 @@
                 const shipName = btn.dataset.shipName;
                 const regionName = btn.dataset.regionName;
                 const cabinNumber = btn.dataset.cabinNumber;
+                const cabinType = btn.dataset.cabinType;
                 const deck = btn.dataset.deck;
                 const cost = btn.dataset.cost;
                 const rating = btn.dataset.rating;
@@ -710,6 +842,7 @@
                     shipId: btn.dataset.shipId,
                     regionId: btn.dataset.regionId,
                     cabinNumber: btn.dataset.cabinNumber,
+                    cabinType: btn.dataset.cabinType,
                     deck: btn.dataset.deck,
                     cost: btn.dataset.cost,
                     rating: btn.dataset.rating,
@@ -729,6 +862,7 @@
                 document.getElementById('view_enddate').textContent = endDate;
                 document.getElementById('view_duration').textContent = duration;
                 document.getElementById('view_cabin').textContent = cabinNumber;
+                document.getElementById('view_cabin_type').textContent = cabinTypeLabels[cabinType] || cabinType || 'Not specified';
                 document.getElementById('view_deck').textContent = deck;
                 document.getElementById('view_cost').textContent = cost;
 
@@ -893,7 +1027,14 @@
                     method: 'POST',
                     body: formData
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Upload failed');
+                        });
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     loadCruisePhotos(currentViewCruiseId);
                     photoUploadInput.value = '';
@@ -901,9 +1042,19 @@
                     uploadPhotosBtn.style.display = 'none';
                     uploadPhotosBtn.textContent = 'Upload Selected';
                     uploadPhotosBtn.disabled = false;
+
+                    // Show success message with details
+                    if (data.count > 0) {
+                        let message = `${data.count} photo(s) uploaded successfully.`;
+                        if (data.skipped && data.skipped.length > 0) {
+                            message += ` ${data.skipped.length} file(s) skipped (invalid type).`;
+                        }
+                        message += ` Total photos: ${data.total_photos}/50`;
+                        alert(message);
+                    }
                 })
                 .catch(err => {
-                    alert('Error uploading photos');
+                    alert(err.message || 'Error uploading photos');
                     uploadPhotosBtn.textContent = 'Upload Selected';
                     uploadPhotosBtn.disabled = false;
                 });
