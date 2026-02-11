@@ -16,20 +16,36 @@
     <div class="container">
 
         <nav>
-            <a href="/">Home</a>
-            <a href="/about">About</a>
-
             {% if current_user.is_authenticated %}
-                <a href="/history">History</a>
-                <a href="{{ url_for('timeline') }}">Timeline</a>
-                <a href="{{ url_for('cruise_map') }}">Map</a>
-                <a href="{{ url_for('statistics') }}">Statistics</a>
-                <button id="darkModeToggle" class="dark-mode-btn" title="Toggle Dark Mode">{{ '🌙' if not (current_user.preferences and current_user.preferences.dark_mode) else '☀️' }}</button>
-                <a href="{{ url_for('logout') }}">Logout ({{ current_user.username }})</a>
-            {% else %}
-                <a href="{{ url_for('login') }}">Login</a>
-                <a href="{{ url_for('register') }}">Register</a>
+            <a href="{{ url_for('social.profile', username=current_user.username) }}" class="nav-profile-link" title="My Profile">
+                {% if current_user.social_profile and current_user.social_profile.avatar_filename %}
+                    <img src="{{ url_for('static', filename='uploads/profile_photos/' + current_user.social_profile.avatar_filename) }}" class="nav-profile-avatar" alt="">
+                {% else %}
+                    <div class="nav-profile-avatar nav-profile-default">{{ current_user.username[0]|upper }}</div>
+                {% endif %}
+            </a>
             {% endif %}
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/about">About</a>
+
+                {% if current_user.is_authenticated %}
+                    <a href="/history">History</a>
+                    <a href="{{ url_for('timeline') }}">Timeline</a>
+                    <a href="{{ url_for('cruise_map') }}">Map</a>
+                    <a href="{{ url_for('statistics') }}">Statistics</a>
+                    <a href="{{ url_for('social.feed') }}">Community</a>
+                    <a href="{{ url_for('social.discover') }}">Discover</a>
+                    <a href="{{ url_for('social.notifications') }}" class="nav-notification-link" id="navNotifLink" title="Notifications">
+                        &#128276;<span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+                    </a>
+                    <button id="darkModeToggle" class="dark-mode-btn" title="Toggle Dark Mode">{{ '🌙' if not (current_user.preferences and current_user.preferences.dark_mode) else '☀️' }}</button>
+                    <a href="{{ url_for('logout') }}">Logout ({{ current_user.username }})</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">Login</a>
+                    <a href="{{ url_for('register') }}">Register</a>
+                {% endif %}
+            </div>
         </nav>
         
         <div class="flash-messages">
@@ -60,6 +76,26 @@
                         });
                 });
             }
+
+            // Notification polling
+            function checkNotifications() {
+                fetch('/community/notifications/count')
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        var badge = document.getElementById('notifBadge');
+                        if (badge) {
+                            if (data.count > 0) {
+                                badge.textContent = data.count > 99 ? '99+' : data.count;
+                                badge.style.display = 'inline-block';
+                            } else {
+                                badge.style.display = 'none';
+                            }
+                        }
+                    })
+                    .catch(function() {});
+            }
+            checkNotifications();
+            setInterval(checkNotifications, 60000);
         });
     </script>
     {% endif %}

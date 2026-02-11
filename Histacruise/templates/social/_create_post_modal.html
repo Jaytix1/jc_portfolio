@@ -1,0 +1,22 @@
+<div id="createPostModal" class="modal">
+    <div class="modal-content-large">
+        <span class="close-modal" onclick="closeCreatePostModal()">&times;</span>
+        <h3>Create a Post</h3>
+        <form method="POST" action="{{ url_for('social.create_post') }}" enctype="multipart/form-data" class="social-create-form">
+            <div>
+                <label for="postContent">What's happening?</label>
+                <textarea id="postContent" name="content" rows="4" maxlength="2000"
+                          placeholder="Share your cruise experience..." required></textarea>
+                <small class="char-counter" id="charCount">0 / 2000</small>
+            </div>
+            <div>
+                <label for="postImage">Add a photo (optional)</label>
+                <input type="file" id="postImage" name="image" accept="image/*">
+            </div>
+            <div class="modal-buttons">
+                <button type="submit" class="btn-primary">Post</button>
+                <button type="button" class="btn-secondary" onclick="closeCreatePostModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>

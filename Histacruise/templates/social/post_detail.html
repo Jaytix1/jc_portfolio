@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Post by {{ post.user.username }}{% endblock %}
+
+{% block content %}
+    <div class="social-detail-back">
+        <a href="{{ url_for('social.feed') }}">&larr; Back to Feed</a>
+    </div>
+
+    <!-- Full Post -->
+    <div class="social-feed">
+        {% include 'social/_post_card.html' %}
+    </div>
+
+    <!-- Full Comments Section -->
+    <div class="social-comments-section">
+        <h3>Comments ({{ comments|length }})</h3>
+
+        {% if comments %}
+        <div class="social-comments-list">
+            {% for comment in comments %}
+            <div class="social-comment">
+                <div class="social-comment-header">
+                    <a href="{{ url_for('social.profile', username=comment.user.username) }}">
+                        {% if comment.user.social_profile and comment.user.social_profile.avatar_filename %}
+                            <img src="{{ url_for('static', filename='uploads/profile_photos/' + comment.user.social_profile.avatar_filename) }}" class="social-avatar-tiny" alt="{{ comment.user.username }}">
+                        {% else %}
+                            <div class="social-avatar-tiny social-avatar-default">{{ comment.user.username[0]|upper }}</div>
+                        {% endif %}
+                    </a>
+                    <div class="social-comment-meta">
+                        <a href="{{ url_for('social.profile', username=comment.user.username) }}" class="social-comment-author">
+                            {{ comment.user.social_profile.display_name or comment.user.username if comment.user.social_profile else comment.user.username }}
+                        </a>
+                        <span class="social-comment-time">{{ comment.created_at.strftime('%b %d, %Y at %I:%M %p') }}</span>
+                    </div>
+                </div>
+                <div class="social-comment-body">
+                    <p>{{ comment.content }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="social-no-comments">No comments yet. Be the first to comment!</p>
+        {% endif %}
+
+        <!-- Comment Form -->
+        <form class="social-comment-form" method="POST" action="{{ url_for('social.add_comment', post_id=post.id) }}">
+            <div class="social-comment-form-row">
+                {% if current_user.social_profile and current_user.social_profile.avatar_filename %}
+                    <img src="{{ url_for('static', filename='uploads/profile_photos/' + current_user.social_profile.avatar_filename) }}" class="social-avatar-tiny" alt="{{ current_user.username }}">
+                {% else %}
+                    <div class="social-avatar-tiny social-avatar-default">{{ current_user.username[0]|upper }}</div>
+                {% endif %}
+                <input type="text" name="content" placeholder="Write a comment..." maxlength="1000" required>
+                <button type="submit" class="btn-primary social-comment-submit">Post</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function sendReaction(postId, reactionType, btn) {
+        fetch('/community/post/' + postId + '/react', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({reaction_type: reactionType})
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var card = document.getElementById('post-' + postId);
+            var summaryEl = card.querySelector('.reaction-summary');
+            var triggerBtn = card.querySelector('.reaction-trigger');
+            var picker = card.querySelector('.reaction-picker');
+
+            var summaryHtml = '';
+            var reactionMap = {'heart':'&#10084;&#65039;','love':'&#128525;','funny':'&#128514;','wow':'&#128558;','jealous':'&#129321;'};
+            if (data.summary) {
+                for (var type in data.summary) {
+                    summaryHtml += '<span class="reaction-chip">' + (reactionMap[type]||type) + ' ' + data.summary[type] + '</span>';
+                }
+            }
+            summaryEl.innerHTML = summaryHtml;
+
+            if (data.user_reaction) {
+                triggerBtn.classList.add('reacted');
+                triggerBtn.querySelector('.reaction-trigger-icon').innerHTML = reactionMap[data.user_reaction] || '&#9825;';
+            } else {
+                triggerBtn.classList.remove('reacted');
+                triggerBtn.querySelector('.reaction-trigger-icon').innerHTML = '&#9825;';
+            }
+            triggerBtn.querySelector('.reaction-trigger-count').textContent = data.reaction_count;
+
+            picker.classList.remove('show');
+        });
+    }
+
+    function toggleReactionPicker(postId, event) {
+        event.stopPropagation();
+        var card = document.getElementById('post-' + postId);
+        var picker = card.querySelector('.reaction-picker');
+        document.querySelectorAll('.reaction-picker.show').forEach(function(p) {
+            if (p !== picker) p.classList.remove('show');
+        });
+        picker.classList.toggle('show');
+    }
+
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.reaction-picker.show').forEach(function(p) {
+            p.classList.remove('show');
+        });
+    });
+</script>
+{% endblock %}

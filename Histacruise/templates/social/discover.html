@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Discover Cruisers{% endblock %}
+
+{% block content %}
+    <div class="social-detail-back">
+        <a href="{{ url_for('social.feed') }}">&larr; Back to Feed</a>
+    </div>
+
+    <div class="social-page-header">
+        <h2>Discover Cruisers</h2>
+        <p class="social-page-subtitle">Find and follow fellow cruise enthusiasts</p>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="discover-search">
+        <form method="GET" action="{{ url_for('social.discover') }}" class="discover-search-form">
+            <input type="text" name="q" value="{{ search }}" placeholder="Search by username or display name..." class="discover-search-input">
+            <button type="submit" class="btn-primary">Search</button>
+            {% if search %}
+                <a href="{{ url_for('social.discover') }}" class="btn-secondary">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- User Grid -->
+    <div class="discover-grid">
+        {% for user in users.items %}
+        <div class="discover-user-card">
+            <a href="{{ url_for('social.profile', username=user.username) }}" class="discover-avatar-link">
+                {% if user.social_profile and user.social_profile.avatar_filename %}
+                    <img src="{{ url_for('static', filename='uploads/profile_photos/' + user.social_profile.avatar_filename) }}" class="social-avatar-medium" alt="{{ user.username }}">
+                {% else %}
+                    <div class="social-avatar-medium social-avatar-default">{{ user.username[0]|upper }}</div>
+                {% endif %}
+            </a>
+            <div class="discover-user-info">
+                <a href="{{ url_for('social.profile', username=user.username) }}" class="discover-user-name">
+                    {{ user.social_profile.display_name or user.username if user.social_profile else user.username }}
+                </a>
+                <span class="discover-user-username">@{{ user.username }}</span>
+                {% if user.social_profile and user.social_profile.bio %}
+                    <p class="discover-user-bio">{{ user.social_profile.bio[:120] }}{% if user.social_profile.bio|length > 120 %}...{% endif %}</p>
+                {% endif %}
+                {% if user.social_profile and user.social_profile.sailing_status == 'currently_sailing' %}
+                    <span class="sailing-badge-mini sailing-active">&#9875; Sailing</span>
+                {% elif user.social_profile and user.social_profile.sailing_status == 'sailing_soon' %}
+                    <span class="sailing-badge-mini sailing-soon">&#9875; Soon</span>
+                {% endif %}
+            </div>
+            <button class="btn-primary discover-follow-btn {{ 'btn-following' if user.id in followed_ids else '' }}"
+                    onclick="toggleFollowDiscover('{{ user.username }}', this)"
+                    data-following="{{ 'true' if user.id in followed_ids else 'false' }}">
+                {{ 'Following' if user.id in followed_ids else 'Follow' }}
+            </button>
+        </div>
+        {% else %}
+        <div class="no-data-message">
+            {% if search %}
+                <p>No users found matching "{{ search }}".</p>
+            {% else %}
+                <p>No other users to discover yet.</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if users.has_prev or users.has_next %}
+    <div class="social-pagination">
+        {% if users.has_prev %}
+            <a href="{{ url_for('social.discover', page=users.prev_num, q=search) }}" class="btn-secondary">Previous</a>
+        {% endif %}
+        <span>Page {{ users.page }} of {{ users.pages }}</span>
+        {% if users.has_next %}
+            <a href="{{ url_for('social.discover', page=users.next_num, q=search) }}" class="btn-secondary">Next</a>
+        {% endif %}
+    </div>
+    {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function toggleFollowDiscover(username, btn) {
+        var isFollowing = btn.getAttribute('data-following') === 'true';
+        var url = isFollowing ? '/community/unfollow/' + username : '/community/follow/' + username;
+        fetch(url, { method: 'POST' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.followed !== undefined) {
+                    btn.setAttribute('data-following', data.followed ? 'true' : 'false');
+                    btn.textContent = data.followed ? 'Following' : 'Follow';
+                    btn.classList.toggle('btn-following', data.followed);
+                }
+            });
+    }
+</script>
+{% endblock %}

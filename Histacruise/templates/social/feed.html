@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Community Feed{% endblock %}
+
+{% block content %}
+    <div class="social-page-header">
+        <h2>Community Feed</h2>
+        <p class="social-page-subtitle">See what fellow cruisers are sharing</p>
+        <a href="{{ url_for('social.profile', username=current_user.username) }}" class="btn-secondary social-my-profile-btn">
+            {% if current_user.social_profile and current_user.social_profile.avatar_filename %}
+                <img src="{{ url_for('static', filename='uploads/profile_photos/' + current_user.social_profile.avatar_filename) }}" class="social-avatar-tiny" alt="">
+            {% else %}
+                <div class="social-avatar-tiny social-avatar-default">{{ current_user.username[0]|upper }}</div>
+            {% endif %}
+            My Profile
+        </a>
+    </div>
+
+    <!-- Feed Filter Tabs -->
+    <div class="feed-filter-tabs">
+        <a href="{{ url_for('social.feed', filter='all') }}" class="feed-tab {{ 'active' if feed_filter == 'all' else '' }}">All Posts</a>
+        <a href="{{ url_for('social.feed', filter='following') }}" class="feed-tab {{ 'active' if feed_filter == 'following' else '' }}">Following</a>
+    </div>
+
+    {% include 'social/_create_post_modal.html' %}
+
+    <!-- Create Post Bar -->
+    <div class="social-create-bar">
+        <a href="{{ url_for('social.profile', username=current_user.username) }}" class="social-create-avatar-link">
+            {% if current_user.social_profile and current_user.social_profile.avatar_filename %}
+                <img src="{{ url_for('static', filename='uploads/profile_photos/' + current_user.social_profile.avatar_filename) }}" class="social-avatar-small" alt="{{ current_user.username }}">
+            {% else %}
+                <div class="social-avatar-small social-avatar-default">{{ current_user.username[0]|upper }}</div>
+            {% endif %}
+        </a>
+        <div class="social-create-prompt" onclick="openCreatePostModal()">
+            <span>What's on your mind, {{ current_user.username }}?</span>
+        </div>
+    </div>
+
+    <!-- Feed Posts -->
+    <div class="social-feed">
+        {% for post in posts.items %}
+            {% include 'social/_post_card.html' %}
+        {% else %}
+            <div class="no-data-message">
+                {% if feed_filter == 'following' %}
+                    <p>No posts from people you follow yet. <a href="{{ url_for('social.discover') }}">Discover users to follow!</a></p>
+                {% else %}
+                    <p>No posts yet! Be the first to share something with the community.</p>
+                    <button onclick="openCreatePostModal()" class="btn-primary">Create a Post</button>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if posts.has_prev or posts.has_next %}
+    <div class="social-pagination">
+        {% if posts.has_prev %}
+            <a href="{{ url_for('social.feed', page=posts.prev_num, filter=feed_filter) }}" class="btn-secondary">Previous</a>
+        {% endif %}
+        <span>Page {{ posts.page }} of {{ posts.pages }}</span>
+        {% if posts.has_next %}
+            <a href="{{ url_for('social.feed', page=posts.next_num, filter=feed_filter) }}" class="btn-secondary">Next</a>
+        {% endif %}
+    </div>
+    {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function openCreatePostModal() {
+        document.getElementById('createPostModal').style.display = 'flex';
+    }
+    function closeCreatePostModal() {
+        document.getElementById('createPostModal').style.display = 'none';
+    }
+
+    function sendReaction(postId, reactionType, btn) {
+        fetch('/community/post/' + postId + '/react', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({reaction_type: reactionType})
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var card = document.getElementById('post-' + postId);
+            var summaryEl = card.querySelector('.reaction-summary');
+            var triggerBtn = card.querySelector('.reaction-trigger');
+            var picker = card.querySelector('.reaction-picker');
+
+            // Update summary chips
+            var summaryHtml = '';
+            var reactionMap = {'heart':'&#10084;&#65039;','love':'&#128525;','funny':'&#128514;','wow':'&#128558;','jealous':'&#129321;'};
+            if (data.summary) {
+                for (var type in data.summary) {
+                    summaryHtml += '<span class="reaction-chip">' + (reactionMap[type]||type) + ' ' + data.summary[type] + '</span>';
+                }
+            }
+            summaryEl.innerHTML = summaryHtml;
+
+            // Update trigger button state
+            if (data.user_reaction) {
+                triggerBtn.classList.add('reacted');
+                triggerBtn.querySelector('.reaction-trigger-icon').innerHTML = reactionMap[data.user_reaction] || '&#9825;';
+            } else {
+                triggerBtn.classList.remove('reacted');
+                triggerBtn.querySelector('.reaction-trigger-icon').innerHTML = '&#9825;';
+            }
+            triggerBtn.querySelector('.reaction-trigger-count').textContent = data.reaction_count;
+
+            // Close picker
+            picker.classList.remove('show');
+        });
+    }
+
+    function toggleReactionPicker(postId, event) {
+        event.stopPropagation();
+        var card = document.getElementById('post-' + postId);
+        var picker = card.querySelector('.reaction-picker');
+        // Close all other pickers
+        document.querySelectorAll('.reaction-picker.show').forEach(function(p) {
+            if (p !== picker) p.classList.remove('show');
+        });
+        picker.classList.toggle('show');
+    }
+
+    // Close pickers on outside click
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.reaction-picker.show').forEach(function(p) {
+            p.classList.remove('show');
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var textarea = document.getElementById('postContent');
+        var counter = document.getElementById('charCount');
+        if (textarea && counter) {
+            textarea.addEventListener('input', function() {
+                counter.textContent = this.value.length + ' / 2000';
+            });
+        }
+    });
+</script>
+{% endblock %}

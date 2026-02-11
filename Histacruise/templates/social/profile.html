@@ -1,0 +1,373 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile_user.username }}'s Profile{% endblock %}
+
+{% block content %}
+    <div class="social-detail-back">
+        <a href="{{ url_for('social.feed') }}">&larr; Back to Feed</a>
+    </div>
+
+    <!-- Cover Photo -->
+    <div class="profile-cover-banner">
+        {% if profile and profile.cover_filename %}
+            <img src="{{ url_for('static', filename='uploads/cover_photos/' + profile.cover_filename) }}" class="cover-image" alt="Cover photo">
+        {% else %}
+            <div class="cover-placeholder"></div>
+        {% endif %}
+    </div>
+
+    <!-- Profile Header -->
+    <div class="social-profile-header">
+        <div class="social-profile-avatar-section">
+            {% if profile and profile.avatar_filename %}
+                <img src="{{ url_for('static', filename='uploads/profile_photos/' + profile.avatar_filename) }}" class="social-avatar-large" alt="{{ profile_user.username }}">
+            {% else %}
+                <div class="social-avatar-large social-avatar-default">{{ profile_user.username[0]|upper }}</div>
+            {% endif %}
+        </div>
+        <div class="social-profile-info">
+            <div class="social-profile-name-line">
+                <h1>{{ profile.display_name or profile_user.username }}</h1>
+                {% if sailing_status == 'currently_sailing' %}
+                    <span class="sailing-badge sailing-active">&#9875; Currently Sailing</span>
+                {% elif sailing_status == 'sailing_soon' %}
+                    <span class="sailing-badge sailing-soon">&#9875; Sailing Soon</span>
+                {% endif %}
+            </div>
+            <span class="social-profile-username">@{{ profile_user.username }}</span>
+            {% if profile.bio %}
+                <p class="social-profile-bio">{{ profile.bio }}</p>
+            {% elif is_own_profile %}
+                <p class="social-profile-bio social-profile-bio-empty">Add a bio to tell others about your cruising adventures!</p>
+            {% endif %}
+
+            <!-- Follow Stats -->
+            <div class="profile-follow-stats">
+                <span><strong>{{ follower_count }}</strong> Followers</span>
+                <span><strong>{{ following_count }}</strong> Following</span>
+            </div>
+
+            <div class="profile-actions">
+                {% if is_own_profile %}
+                    <button onclick="openEditProfileModal()" class="btn-secondary">Edit Profile</button>
+                {% else %}
+                    <button id="followBtn" class="btn-primary {{ 'btn-following' if is_following else '' }}"
+                            onclick="toggleFollow('{{ profile_user.username }}', this)"
+                            data-following="{{ 'true' if is_following else 'false' }}">
+                        {{ 'Following' if is_following else 'Follow' }}
+                    </button>
+                {% endif %}
+            </div>
+
+            <span class="social-profile-joined">Member since {{ profile_user.social_profile.created_at.strftime('%B %Y') if profile_user.social_profile else 'recently' }}</span>
+        </div>
+    </div>
+
+    <!-- Sailing Status Cruise Info -->
+    {% if sailing_cruise %}
+    <div class="sailing-status-card">
+        {% if sailing_status == 'currently_sailing' %}
+            <h4>&#9875; Currently aboard {{ sailing_cruise.ship.name }}</h4>
+            <p>{{ sailing_cruise.cruiseline.name }} &mdash; {{ sailing_cruise.region.name }}</p>
+            <p>{{ sailing_cruise.begindate.strftime('%b %d') }} - {{ sailing_cruise.enddate.strftime('%b %d, %Y') }}</p>
+        {% elif sailing_status == 'sailing_soon' %}
+            <h4>&#9875; Setting sail soon on {{ sailing_cruise.ship.name }}</h4>
+            <p>{{ sailing_cruise.cruiseline.name }} &mdash; {{ sailing_cruise.region.name }}</p>
+            <p>Departing {{ sailing_cruise.begindate.strftime('%b %d, %Y') }}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Favorite Cruise Showcase -->
+    {% if favorite_cruise %}
+    <div class="favorite-cruise-showcase">
+        <div class="showcase-header">
+            <span>&#11088;</span>
+            <h3>Favorite Cruise</h3>
+        </div>
+        <div class="social-cruise-card">
+            {% set cover = favorite_cruise.photos|selectattr('is_cover')|first %}
+            {% if cover %}
+            <div class="social-cruise-image">
+                <img src="{{ url_for('static', filename='uploads/cruise_photos/' + cover.filename) }}" alt="Cruise photo">
+            </div>
+            {% elif favorite_cruise.photos|list %}
+            <div class="social-cruise-image">
+                <img src="{{ url_for('static', filename='uploads/cruise_photos/' + favorite_cruise.photos[0].filename) }}" alt="Cruise photo">
+            </div>
+            {% endif %}
+            <div class="social-cruise-info">
+                <strong>{{ favorite_cruise.ship.name }}</strong>
+                <span>{{ favorite_cruise.cruiseline.name }}</span>
+                <span>{{ favorite_cruise.region.name }}</span>
+                <span>{{ favorite_cruise.begindate.strftime('%b %d') }} - {{ favorite_cruise.enddate.strftime('%b %d, %Y') }}</span>
+                {% if favorite_cruise.rating %}
+                <span class="social-cruise-rating">
+                    {% for i in range(favorite_cruise.rating) %}&#11088;{% endfor %}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Cruise Passport -->
+    <div class="cruise-passport">
+        <div class="passport-header">
+            <span class="passport-stamp">&#9875;</span>
+            <h3>Cruise Passport</h3>
+        </div>
+        <div class="passport-badges">
+            <div class="passport-badge badge-voyages">
+                <div class="badge-ring">
+                    <span class="badge-number" data-target="{{ total_cruises }}">0</span>
+                </div>
+                <span class="badge-label">Voyages</span>
+                <span class="badge-flavor">
+                    {% if total_cruises == 0 %}Ready to set sail!
+                    {% elif total_cruises < 3 %}Sea Beginner
+                    {% elif total_cruises < 10 %}Seasoned Sailor
+                    {% elif total_cruises < 25 %}Ocean Explorer
+                    {% else %}Admiral
+                    {% endif %}
+                </span>
+            </div>
+            <div class="passport-badge badge-days">
+                <div class="badge-ring">
+                    <span class="badge-number" data-target="{{ total_days }}">0</span>
+                </div>
+                <span class="badge-label">Days at Sea</span>
+                <span class="badge-flavor">
+                    {% if total_days == 0 %}Land lubber... for now
+                    {% elif total_days < 14 %}Dipping your toes in
+                    {% elif total_days < 60 %}Living the wave life
+                    {% elif total_days < 200 %}Part-time mermaid
+                    {% else %}Basically a dolphin
+                    {% endif %}
+                </span>
+            </div>
+            <div class="passport-badge badge-ships">
+                <div class="badge-ring">
+                    <span class="badge-number" data-target="{{ unique_ships }}">0</span>
+                </div>
+                <span class="badge-label">Ships Sailed</span>
+                <span class="badge-flavor">
+                    {% if unique_ships == 0 %}Pick your first ship!
+                    {% elif unique_ships == 1 %}Loyal to one
+                    {% elif unique_ships < 5 %}Ship hopper
+                    {% elif unique_ships < 10 %}Fleet commander
+                    {% else %}Ship connoisseur
+                    {% endif %}
+                </span>
+            </div>
+            <div class="passport-badge badge-regions">
+                <div class="badge-ring">
+                    <span class="badge-number" data-target="{{ unique_regions }}">0</span>
+                </div>
+                <span class="badge-label">Regions</span>
+                <span class="badge-flavor">
+                    {% if unique_regions == 0 %}The world awaits!
+                    {% elif unique_regions == 1 %}Regional fan
+                    {% elif unique_regions < 4 %}Horizon chaser
+                    {% elif unique_regions < 7 %}Globe trotter
+                    {% else %}World dominator
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trophy Case -->
+    <div class="trophy-case">
+        <div class="trophy-header">
+            <span>&#127942;</span>
+            <h3>Trophy Case</h3>
+        </div>
+        <div class="trophy-grid">
+            {% for badge_type, badge_def in badge_definitions.items() %}
+            <div class="trophy-item {{ 'earned' if badge_type in user_badges else 'locked' }}"
+                 title="{{ badge_def.description }}{% if badge_type in user_badges %} - Earned {{ user_badges[badge_type].earned_at.strftime('%b %d, %Y') }}{% endif %}">
+                <span class="trophy-icon">{{ badge_def.icon }}</span>
+                <span class="trophy-name">{{ badge_def.name }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- User's Posts -->
+    <div class="social-profile-posts-header">
+        <h2>Posts</h2>
+    </div>
+
+    <div class="social-feed">
+        {% for post in posts.items %}
+            {% include 'social/_post_card.html' %}
+        {% else %}
+            <div class="no-data-message">
+                <p>{% if is_own_profile %}You haven't posted anything yet.{% else %}{{ profile_user.username }} hasn't posted anything yet.{% endif %}</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if posts.has_prev or posts.has_next %}
+    <div class="social-pagination">
+        {% if posts.has_prev %}
+            <a href="{{ url_for('social.profile', username=profile_user.username, page=posts.prev_num) }}" class="btn-secondary">Previous</a>
+        {% endif %}
+        <span>Page {{ posts.page }} of {{ posts.pages }}</span>
+        {% if posts.has_next %}
+            <a href="{{ url_for('social.profile', username=profile_user.username, page=posts.next_num) }}" class="btn-secondary">Next</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Edit Profile Modal -->
+    {% if is_own_profile %}
+    <div id="editProfileModal" class="modal">
+        <div class="modal-content-large">
+            <span class="close-modal" onclick="closeEditProfileModal()">&times;</span>
+            <h3>Edit Profile</h3>
+            <form method="POST" action="{{ url_for('social.edit_profile') }}" enctype="multipart/form-data" class="social-create-form">
+                <div>
+                    <label for="displayName">Display Name</label>
+                    <input type="text" id="displayName" name="display_name" maxlength="100"
+                           value="{{ profile.display_name or '' }}" placeholder="How should we call you?">
+                </div>
+                <div>
+                    <label for="bio">Bio</label>
+                    <textarea id="bio" name="bio" rows="3" maxlength="500"
+                              placeholder="Tell us about your cruising adventures...">{{ profile.bio or '' }}</textarea>
+                </div>
+                <div>
+                    <label for="avatar">Profile Photo</label>
+                    <input type="file" id="avatar" name="avatar" accept="image/*">
+                    {% if profile.avatar_filename %}
+                    <small>Current photo will be replaced if you upload a new one.</small>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="cover">Cover Photo</label>
+                    <input type="file" id="cover" name="cover" accept="image/*">
+                    {% if profile.cover_filename %}
+                    <small>Current cover will be replaced if you upload a new one.</small>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="favorite_cruise_id">Favorite Cruise</label>
+                    <select id="favorite_cruise_id" name="favorite_cruise_id">
+                        <option value="">-- None --</option>
+                        {% for cruise in cruises %}
+                        <option value="{{ cruise.cruiseid }}" {{ 'selected' if profile.favorite_cruise_id == cruise.cruiseid else '' }}>
+                            {{ cruise.ship.name }} - {{ cruise.region.name }} ({{ cruise.begindate.strftime('%b %Y') }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn-primary">Save Changes</button>
+                    <button type="button" class="btn-secondary" onclick="closeEditProfileModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function openEditProfileModal() {
+        document.getElementById('editProfileModal').style.display = 'flex';
+    }
+    function closeEditProfileModal() {
+        document.getElementById('editProfileModal').style.display = 'none';
+    }
+
+    // Animate badge counters
+    document.addEventListener('DOMContentLoaded', function() {
+        var counters = document.querySelectorAll('.badge-number');
+        counters.forEach(function(counter) {
+            var target = parseInt(counter.getAttribute('data-target'));
+            if (target === 0) { counter.textContent = '0'; return; }
+            var duration = 1200;
+            var startTime = null;
+            function animate(currentTime) {
+                if (!startTime) startTime = currentTime;
+                var progress = Math.min((currentTime - startTime) / duration, 1);
+                var eased = 1 - Math.pow(1 - progress, 3);
+                counter.textContent = Math.floor(eased * target);
+                if (progress < 1) requestAnimationFrame(animate);
+                else counter.textContent = target;
+            }
+            requestAnimationFrame(animate);
+        });
+    });
+
+    function toggleFollow(username, btn) {
+        var isFollowing = btn.getAttribute('data-following') === 'true';
+        var url = isFollowing ? '/community/unfollow/' + username : '/community/follow/' + username;
+        fetch(url, { method: 'POST' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.followed !== undefined) {
+                    btn.setAttribute('data-following', data.followed ? 'true' : 'false');
+                    btn.textContent = data.followed ? 'Following' : 'Follow';
+                    btn.classList.toggle('btn-following', data.followed);
+                    var followerSpan = document.querySelector('.profile-follow-stats span:first-child strong');
+                    if (followerSpan) followerSpan.textContent = data.follower_count;
+                }
+            });
+    }
+
+    function sendReaction(postId, reactionType, btn) {
+        fetch('/community/post/' + postId + '/react', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({reaction_type: reactionType})
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var card = document.getElementById('post-' + postId);
+            var summaryEl = card.querySelector('.reaction-summary');
+            var triggerBtn = card.querySelector('.reaction-trigger');
+            var picker = card.querySelector('.reaction-picker');
+
+            var summaryHtml = '';
+            var reactionMap = {'heart':'&#10084;&#65039;','love':'&#128525;','funny':'&#128514;','wow':'&#128558;','jealous':'&#129321;'};
+            if (data.summary) {
+                for (var type in data.summary) {
+                    summaryHtml += '<span class="reaction-chip">' + (reactionMap[type]||type) + ' ' + data.summary[type] + '</span>';
+                }
+            }
+            summaryEl.innerHTML = summaryHtml;
+
+            if (data.user_reaction) {
+                triggerBtn.classList.add('reacted');
+                triggerBtn.querySelector('.reaction-trigger-icon').innerHTML = reactionMap[data.user_reaction] || '&#9825;';
+            } else {
+                triggerBtn.classList.remove('reacted');
+                triggerBtn.querySelector('.reaction-trigger-icon').innerHTML = '&#9825;';
+            }
+            triggerBtn.querySelector('.reaction-trigger-count').textContent = data.reaction_count;
+
+            picker.classList.remove('show');
+        });
+    }
+
+    function toggleReactionPicker(postId, event) {
+        event.stopPropagation();
+        var card = document.getElementById('post-' + postId);
+        var picker = card.querySelector('.reaction-picker');
+        document.querySelectorAll('.reaction-picker.show').forEach(function(p) {
+            if (p !== picker) p.classList.remove('show');
+        });
+        picker.classList.toggle('show');
+    }
+
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.reaction-picker.show').forEach(function(p) {
+            p.classList.remove('show');
+        });
+    });
+</script>
+{% endblock %}

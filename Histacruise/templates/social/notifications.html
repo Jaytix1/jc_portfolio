@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+    <div class="social-detail-back">
+        <a href="{{ url_for('social.feed') }}">&larr; Back to Feed</a>
+    </div>
+
+    <div class="social-page-header">
+        <h2>Notifications</h2>
+        <p class="social-page-subtitle">Stay up to date with your community</p>
+    </div>
+
+    <div class="notifications-list">
+        {% for notif in notifications.items %}
+        <div class="notification-item {{ 'unread' if not notif.is_read else '' }}">
+            <a href="{{ url_for('social.profile', username=notif.actor.username) }}">
+                {% if notif.actor.social_profile and notif.actor.social_profile.avatar_filename %}
+                    <img src="{{ url_for('static', filename='uploads/profile_photos/' + notif.actor.social_profile.avatar_filename) }}" class="social-avatar-small" alt="">
+                {% else %}
+                    <div class="social-avatar-small social-avatar-default">{{ notif.actor.username[0]|upper }}</div>
+                {% endif %}
+            </a>
+            <div class="notification-content">
+                <p>
+                    <a href="{{ url_for('social.profile', username=notif.actor.username) }}" class="notif-actor">
+                        {{ notif.actor.social_profile.display_name or notif.actor.username if notif.actor.social_profile else notif.actor.username }}
+                    </a>
+                    {% if notif.type == 'follow' %}
+                        started following you.
+                    {% elif notif.type == 'reaction' %}
+                        reacted to your
+                        {% if notif.post %}
+                            <a href="{{ url_for('social.post_detail', post_id=notif.post_id) }}">post</a>.
+                        {% else %}
+                            post.
+                        {% endif %}
+                    {% elif notif.type == 'comment' %}
+                        commented on your
+                        {% if notif.post %}
+                            <a href="{{ url_for('social.post_detail', post_id=notif.post_id) }}">post</a>.
+                        {% else %}
+                            post.
+                        {% endif %}
+                    {% elif notif.type == 'like' %}
+                        liked your
+                        {% if notif.post %}
+                            <a href="{{ url_for('social.post_detail', post_id=notif.post_id) }}">post</a>.
+                        {% else %}
+                            post.
+                        {% endif %}
+                    {% endif %}
+                </p>
+                <span class="notification-time">{{ notif.created_at.strftime('%b %d, %Y at %I:%M %p') }}</span>
+            </div>
+        </div>
+        {% else %}
+        <div class="no-data-message">
+            <p>No notifications yet. Interact with the community to get started!</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if notifications.has_prev or notifications.has_next %}
+    <div class="social-pagination">
+        {% if notifications.has_prev %}
+            <a href="{{ url_for('social.notifications', page=notifications.prev_num) }}" class="btn-secondary">Previous</a>
+        {% endif %}
+        <span>Page {{ notifications.page }} of {{ notifications.pages }}</span>
+        {% if notifications.has_next %}
+            <a href="{{ url_for('social.notifications', page=notifications.next_num) }}" class="btn-secondary">Next</a>
+        {% endif %}
+    </div>
+    {% endif %}
+{% endblock %}

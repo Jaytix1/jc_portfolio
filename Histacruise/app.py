@@ -7,6 +7,12 @@ from datetime import datetime, timedelta
 from functools import wraps
 import os
 import re
+import sys
+
+# Fix dual-module issue: when running as __main__, register as Histacruise.app
+# so that 'from Histacruise.app import db' returns the same module instance.
+if __name__ == '__main__':
+    sys.modules['Histacruise.app'] = sys.modules['__main__']
 
 app = Flask(__name__)
 
@@ -58,6 +64,40 @@ CABIN_TYPES = [
     ('haven', 'Haven/Luxury Suite'),
     ('studio', 'Studio (Solo)')
 ]
+
+# Social feature limits
+MAX_POST_CONTENT_LENGTH = 2000
+MAX_COMMENT_LENGTH = 1000
+MAX_BIO_LENGTH = 500
+MAX_DISPLAY_NAME_LENGTH = 100
+SOCIAL_POSTS_PER_PAGE = 20
+NOTIFICATIONS_PER_PAGE = 30
+DISCOVER_USERS_PER_PAGE = 20
+
+# Reaction types for posts
+REACTION_TYPES = {
+    'heart': '❤️',
+    'love': '😍',
+    'funny': '😂',
+    'wow': '😮',
+    'jealous': '🤩',
+}
+
+# Achievement badge definitions
+BADGE_DEFINITIONS = {
+    'first_voyage': {'name': 'First Voyage', 'icon': '⛵', 'description': 'Completed your first cruise'},
+    'sea_legs': {'name': 'Sea Legs', 'icon': '🚢', 'description': 'Completed 5 cruises'},
+    'admiral': {'name': 'Admiral', 'icon': '⚓', 'description': 'Completed 15 cruises'},
+    'week_at_sea': {'name': 'Week at Sea', 'icon': '🌊', 'description': 'Took a 7+ night cruise'},
+    'month_at_sea': {'name': 'Month at Sea', 'icon': '🗓️', 'description': 'Spent 30+ total days at sea'},
+    'century_sailor': {'name': 'Century Sailor', 'icon': '💯', 'description': 'Spent 100+ total days at sea'},
+    'ship_hopper': {'name': 'Ship Hopper', 'icon': '🔄', 'description': 'Sailed on 3+ different ships'},
+    'globe_trotter': {'name': 'Globe Trotter', 'icon': '🌍', 'description': 'Cruised in 3+ regions'},
+    'world_explorer': {'name': 'World Explorer', 'icon': '🗺️', 'description': 'Cruised in 5+ regions'},
+    'social_butterfly': {'name': 'Social Butterfly', 'icon': '🦋', 'description': 'Created 10+ posts'},
+    'popular': {'name': 'Popular', 'icon': '⭐', 'description': 'Received 25+ reactions on your posts'},
+    'storyteller': {'name': 'Storyteller', 'icon': '📖', 'description': 'Received 10+ comments on your posts'},
+}
 
 
 # ============== VALIDATION FUNCTIONS ==============
@@ -217,6 +257,14 @@ UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads', 'cruise_photos'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
+
+# Social upload directories
+SOCIAL_UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads', 'social_photos')
+PROFILE_UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads', 'profile_photos')
+COVER_UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads', 'cover_photos')
+app.config['SOCIAL_UPLOAD_FOLDER'] = SOCIAL_UPLOAD_FOLDER
+app.config['PROFILE_UPLOAD_FOLDER'] = PROFILE_UPLOAD_FOLDER
+app.config['COVER_UPLOAD_FOLDER'] = COVER_UPLOAD_FOLDER
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -451,6 +499,188 @@ class PipelineRun(db.Model):
     def __repr__(self):
         return f'<PipelineRun {self.run_type} {self.status}>'
 
+
+# ============== SOCIAL / COMMUNITY MODELS ==============
+
+class SocialProfile(db.Model):
+    __tablename__ = 'social_profile'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, unique=True)
+    display_name = db.Column(db.String(100), nullable=True)
+    bio = db.Column(db.Text, nullable=True)
+    avatar_filename = db.Column(db.String(255), nullable=True)
+    cover_filename = db.Column(db.String(255), nullable=True)
+    sailing_status = db.Column(db.String(30), nullable=True)
+    sailing_status_cruise_id = db.Column(db.Integer, db.ForeignKey('cruise_history.cruiseid'), nullable=True)
+    favorite_cruise_id = db.Column(db.Integer, db.ForeignKey('cruise_history.cruiseid'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user = db.relationship('User', backref=db.backref('social_profile', uselist=False))
+    sailing_status_cruise = db.relationship('CruiseHistory', foreign_keys=[sailing_status_cruise_id])
+    favorite_cruise = db.relationship('CruiseHistory', foreign_keys=[favorite_cruise_id])
+
+    def __repr__(self):
+        return f'<SocialProfile user_id={self.user_id}>'
+
+
+class SocialPost(db.Model):
+    __tablename__ = 'social_post'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    image_filename = db.Column(db.String(255), nullable=True)
+    shared_cruise_id = db.Column(db.Integer, db.ForeignKey('cruise_history.cruiseid', ondelete='SET NULL'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user = db.relationship('User', backref='social_posts')
+    shared_cruise = db.relationship('CruiseHistory', backref='social_shares')
+    likes = db.relationship('PostLike', backref='post', lazy='dynamic', cascade='all, delete-orphan')
+    reactions = db.relationship('PostReaction', backref='post', lazy='dynamic', cascade='all, delete-orphan')
+    comments = db.relationship('PostComment', backref='post', lazy='dynamic',
+                               order_by='PostComment.created_at.asc()', cascade='all, delete-orphan')
+
+    @property
+    def like_count(self):
+        return self.likes.count()
+
+    @property
+    def reaction_count(self):
+        return self.reactions.count()
+
+    @property
+    def comment_count(self):
+        return self.comments.count()
+
+    def is_liked_by(self, user):
+        return self.likes.filter_by(user_id=user.id).first() is not None
+
+    def user_reaction(self, user):
+        r = self.reactions.filter_by(user_id=user.id).first()
+        return r.reaction_type if r else None
+
+    def reaction_summary(self):
+        from sqlalchemy import func
+        results = db.session.query(
+            PostReaction.reaction_type, func.count(PostReaction.id)
+        ).filter_by(post_id=self.id).group_by(PostReaction.reaction_type).all()
+        return {r_type: count for r_type, count in results}
+
+    def __repr__(self):
+        return f'<SocialPost {self.id} by user {self.user_id}>'
+
+
+class PostLike(db.Model):
+    __tablename__ = 'post_like'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('social_post.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref='post_likes')
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'post_id', name='unique_user_post_like'),
+    )
+
+    def __repr__(self):
+        return f'<PostLike user={self.user_id} post={self.post_id}>'
+
+
+class PostComment(db.Model):
+    __tablename__ = 'post_comment'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('social_post.id'), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref='post_comments')
+
+    def __repr__(self):
+        return f'<PostComment {self.id} on post {self.post_id}>'
+
+
+class UserFollow(db.Model):
+    __tablename__ = 'user_follow'
+
+    id = db.Column(db.Integer, primary_key=True)
+    follower_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    following_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    follower = db.relationship('User', foreign_keys=[follower_id], backref='following_assocs')
+    following = db.relationship('User', foreign_keys=[following_id], backref='follower_assocs')
+
+    __table_args__ = (
+        db.UniqueConstraint('follower_id', 'following_id', name='unique_user_follow'),
+    )
+
+    def __repr__(self):
+        return f'<UserFollow {self.follower_id} -> {self.following_id}>'
+
+
+class PostReaction(db.Model):
+    __tablename__ = 'post_reaction'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('social_post.id'), nullable=False)
+    reaction_type = db.Column(db.String(20), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref='post_reactions')
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'post_id', name='unique_user_post_reaction'),
+    )
+
+    def __repr__(self):
+        return f'<PostReaction {self.user_id} {self.reaction_type} on {self.post_id}>'
+
+
+class Notification(db.Model):
+    __tablename__ = 'notification'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    actor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    type = db.Column(db.String(30), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('social_post.id'), nullable=True)
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', foreign_keys=[user_id], backref='notifications')
+    actor = db.relationship('User', foreign_keys=[actor_id])
+    post = db.relationship('SocialPost', backref='notifications')
+
+    def __repr__(self):
+        return f'<Notification {self.type} for user {self.user_id}>'
+
+
+class UserBadge(db.Model):
+    __tablename__ = 'user_badge'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    badge_type = db.Column(db.String(50), nullable=False)
+    earned_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref='badges')
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'badge_type', name='unique_user_badge'),
+    )
+
+    def __repr__(self):
+        return f'<UserBadge {self.badge_type} for user {self.user_id}>'
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -464,6 +694,10 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from HC_Pipeline.api.routes import pipeline_api
 app.register_blueprint(pipeline_api)
+
+# Register Social Community blueprint
+from Histacruise.social import social_bp
+app.register_blueprint(social_bp)
 
 @app.route('/')
 def home():
@@ -871,6 +1105,12 @@ def statistics():
     cost_by_year = {}
     cost_by_cruiseline = {}
 
+    # Missing data tracking
+    missing_cost_ids = []
+    missing_cabin_type_ids = []
+    missing_rating_ids = []
+    days_with_cost = 0
+
     for cruise in cruises:
         # Cruise line counts
         line_name = cruise.cruiseline.name
@@ -888,6 +1128,8 @@ def statistics():
         if cruise.cabin_type:
             cabin_type_label = dict(CABIN_TYPES).get(cruise.cabin_type, cruise.cabin_type)
             cabin_type_counts[cabin_type_label] = cabin_type_counts.get(cabin_type_label, 0) + 1
+        else:
+            missing_cabin_type_ids.append(cruise.cruiseid)
 
         # Days calculation
         delta = cruise.enddate - cruise.begindate
@@ -898,10 +1140,13 @@ def statistics():
         if cruise.cost:
             total_cost += cruise.cost
             cruises_with_cost += 1
+            days_with_cost += cruise_days
             if line_name not in cost_by_cruiseline:
                 cost_by_cruiseline[line_name] = {'total': 0, 'count': 0}
             cost_by_cruiseline[line_name]['total'] += cruise.cost
             cost_by_cruiseline[line_name]['count'] += 1
+        else:
+            missing_cost_ids.append(cruise.cruiseid)
 
         # Year-based aggregation
         year = cruise.begindate.year
@@ -909,10 +1154,14 @@ def statistics():
         if cruise.cost:
             cost_by_year[year] = cost_by_year.get(year, 0) + cruise.cost
 
+        # Rating tracking
+        if not cruise.rating:
+            missing_rating_ids.append(cruise.cruiseid)
+
     # Derived statistics
     avg_cruise_length = total_days / len(cruises) if cruises else 0
     avg_cost = total_cost / cruises_with_cost if cruises_with_cost else 0
-    avg_cost_per_day = total_cost / total_days if total_days and total_cost else 0
+    avg_cost_per_day = total_cost / days_with_cost if days_with_cost and total_cost else 0
 
     # Favorites
     most_sailed_ship = max(ship_counts, key=ship_counts.get) if ship_counts else None
@@ -972,7 +1221,12 @@ def statistics():
         current_year=current_year,
         current_year_spending=current_year_spending,
         yearly_budget=yearly_budget,
-        budget_remaining=budget_remaining
+        budget_remaining=budget_remaining,
+        missing_cost_count=len(missing_cost_ids),
+        missing_cabin_type_count=len(missing_cabin_type_ids),
+        missing_rating_count=len(missing_rating_ids),
+        cruises_with_cost=cruises_with_cost,
+        cruises_with_cabin_type=sum(cabin_type_counts.values())
     )
 
 @app.route('/set_budget', methods=['POST'])
