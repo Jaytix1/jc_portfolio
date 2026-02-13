@@ -3422,9 +3422,12 @@ body.dark-mode .port-badge {
     align-items: center;
     padding: 30px;
     background: white;
-    border-radius: 15px;
+    border-radius: 0 0 15px 15px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
     margin-bottom: 25px;
+    margin-top: -30px;
+    position: relative;
+    z-index: 1;
 }
 
 .social-profile-avatar-section {
@@ -3968,24 +3971,101 @@ body.dark-mode .social-delete-btn:hover {
 
 .profile-cover-banner {
     width: 100%;
-    max-width: 700px;
-    margin: 0 auto 0;
-    border-radius: 12px 12px 0 0;
-    overflow: hidden;
     position: relative;
+    overflow: hidden;
+    border-radius: 12px 12px 0 0;
+}
+
+.profile-cover-banner::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.85));
+    pointer-events: none;
 }
 
 .cover-image {
     width: 100%;
-    height: 200px;
+    height: 280px;
     object-fit: cover;
     display: block;
 }
 
 .cover-placeholder {
     width: 100%;
-    height: 200px;
+    height: 280px;
     background: linear-gradient(135deg, #0d2137 0%, #1a4a7a 50%, #2980b9 100%);
+}
+
+/* ===== PROFILE TWO-COLUMN LAYOUT ===== */
+
+.profile-two-col {
+    display: flex;
+    gap: 25px;
+    max-width: 1100px;
+    margin: 20px auto 0;
+    align-items: flex-start;
+}
+
+.profile-col-posts {
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-col-posts .social-feed {
+    max-width: 100%;
+}
+
+.profile-col-posts .social-pagination {
+    max-width: 100%;
+}
+
+.profile-col-sidebar {
+    width: 320px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    position: sticky;
+    top: 20px;
+}
+
+.profile-col-sidebar .sailing-status-card,
+.profile-col-sidebar .favorite-cruise-showcase,
+.profile-col-sidebar .cruise-passport,
+.profile-col-sidebar .trophy-case {
+    max-width: 100%;
+    margin: 0;
+}
+
+.profile-col-sidebar .passport-badges {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.profile-col-sidebar .badge-ring {
+    width: 60px;
+    height: 60px;
+}
+
+.profile-col-sidebar .badge-number {
+    font-size: 1.3em;
+}
+
+.profile-col-sidebar .trophy-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.profile-col-sidebar .trophy-icon {
+    font-size: 1.6em;
+}
+
+.profile-col-sidebar .trophy-name {
+    font-size: 0.7em;
 }
 
 /* ===== SAILING STATUS BADGES ===== */
@@ -4112,8 +4192,13 @@ body.dark-mode .social-delete-btn:hover {
     color: #222;
 }
 
-.profile-actions {
-    margin: 10px 0;
+.profile-header-actions {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+    z-index: 2;
 }
 
 .btn-following {
@@ -4479,6 +4564,10 @@ body.dark-mode .feed-tab.active {
     border-bottom-color: #a5b4fc;
 }
 
+body.dark-mode .profile-cover-banner::after {
+    background: linear-gradient(to bottom, transparent, rgba(30, 58, 95, 0.85));
+}
+
 body.dark-mode .cover-placeholder {
     background: linear-gradient(135deg, #0a1628 0%, #1a3a5c 50%, #1e4d7a 100%);
 }
@@ -4680,6 +4769,23 @@ body.dark-mode .discover-search-input:focus {
 
     .trophy-grid {
         grid-template-columns: repeat(3, 1fr);
+    }
+
+    .profile-two-col {
+        flex-direction: column;
+    }
+
+    .profile-col-sidebar {
+        width: 100%;
+        position: static;
+    }
+
+    .profile-col-sidebar .passport-badges {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .profile-col-sidebar .trophy-grid {
+        grid-template-columns: repeat(4, 1fr);
     }
 
     .cover-image,

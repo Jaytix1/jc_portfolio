@@ -12,7 +12,10 @@
       "Bash(Histacruise/venv/Scripts/pip:*)",
       "Bash(python:*)",
       "Bash(pip install:*)",
-      "Bash(start:*)"
+      "Bash(start:*)",
+      "Bash(taskkill:*)",
+      "Bash(curl:*)",
+      "Bash(git add:*)"
     ]
   }
 }

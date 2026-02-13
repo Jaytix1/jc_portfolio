@@ -3,7 +3,10 @@
 {% block title %}Statistics{% endblock %}
 
 {% block content %}
-    <h2>Your Cruise Statistics</h2>
+    <div class="stats-hero">
+        <h2>Your Cruise Statistics</h2>
+        <p class="stats-subtitle">A look at your journey across the seas</p>
+    </div>
 
     {% if total_cruises == 0 %}
         <div class="no-data-message">
@@ -11,39 +14,80 @@
             <a href="{{ url_for('history') }}" class="btn-primary">Add Your First Cruise</a>
         </div>
     {% else %}
+        <!-- Missing Data Notifications -->
+        {% if missing_cost_count > 0 or missing_cabin_type_count > 0 or missing_rating_count > 0 %}
+        <div class="missing-data-section">
+            <h3>Incomplete Data</h3>
+            {% if missing_cost_count > 0 %}
+            <div class="missing-data-item">
+                <span class="missing-data-icon">&#128176;</span>
+                <div class="missing-data-text">
+                    <strong>{{ missing_cost_count }} of {{ total_cruises }}</strong> cruises are missing cost data &mdash; these are excluded from spending statistics.
+                </div>
+                <a href="{{ url_for('history') }}" class="btn-fix">Update Cruises</a>
+            </div>
+            {% endif %}
+            {% if missing_cabin_type_count > 0 %}
+            <div class="missing-data-item">
+                <span class="missing-data-icon">&#128682;</span>
+                <div class="missing-data-text">
+                    <strong>{{ missing_cabin_type_count }} of {{ total_cruises }}</strong> cruises are missing cabin type &mdash; these are excluded from the cabin breakdown chart.
+                </div>
+                <a href="{{ url_for('history') }}" class="btn-fix">Update Cruises</a>
+            </div>
+            {% endif %}
+            {% if missing_rating_count > 0 %}
+            <div class="missing-data-item">
+                <span class="missing-data-icon">&#11088;</span>
+                <div class="missing-data-text">
+                    <strong>{{ missing_rating_count }} of {{ total_cruises }}</strong> cruises are missing ratings.
+                </div>
+                <a href="{{ url_for('history') }}" class="btn-fix">Update Cruises</a>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
         <!-- Summary Stats Cards -->
         <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">🚢</div>
+            <div class="stat-card stat-card-cruises">
+                <div class="stat-icon">&#128674;</div>
                 <h3>Total Cruises</h3>
                 <p class="stat-number">{{ total_cruises }}</p>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">🌊</div>
+            <div class="stat-card stat-card-days">
+                <div class="stat-icon">&#127754;</div>
                 <h3>Days at Sea</h3>
                 <p class="stat-number">{{ total_days }}</p>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">💰</div>
+            <div class="stat-card stat-card-spent">
+                <div class="stat-icon">&#128176;</div>
                 <h3>Total Spent</h3>
                 <p class="stat-number">${{ "{:,.2f}".format(total_cost) }}</p>
+                {% if missing_cost_count > 0 %}
+                <p class="stat-annotation">Based on {{ cruises_with_cost }} of {{ total_cruises }} cruises</p>
+                {% endif %}
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">📊</div>
+            <div class="stat-card stat-card-avg">
+                <div class="stat-icon">&#128200;</div>
                 <h3>Avg Cost/Day</h3>
                 <p class="stat-number">${{ "{:,.2f}".format(avg_cost_per_day) }}</p>
+                {% if missing_cost_count > 0 %}
+                <p class="stat-annotation">Based on {{ cruises_with_cost }} of {{ total_cruises }} cruises</p>
+                {% endif %}
             </div>
-        </div>
-
-        <!-- Secondary Stats -->
-        <div class="stats-grid secondary">
-            <div class="stat-card small">
-                <h4>Avg Cruise Length</h4>
-                <p class="stat-number-small">{{ avg_cruise_length }} days</p>
+            <div class="stat-card stat-card-length">
+                <div class="stat-icon">&#128197;</div>
+                <h3>Avg Cruise Length</h3>
+                <p class="stat-number">{{ avg_cruise_length }} days</p>
             </div>
-            <div class="stat-card small">
-                <h4>Avg Cruise Cost</h4>
-                <p class="stat-number-small">${{ "{:,.2f}".format(avg_cost) }}</p>
+            <div class="stat-card stat-card-avgcost">
+                <div class="stat-icon">&#127991;</div>
+                <h3>Avg Cruise Cost</h3>
+                <p class="stat-number">${{ "{:,.2f}".format(avg_cost) }}</p>
+                {% if missing_cost_count > 0 %}
+                <p class="stat-annotation">Based on {{ cruises_with_cost }} of {{ total_cruises }} cruises</p>
+                {% endif %}
             </div>
         </div>
 
@@ -209,49 +253,113 @@
 
         <!-- Time Series Charts -->
         {% if years %}
-        <div class="charts-row">
-            <div class="chart-container">
-                <h3>Cruises Over Time</h3>
-                <canvas id="cruisesOverTimeChart"></canvas>
-            </div>
-            <div class="chart-container">
-                <h3>Spending Over Time</h3>
-                <canvas id="costOverTimeChart"></canvas>
+        <div class="zigzag-section stats-section">
+            <div class="zigzag-content">
+                <div class="zigzag-visual">
+                    <div class="charts-row">
+                        <div class="chart-container">
+                            <h3>Cruises Over Time</h3>
+                            <canvas id="cruisesOverTimeChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <h3>Spending Over Time</h3>
+                            {% if missing_cost_count > 0 %}
+                            <p class="chart-annotation">Based on {{ cruises_with_cost }} of {{ total_cruises }} cruises with cost data</p>
+                            {% endif %}
+                            <canvas id="costOverTimeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="zigzag-text">
+                    <h2>Every Voyage Tells a Story</h2>
+                    <p>Watch your cruise journey unfold over the years. Each trip adds a new chapter to your seafaring story &mdash; from your very first sailing to the adventures still to come.</p>
+                    <p>Track how your love for cruising has grown and how your spending has evolved as you explore new destinations and cruise lines.</p>
+                    <p class="fun-tagline">The best journeys are the ones you keep coming back to.</p>
+                </div>
             </div>
         </div>
         {% endif %}
 
         <!-- Distribution Charts -->
-        <div class="charts-row">
-            <div class="chart-container">
-                <h3>Cruises by Cruise Line</h3>
-                <canvas id="cruiselineChart"></canvas>
-            </div>
-            <div class="chart-container">
-                <h3>Cruises by Region</h3>
-                <canvas id="regionChart"></canvas>
+        <div class="zigzag-section stats-section alternate">
+            <div class="zigzag-content">
+                <div class="zigzag-visual">
+                    <div class="charts-row">
+                        <div class="chart-container">
+                            <h3>Cruises by Cruise Line</h3>
+                            <canvas id="cruiselineChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <h3>Cruises by Region</h3>
+                            <canvas id="regionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="zigzag-text">
+                    <h2>Exploring the World, One Port at a Time</h2>
+                    <p>Discover patterns in your cruising preferences. Which cruise lines have earned your loyalty? Which regions keep calling you back to the open water?</p>
+                    <p>Whether you're a Caribbean sun-chaser, an Alaskan adventurer, or a Mediterranean dreamer, your data reveals who you are as a cruiser.</p>
+                    <p class="fun-tagline">The world is 71% water &mdash; there's plenty left to explore!</p>
+                </div>
             </div>
         </div>
 
         <!-- Cabin Type Distribution -->
         {% if cabin_type_counts %}
-        <div class="charts-row single">
-            <div class="chart-container wide">
-                <h3>Cabin Type Breakdown</h3>
-                <canvas id="cabinTypeChart"></canvas>
+        <div class="zigzag-section stats-section">
+            <div class="zigzag-content">
+                <div class="zigzag-visual">
+                    <div class="chart-container stats-chart-full">
+                        <h3>Cabin Type Breakdown</h3>
+                        {% if missing_cabin_type_count > 0 %}
+                        <p class="chart-annotation">Based on {{ cruises_with_cabin_type }} of {{ total_cruises }} cruises with cabin data</p>
+                        {% endif %}
+                        <canvas id="cabinTypeChart"></canvas>
+                    </div>
+                </div>
+                <div class="zigzag-text">
+                    <h2>From Cozy Interiors to Luxurious Suites</h2>
+                    <p>Your cabin is your home at sea. Whether you prefer the simplicity of an interior cabin, the fresh air of a balcony, or the indulgence of a suite &mdash; your choices tell a story.</p>
+                    <p>See how your cabin preferences have shaped your cruising experience and maybe inspire your next upgrade!</p>
+                    <p class="fun-tagline">Life is short &mdash; book the balcony.</p>
+                </div>
             </div>
         </div>
         {% endif %}
 
         <!-- Cost by Cruise Line Chart -->
         {% if avg_cost_by_cruiseline %}
-        <div class="charts-row single">
-            <div class="chart-container wide">
-                <h3>Average Cost by Cruise Line</h3>
-                <canvas id="costByCruiselineChart"></canvas>
+        <div class="zigzag-section stats-section alternate">
+            <div class="zigzag-content">
+                <div class="zigzag-visual">
+                    <div class="chart-container stats-chart-full">
+                        <h3>Average Cost by Cruise Line</h3>
+                        {% if missing_cost_count > 0 %}
+                        <p class="chart-annotation">Based on {{ cruises_with_cost }} of {{ total_cruises }} cruises with cost data</p>
+                        {% endif %}
+                        <canvas id="costByCruiselineChart"></canvas>
+                    </div>
+                </div>
+                <div class="zigzag-text">
+                    <h2>Smart Cruising, Smart Spending</h2>
+                    <p>Knowledge is power when it comes to planning your next voyage. See how your spending compares across different cruise lines to find the best value for your style.</p>
+                    <p>Every dollar spent on a cruise is an investment in memories that last a lifetime.</p>
+                    <p class="fun-tagline">The best things in life are at sea.</p>
+                </div>
             </div>
         </div>
         {% endif %}
+
+        <!-- Closing CTA -->
+        <div class="stats-cta-section">
+            <div class="stats-cta-icon">&#9875;</div>
+            <h3>The Ocean is Calling</h3>
+            <p>Every cruise is a new adventure waiting to be tracked. Keep your statistics growing and your horizons expanding!</p>
+            <div class="cta-buttons">
+                <a href="{{ url_for('history') }}" class="btn-primary">Add a Cruise</a>
+                <a href="{{ url_for('timeline') }}" class="btn-secondary">View Timeline</a>
+            </div>
+        </div>
     {% endif %}
 
     <script>

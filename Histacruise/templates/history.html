@@ -126,6 +126,9 @@
                                     data-notes="{{ cruise.notes or '' }}">
                                 Edit
                             </button>
+                            <form method="POST" action="{{ url_for('social.share_cruise', cruise_id=cruise.cruiseid) }}" style="margin: 0;">
+                                <button type="submit" class="action-btn social-share-btn" onclick="return confirm('Share this cruise to the community feed?')">Share</button>
+                            </form>
                             <form method="POST" action="{{ url_for('delete_cruise', cruise_id=cruise.cruiseid) }}" class="delete-form" style="margin: 0;">
                                 <button type="button" class="action-btn action-danger delete-btn">Delete</button>
                             </form>
@@ -207,6 +210,9 @@
                         data-cost="{{ cruise.cost or '' }}"
                         data-rating="{{ cruise.rating or '' }}"
                         data-notes="{{ cruise.notes or '' }}">Edit</button>
+                    <form method="POST" action="{{ url_for('social.share_cruise', cruise_id=cruise.cruiseid) }}" style="margin: 0; background: transparent; padding: 0; flex: 1;">
+                        <button type="submit" class="action-btn social-share-btn" style="width: 100%;" onclick="return confirm('Share this cruise to the community feed?')">Share</button>
+                    </form>
                 </div>
             </div>
             {% endfor %}
