@@ -1,0 +1,191 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0e14"/>
+      <stop offset="50%" style="stop-color:#0d1117"/>
+      <stop offset="100%" style="stop-color:#161b22"/>
+    </linearGradient>
+
+    <!-- Logo gradients -->
+    <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#58a6ff"/>
+      <stop offset="100%" style="stop-color:#a371f7"/>
+    </linearGradient>
+    <linearGradient id="eyeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#79b8ff"/>
+      <stop offset="100%" style="stop-color:#c4a5f9"/>
+    </linearGradient>
+
+    <!-- Glow effect -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+
+  <!-- Grid pattern -->
+  <g opacity="0.03">
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#58a6ff" stroke-width="1"/>
+    </pattern>
+    <rect width="1200" height="630" fill="url(#grid)"/>
+  </g>
+
+  <!-- Binary code background - left side -->
+  <g fill="#58a6ff" font-family="Consolas, monospace" font-size="14" opacity="0.08">
+    <text x="20" y="40">01001000 01100101 01101100</text>
+    <text x="50" y="70">10110010 01001111 00101010</text>
+    <text x="30" y="100">01100011 01101111 01100100</text>
+    <text x="60" y="130">11010101 00110011 01110101</text>
+    <text x="20" y="160">01110011 01100101 01100011</text>
+    <text x="40" y="190">10101010 01010101 11001100</text>
+    <text x="25" y="220">01100001 01101110 01100001</text>
+    <text x="55" y="250">11110000 00001111 10101010</text>
+    <text x="35" y="280">01101100 01111001 01111010</text>
+    <text x="20" y="310">01010101 10101010 01010101</text>
+    <text x="45" y="340">10011001 01100110 11001100</text>
+    <text x="30" y="370">01100101 01110010 01110010</text>
+    <text x="50" y="400">11100011 00011100 10101010</text>
+    <text x="25" y="430">01101111 01110010 01110011</text>
+    <text x="40" y="460">10110110 01001001 11011011</text>
+    <text x="35" y="490">01110000 01100101 01110010</text>
+    <text x="20" y="520">01001010 10110101 01001010</text>
+    <text x="55" y="550">11001100 00110011 10011001</text>
+    <text x="30" y="580">01100110 01101111 01110010</text>
+    <text x="45" y="610">10101010 01010101 11110000</text>
+  </g>
+
+  <!-- Binary code background - right side -->
+  <g fill="#a371f7" font-family="Consolas, monospace" font-size="14" opacity="0.08">
+    <text x="980" y="50">01110011 01100101 01100011</text>
+    <text x="1010" y="80">10010110 01101001 01011010</text>
+    <text x="990" y="110">01110101 01110010 01101001</text>
+    <text x="1020" y="140">11011011 00100100 10110110</text>
+    <text x="985" y="170">01110100 01111001 01110000</text>
+    <text x="1000" y="200">10101010 01010101 11001100</text>
+    <text x="995" y="230">01100101 01110011 01110100</text>
+    <text x="1015" y="260">11110000 00001111 10101010</text>
+    <text x="988" y="290">01100011 01101111 01100100</text>
+    <text x="1005" y="320">01010101 10101010 01010101</text>
+    <text x="992" y="350">10011001 01100110 11001100</text>
+    <text x="1008" y="380">01110010 01100101 01110110</text>
+    <text x="998" y="410">11100011 00011100 10101010</text>
+    <text x="982" y="440">01101001 01100101 01110111</text>
+    <text x="1012" y="470">10110110 01001001 11011011</text>
+    <text x="995" y="500">01100010 01110101 01100111</text>
+    <text x="1000" y="530">01001010 10110101 01001010</text>
+    <text x="988" y="560">11001100 00110011 10011001</text>
+    <text x="1005" y="590">01110000 01100101 01110010</text>
+  </g>
+
+  <!-- Floating code snippets - left -->
+  <g opacity="0.12">
+    <rect x="80" y="120" width="220" height="100" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+    <text x="95" y="145" fill="#ff7b72" font-family="Consolas, monospace" font-size="11">def</text>
+    <text x="120" y="145" fill="#d2a8ff" font-family="Consolas, monospace" font-size="11">analyze_code</text>
+    <text x="210" y="145" fill="#8b949e" font-family="Consolas, monospace" font-size="11">(code):</text>
+    <text x="105" y="165" fill="#8b949e" font-family="Consolas, monospace" font-size="11">errors = []</text>
+    <text x="105" y="185" fill="#ff7b72" font-family="Consolas, monospace" font-size="11">for</text>
+    <text x="130" y="185" fill="#8b949e" font-family="Consolas, monospace" font-size="11">line</text>
+    <text x="160" y="185" fill="#ff7b72" font-family="Consolas, monospace" font-size="11">in</text>
+    <text x="178" y="185" fill="#8b949e" font-family="Consolas, monospace" font-size="11">code:</text>
+    <text x="115" y="205" fill="#79c0ff" font-family="Consolas, monospace" font-size="11">check_security</text>
+    <text x="220" y="205" fill="#8b949e" font-family="Consolas, monospace" font-size="11">()</text>
+  </g>
+
+  <!-- Floating code snippets - right -->
+  <g opacity="0.12">
+    <rect x="900" y="420" width="200" height="90" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+    <text x="915" y="445" fill="#6e7681" font-family="Consolas, monospace" font-size="11">// Security check</text>
+    <text x="915" y="465" fill="#ff7b72" font-family="Consolas, monospace" font-size="11">if</text>
+    <text x="935" y="465" fill="#8b949e" font-family="Consolas, monospace" font-size="11">(input.includes(</text>
+    <text x="925" y="485" fill="#a5d6ff" font-family="Consolas, monospace" font-size="11">"SELECT"</text>
+    <text x="990" y="485" fill="#8b949e" font-family="Consolas, monospace" font-size="11">)) {</text>
+    <text x="935" y="505" fill="#79c0ff" font-family="Consolas, monospace" font-size="11">flagInjection</text>
+    <text x="1040" y="505" fill="#8b949e" font-family="Consolas, monospace" font-size="11">();</text>
+  </g>
+
+  <!-- Connection lines -->
+  <g stroke="#58a6ff" stroke-width="1" opacity="0.15">
+    <line x1="300" y1="170" x2="450" y2="280"/>
+    <line x1="900" y1="465" x2="750" y2="350"/>
+    <line x1="200" y1="400" x2="400" y2="350"/>
+    <line x1="1000" y1="200" x2="800" y2="300"/>
+  </g>
+
+  <!-- Glowing orbs -->
+  <circle cx="150" cy="500" r="80" fill="#58a6ff" opacity="0.03" filter="url(#glow)"/>
+  <circle cx="1050" cy="150" r="100" fill="#a371f7" opacity="0.03" filter="url(#glow)"/>
+  <circle cx="600" cy="600" r="120" fill="#58a6ff" opacity="0.02" filter="url(#glow)"/>
+
+  <!-- Main Logo - Centered and Large -->
+  <g transform="translate(600, 280)" filter="url(#glow)">
+    <!-- Shield shape -->
+    <path d="M0 -120 L96 -72 L96 24 C96 84 48 132 0 144 C-48 132 -96 84 -96 24 L-96 -72 Z"
+          fill="url(#shieldGradient)" opacity="0.95"/>
+    <!-- Inner shield highlight -->
+    <path d="M0 -100 L78 -58 L78 20 C78 68 39 108 0 118 C-39 108 -78 68 -78 20 L-78 -58 Z"
+          fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
+    <!-- AI Eye - outer -->
+    <ellipse cx="0" cy="-12" rx="48" ry="36" fill="#0d1117" opacity="0.85"/>
+    <ellipse cx="0" cy="-12" rx="36" ry="27" fill="none" stroke="url(#eyeGradient)" stroke-width="3"/>
+    <!-- AI Eye - pupil -->
+    <circle cx="0" cy="-12" r="18" fill="url(#eyeGradient)"/>
+    <circle cx="6" cy="-18" r="6" fill="white" opacity="0.8"/>
+    <!-- Scan lines -->
+    <line x1="-60" y1="48" x2="60" y2="48" stroke="url(#eyeGradient)" stroke-width="2" opacity="0.5"/>
+    <line x1="-48" y1="66" x2="48" y2="66" stroke="url(#eyeGradient)" stroke-width="2" opacity="0.3"/>
+    <line x1="-36" y1="84" x2="36" y2="84" stroke="url(#eyeGradient)" stroke-width="2" opacity="0.15"/>
+  </g>
+
+  <!-- Logo Text -->
+  <text x="600" y="470" text-anchor="middle" fill="url(#shieldGradient)" font-family="Inter, -apple-system, sans-serif" font-size="56" font-weight="700" filter="url(#softGlow)">FlakkAi</text>
+
+  <!-- Tagline -->
+  <text x="600" y="510" text-anchor="middle" fill="#8b949e" font-family="Inter, -apple-system, sans-serif" font-size="18">Intelligent Code Analysis</text>
+
+  <!-- Feature pills - centered around x=600 -->
+  <g font-family="Inter, -apple-system, sans-serif" font-size="12">
+    <!-- Total width: 110+15+100+15+110+15+115 = 480, start at 600-240=360 -->
+    <!-- Bug Detection -->
+    <rect x="360" y="545" width="110" height="28" rx="14" fill="rgba(248,81,73,0.15)" stroke="rgba(248,81,73,0.3)" stroke-width="1"/>
+    <text x="415" y="564" text-anchor="middle" fill="#f85149">Bug Detection</text>
+
+    <!-- Security -->
+    <rect x="485" y="545" width="100" height="28" rx="14" fill="rgba(88,166,255,0.15)" stroke="rgba(88,166,255,0.3)" stroke-width="1"/>
+    <text x="535" y="564" text-anchor="middle" fill="#58a6ff">Security</text>
+
+    <!-- Performance -->
+    <rect x="600" y="545" width="110" height="28" rx="14" fill="rgba(210,153,34,0.15)" stroke="rgba(210,153,34,0.3)" stroke-width="1"/>
+    <text x="655" y="564" text-anchor="middle" fill="#d29922">Performance</text>
+
+    <!-- Best Practices -->
+    <rect x="725" y="545" width="115" height="28" rx="14" fill="rgba(63,185,80,0.15)" stroke="rgba(63,185,80,0.3)" stroke-width="1"/>
+    <text x="782" y="564" text-anchor="middle" fill="#3fb950">Best Practices</text>
+  </g>
+
+  <!-- Decorative brackets -->
+  <text x="250" y="315" fill="#58a6ff" font-family="Fira Code, Consolas, monospace" font-size="120" opacity="0.08">{</text>
+  <text x="900" y="315" fill="#a371f7" font-family="Fira Code, Consolas, monospace" font-size="120" opacity="0.08">}</text>
+
+  <!-- Corner accents -->
+  <path d="M0 0 L80 0 L80 5 L5 5 L5 80 L0 80 Z" fill="#58a6ff" opacity="0.3"/>
+  <path d="M1200 0 L1120 0 L1120 5 L1195 5 L1195 80 L1200 80 Z" fill="#a371f7" opacity="0.3"/>
+  <path d="M0 630 L80 630 L80 625 L5 625 L5 550 L0 550 Z" fill="#58a6ff" opacity="0.3"/>
+  <path d="M1200 630 L1120 630 L1120 625 L1195 625 L1195 550 L1200 550 Z" fill="#a371f7" opacity="0.3"/>
+</svg>

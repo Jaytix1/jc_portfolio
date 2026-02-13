@@ -2,7 +2,6 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_required, current_user
 from datetime import datetime
 from werkzeug.utils import secure_filename
-import os
 
 from .helpers import ensure_profile_exists, compute_sailing_status, create_notification, check_and_award_badges
 
@@ -124,13 +123,15 @@ def profile(username):
 @login_required
 def edit_profile():
     from Histacruise.app import (db, SocialProfile, CruiseHistory, app, allowed_file,
-                                  sanitize_text, validate_text_field,
-                                  MAX_DISPLAY_NAME_LENGTH, MAX_BIO_LENGTH)
+                                  get_mimetype, sanitize_text, validate_text_field,
+                                  MAX_DISPLAY_NAME_LENGTH, MAX_BIO_LENGTH,
+                                  MAX_HOMETOWN_LENGTH)
 
     profile = ensure_profile_exists(current_user)
 
     display_name = request.form.get('display_name', '').strip()
     bio = request.form.get('bio', '').strip()
+    hometown = request.form.get('hometown', '').strip()
 
     errors = []
     if display_name:
@@ -141,6 +142,10 @@ def edit_profile():
         bio_valid, bio_error = validate_text_field(bio, 'Bio', MAX_BIO_LENGTH)
         if not bio_valid:
             errors.append(bio_error)
+    if hometown:
+        ht_valid, ht_error = validate_text_field(hometown, 'Hometown', MAX_HOMETOWN_LENGTH)
+        if not ht_valid:
+            errors.append(ht_error)
 
     if errors:
         for e in errors:
@@ -149,6 +154,7 @@ def edit_profile():
 
     profile.display_name = sanitize_text(display_name) if display_name else None
     profile.bio = sanitize_text(bio) if bio else None
+    profile.hometown = sanitize_text(hometown) if hometown else None
 
     # Handle avatar upload
     if 'avatar' in request.files:
@@ -156,19 +162,9 @@ def edit_profile():
         if file and file.filename and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             unique_filename = f"avatar_{current_user.id}_{datetime.now().strftime('%Y%m%d%H%M%S')}_{filename}"
-            os.makedirs(app.config['PROFILE_UPLOAD_FOLDER'], exist_ok=True)
-            filepath = os.path.join(app.config['PROFILE_UPLOAD_FOLDER'], unique_filename)
-            file.save(filepath)
-
-            if profile.avatar_filename:
-                old_path = os.path.join(app.config['PROFILE_UPLOAD_FOLDER'], profile.avatar_filename)
-                if os.path.exists(old_path):
-                    try:
-                        os.remove(old_path)
-                    except OSError:
-                        pass
-
             profile.avatar_filename = unique_filename
+            profile.avatar_data = file.read()
+            profile.avatar_mimetype = get_mimetype(filename)
 
     # Handle cover photo upload
     if 'cover' in request.files:
@@ -176,19 +172,9 @@ def edit_profile():
         if file and file.filename and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             unique_filename = f"cover_{current_user.id}_{datetime.now().strftime('%Y%m%d%H%M%S')}_{filename}"
-            os.makedirs(app.config['COVER_UPLOAD_FOLDER'], exist_ok=True)
-            filepath = os.path.join(app.config['COVER_UPLOAD_FOLDER'], unique_filename)
-            file.save(filepath)
-
-            if profile.cover_filename:
-                old_path = os.path.join(app.config['COVER_UPLOAD_FOLDER'], profile.cover_filename)
-                if os.path.exists(old_path):
-                    try:
-                        os.remove(old_path)
-                    except OSError:
-                        pass
-
             profile.cover_filename = unique_filename
+            profile.cover_data = file.read()
+            profile.cover_mimetype = get_mimetype(filename)
 
     # Handle favorite cruise
     fav_cruise_id = request.form.get('favorite_cruise_id', '')
@@ -208,37 +194,75 @@ def edit_profile():
 @login_required
 def create_post():
     from Histacruise.app import (db, SocialPost, app, allowed_file,
-                                  sanitize_text, validate_text_field,
-                                  MAX_POST_CONTENT_LENGTH)
+                                  get_mimetype, sanitize_text, validate_text_field,
+                                  MAX_POST_CONTENT_LENGTH, MAX_LOCATION_LENGTH,
+                                  MAX_HASHTAGS_LENGTH)
+
+    next_url = request.form.get('next', '')
+    # Only allow relative URLs to prevent open redirect
+    if not next_url or next_url.startswith('//') or '://' in next_url:
+        next_url = None
+    fallback = next_url or url_for('social.feed')
 
     content = request.form.get('content', '').strip()
 
     if not content:
         flash('Post content cannot be empty.')
-        return redirect(url_for('social.feed'))
+        return redirect(fallback)
 
     content_valid, content_error = validate_text_field(content, 'Post content', MAX_POST_CONTENT_LENGTH)
     if not content_valid:
         flash(content_error)
-        return redirect(url_for('social.feed'))
+        return redirect(fallback)
 
     content = sanitize_text(content)
 
+    # Location
+    location = request.form.get('location', '').strip()
+    if location:
+        loc_valid, loc_error = validate_text_field(location, 'Location', MAX_LOCATION_LENGTH)
+        if not loc_valid:
+            flash(loc_error)
+            return redirect(fallback)
+        location = sanitize_text(location)
+    else:
+        location = None
+
+    # Hashtags — strip # symbols, filter empty tags, rejoin
+    hashtags_raw = request.form.get('hashtags', '').strip()
+    if hashtags_raw:
+        tags = [t.strip().lstrip('#').strip() for t in hashtags_raw.split(',')]
+        tags = [t for t in tags if t]  # drop empty entries
+        hashtags = ', '.join(tags) if tags else None
+        if hashtags:
+            ht_valid, ht_error = validate_text_field(hashtags, 'Hashtags', MAX_HASHTAGS_LENGTH)
+            if not ht_valid:
+                flash(ht_error)
+                return redirect(fallback)
+            hashtags = sanitize_text(hashtags)
+    else:
+        hashtags = None
+
     image_filename = None
+    image_data = None
+    image_mimetype = None
     if 'image' in request.files:
         file = request.files['image']
         if file and file.filename and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             unique_filename = f"post_{current_user.id}_{datetime.now().strftime('%Y%m%d%H%M%S%f')}_{filename}"
-            os.makedirs(app.config['SOCIAL_UPLOAD_FOLDER'], exist_ok=True)
-            filepath = os.path.join(app.config['SOCIAL_UPLOAD_FOLDER'], unique_filename)
-            file.save(filepath)
             image_filename = unique_filename
+            image_data = file.read()
+            image_mimetype = get_mimetype(filename)
 
     post = SocialPost(
         user_id=current_user.id,
         content=content,
-        image_filename=image_filename
+        location=location,
+        hashtags=hashtags,
+        image_filename=image_filename,
+        image_data=image_data,
+        image_mimetype=image_mimetype
     )
     db.session.add(post)
     db.session.commit()
@@ -246,7 +270,7 @@ def create_post():
     check_and_award_badges(current_user.id)
 
     flash('Post created!')
-    return redirect(url_for('social.feed'))
+    return redirect(fallback)
 
 
 @social_bp.route('/post/<int:post_id>/like', methods=['POST'])
@@ -340,16 +364,22 @@ def add_comment(post_id):
                                   MAX_COMMENT_LENGTH)
 
     post = SocialPost.query.get_or_404(post_id)
+
+    next_url = request.form.get('next', '')
+    if not next_url or next_url.startswith('//') or '://' in next_url:
+        next_url = None
+    fallback = next_url or url_for('social.post_detail', post_id=post_id)
+
     content = request.form.get('content', '').strip()
 
     if not content:
         flash('Comment cannot be empty.')
-        return redirect(url_for('social.post_detail', post_id=post_id))
+        return redirect(fallback)
 
     content_valid, content_error = validate_text_field(content, 'Comment', MAX_COMMENT_LENGTH)
     if not content_valid:
         flash(content_error)
-        return redirect(url_for('social.post_detail', post_id=post_id))
+        return redirect(fallback)
 
     content = sanitize_text(content)
 
@@ -377,7 +407,7 @@ def add_comment(post_id):
             }
         })
 
-    return redirect(url_for('social.post_detail', post_id=post_id))
+    return redirect(fallback)
 
 
 @social_bp.route('/share-cruise/<int:cruise_id>', methods=['POST'])
@@ -434,27 +464,24 @@ def post_detail(post_id):
 @social_bp.route('/post/<int:post_id>/delete', methods=['POST'])
 @login_required
 def delete_post(post_id):
-    from Histacruise.app import db, SocialPost, app
+    from Histacruise.app import db, SocialPost
 
     post = SocialPost.query.get_or_404(post_id)
 
+    next_url = request.form.get('next', '')
+    if not next_url or next_url.startswith('//') or '://' in next_url:
+        next_url = None
+    fallback = next_url or url_for('social.feed')
+
     if post.user_id != current_user.id:
         flash('You can only delete your own posts.')
-        return redirect(url_for('social.feed'))
-
-    if post.image_filename:
-        filepath = os.path.join(app.config['SOCIAL_UPLOAD_FOLDER'], post.image_filename)
-        if os.path.exists(filepath):
-            try:
-                os.remove(filepath)
-            except OSError:
-                pass
+        return redirect(fallback)
 
     db.session.delete(post)
     db.session.commit()
 
     flash('Post deleted.')
-    return redirect(url_for('social.feed'))
+    return redirect(fallback)
 
 
 # ============== FOLLOW ROUTES ==============

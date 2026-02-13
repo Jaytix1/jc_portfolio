@@ -8,7 +8,7 @@
         <p class="social-page-subtitle">See what fellow cruisers are sharing</p>
         <a href="{{ url_for('social.profile', username=current_user.username) }}" class="btn-secondary social-my-profile-btn">
             {% if current_user.social_profile and current_user.social_profile.avatar_filename %}
-                <img src="{{ url_for('static', filename='uploads/profile_photos/' + current_user.social_profile.avatar_filename) }}" class="social-avatar-tiny" alt="">
+                <img src="{{ url_for('serve_upload', category='profile_photos', filename=current_user.social_profile.avatar_filename) }}" class="social-avatar-tiny" alt="{{ current_user.username }}">
             {% else %}
                 <div class="social-avatar-tiny social-avatar-default">{{ current_user.username[0]|upper }}</div>
             {% endif %}
@@ -28,7 +28,7 @@
     <div class="social-create-bar">
         <a href="{{ url_for('social.profile', username=current_user.username) }}" class="social-create-avatar-link">
             {% if current_user.social_profile and current_user.social_profile.avatar_filename %}
-                <img src="{{ url_for('static', filename='uploads/profile_photos/' + current_user.social_profile.avatar_filename) }}" class="social-avatar-small" alt="{{ current_user.username }}">
+                <img src="{{ url_for('serve_upload', category='profile_photos', filename=current_user.social_profile.avatar_filename) }}" class="social-avatar-small" alt="{{ current_user.username }}">
             {% else %}
                 <div class="social-avatar-small social-avatar-default">{{ current_user.username[0]|upper }}</div>
             {% endif %}
@@ -52,6 +52,12 @@
                 {% endif %}
             </div>
         {% endfor %}
+
+        {% if posts.items and not posts.has_next %}
+        <div class="no-more-posts">
+            <p>You've reached the end — no more posts here.</p>
+        </div>
+        {% endif %}
     </div>
 
     <!-- Pagination -->

@@ -32,7 +32,7 @@
                     {% if cruise.photos and (cruise.photos|selectattr('is_cover')|first or cruise.photos[0]) %}
                         {% set cover = cruise.photos|selectattr('is_cover')|first or cruise.photos[0] %}
                         <div class="timeline-card-image">
-                            <img src="{{ url_for('static', filename='uploads/cruise_photos/' + cover.filename) }}" alt="{{ cruise.ship.name }}">
+                            <img src="{{ url_for('serve_upload', category='cruise_photos', filename=cover.filename) }}" alt="{{ cruise.ship.name }}">
                         </div>
                     {% endif %}
                     <div class="timeline-card-content">

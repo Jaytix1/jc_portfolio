@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, flash, request, jsonify
+from flask import Flask, render_template, redirect, url_for, flash, request, jsonify, make_response
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -70,6 +70,9 @@ MAX_POST_CONTENT_LENGTH = 2000
 MAX_COMMENT_LENGTH = 1000
 MAX_BIO_LENGTH = 500
 MAX_DISPLAY_NAME_LENGTH = 100
+MAX_LOCATION_LENGTH = 255
+MAX_HASHTAGS_LENGTH = 500
+MAX_HOMETOWN_LENGTH = 255
 SOCIAL_POSTS_PER_PAGE = 20
 NOTIFICATIONS_PER_PAGE = 30
 DISCOVER_USERS_PER_PAGE = 20
@@ -253,21 +256,23 @@ app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(basedir, "inst
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Photo upload configuration
-UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads', 'cruise_photos')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
 
-# Social upload directories
-SOCIAL_UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads', 'social_photos')
-PROFILE_UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads', 'profile_photos')
-COVER_UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads', 'cover_photos')
-app.config['SOCIAL_UPLOAD_FOLDER'] = SOCIAL_UPLOAD_FOLDER
-app.config['PROFILE_UPLOAD_FOLDER'] = PROFILE_UPLOAD_FOLDER
-app.config['COVER_UPLOAD_FOLDER'] = COVER_UPLOAD_FOLDER
+MIMETYPE_MAP = {
+    'png': 'image/png',
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'gif': 'image/gif',
+    'webp': 'image/webp',
+}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def get_mimetype(filename):
+    ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
+    return MIMETYPE_MAP.get(ext, 'application/octet-stream')
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -347,6 +352,8 @@ class CruisePhoto(db.Model):
     cruise_id = db.Column(db.Integer, db.ForeignKey('cruise_history.cruiseid'), nullable=False)
     filename = db.Column(db.String(255), nullable=False)
     original_filename = db.Column(db.String(255), nullable=False)
+    image_data = db.Column(db.LargeBinary, nullable=True)
+    image_mimetype = db.Column(db.String(50), nullable=True)
     upload_date = db.Column(db.DateTime, default=datetime.utcnow)
     is_cover = db.Column(db.Boolean, default=False)
     caption = db.Column(db.String(500), nullable=True)
@@ -510,7 +517,12 @@ class SocialProfile(db.Model):
     display_name = db.Column(db.String(100), nullable=True)
     bio = db.Column(db.Text, nullable=True)
     avatar_filename = db.Column(db.String(255), nullable=True)
+    avatar_data = db.Column(db.LargeBinary, nullable=True)
+    avatar_mimetype = db.Column(db.String(50), nullable=True)
     cover_filename = db.Column(db.String(255), nullable=True)
+    cover_data = db.Column(db.LargeBinary, nullable=True)
+    cover_mimetype = db.Column(db.String(50), nullable=True)
+    hometown = db.Column(db.String(255), nullable=True)
     sailing_status = db.Column(db.String(30), nullable=True)
     sailing_status_cruise_id = db.Column(db.Integer, db.ForeignKey('cruise_history.cruiseid'), nullable=True)
     favorite_cruise_id = db.Column(db.Integer, db.ForeignKey('cruise_history.cruiseid'), nullable=True)
@@ -532,6 +544,10 @@ class SocialPost(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     content = db.Column(db.Text, nullable=False)
     image_filename = db.Column(db.String(255), nullable=True)
+    image_data = db.Column(db.LargeBinary, nullable=True)
+    image_mimetype = db.Column(db.String(50), nullable=True)
+    location = db.Column(db.String(255), nullable=True)
+    hashtags = db.Column(db.String(500), nullable=True)
     shared_cruise_id = db.Column(db.Integer, db.ForeignKey('cruise_history.cruiseid', ondelete='SET NULL'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -688,6 +704,26 @@ def load_user(user_id):
 with app.app_context():
     db.create_all()
 
+    # Idempotent migration: add location and hashtags columns to social_post
+    import sqlite3 as _sqlite3
+    _conn = _sqlite3.connect(os.path.join(basedir, 'instance', 'histacruise.db'))
+    _cur = _conn.cursor()
+    _cur.execute("PRAGMA table_info(social_post)")
+    _existing_cols = {row[1] for row in _cur.fetchall()}
+    if 'location' not in _existing_cols:
+        _cur.execute("ALTER TABLE social_post ADD COLUMN location VARCHAR(255)")
+    if 'hashtags' not in _existing_cols:
+        _cur.execute("ALTER TABLE social_post ADD COLUMN hashtags VARCHAR(500)")
+    _conn.commit()
+
+    # Add hometown column to social_profile
+    _cur.execute("PRAGMA table_info(social_profile)")
+    _profile_cols = {row[1] for row in _cur.fetchall()}
+    if 'hometown' not in _profile_cols:
+        _cur.execute("ALTER TABLE social_profile ADD COLUMN hometown VARCHAR(255)")
+    _conn.commit()
+    _conn.close()
+
 # Register Pipeline API blueprint
 import sys
 import os
@@ -698,6 +734,40 @@ app.register_blueprint(pipeline_api)
 # Register Social Community blueprint
 from Histacruise.social import social_bp
 app.register_blueprint(social_bp)
+
+@app.route('/uploads/<category>/<filename>')
+def serve_upload(category, filename):
+    """Serve uploaded images from the database."""
+    if category == 'profile_photos':
+        record = SocialProfile.query.filter_by(avatar_filename=filename).first()
+        if record and record.avatar_data:
+            resp = make_response(record.avatar_data)
+            resp.headers['Content-Type'] = record.avatar_mimetype or 'image/jpeg'
+            resp.headers['Cache-Control'] = 'public, max-age=86400'
+            return resp
+    elif category == 'cover_photos':
+        record = SocialProfile.query.filter_by(cover_filename=filename).first()
+        if record and record.cover_data:
+            resp = make_response(record.cover_data)
+            resp.headers['Content-Type'] = record.cover_mimetype or 'image/jpeg'
+            resp.headers['Cache-Control'] = 'public, max-age=86400'
+            return resp
+    elif category == 'social_photos':
+        record = SocialPost.query.filter_by(image_filename=filename).first()
+        if record and record.image_data:
+            resp = make_response(record.image_data)
+            resp.headers['Content-Type'] = record.image_mimetype or 'image/jpeg'
+            resp.headers['Cache-Control'] = 'public, max-age=86400'
+            return resp
+    elif category == 'cruise_photos':
+        record = CruisePhoto.query.filter_by(filename=filename).first()
+        if record and record.image_data:
+            resp = make_response(record.image_data)
+            resp.headers['Content-Type'] = record.image_mimetype or 'image/jpeg'
+            resp.headers['Cache-Control'] = 'public, max-age=86400'
+            return resp
+    return '', 404
+
 
 @app.route('/')
 def home():
@@ -912,17 +982,8 @@ def delete_cruise(cruise_id):
         flash('You do not have permission to delete this cruise.', 'error')
         return redirect(url_for('history'))
 
-    # Delete associated photos (files and records)
-    photos = CruisePhoto.query.filter_by(cruise_id=cruise_id).all()
-    for photo in photos:
-        # Delete the file
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], photo.filename)
-        if os.path.exists(filepath):
-            try:
-                os.remove(filepath)
-            except OSError:
-                pass  # File might already be deleted
-        db.session.delete(photo)
+    # Delete associated photos (DB records — BLOB data deleted automatically)
+    CruisePhoto.query.filter_by(cruise_id=cruise_id).delete()
 
     # Delete associated cruise ports
     CruisePort.query.filter_by(cruise_id=cruise_id).delete()
@@ -1483,7 +1544,7 @@ def cruise_photos(cruise_id):
         'original_filename': p.original_filename,
         'is_cover': p.is_cover,
         'caption': p.caption,
-        'url': f'/static/uploads/cruise_photos/{p.filename}'
+        'url': f'/uploads/cruise_photos/{p.filename}'
     } for p in photos])
 
 @app.route('/upload_photos/<int:cruise_id>', methods=['POST'])
@@ -1507,9 +1568,6 @@ def upload_photos(cruise_id):
             'max_allowed': MAX_PHOTOS_PER_CRUISE
         }), 400
 
-    # Ensure upload directory exists
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
     uploaded = []
     skipped = []
 
@@ -1517,13 +1575,15 @@ def upload_photos(cruise_id):
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             unique_filename = f"{cruise_id}_{datetime.now().strftime('%Y%m%d%H%M%S%f')}_{filename}"
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-            file.save(filepath)
+            file_data = file.read()
+            mimetype = get_mimetype(filename)
 
             photo = CruisePhoto(
                 cruise_id=cruise_id,
                 filename=unique_filename,
-                original_filename=filename
+                original_filename=filename,
+                image_data=file_data,
+                image_mimetype=mimetype
             )
             db.session.add(photo)
             uploaded.append({
@@ -1564,11 +1624,6 @@ def delete_photo(photo_id):
     photo = CruisePhoto.query.get_or_404(photo_id)
     if photo.cruise.user_id != current_user.id:
         return jsonify({'error': 'Unauthorized'}), 403
-
-    # Delete file
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], photo.filename)
-    if os.path.exists(filepath):
-        os.remove(filepath)
 
     db.session.delete(photo)
     db.session.commit()

@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlakkOps - Inventory & Shipment Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="FlakkOps" width="36" height="36">
+                    <span>FlakkOps</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard') }}" class="nav-item {% if page == 'dashboard' %}active{% endif %}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7" rx="1"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1"/>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('manifests_page') }}" class="nav-item {% if page == 'manifests' or page == 'manifest_detail' %}active{% endif %}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                    <span>Manifests</span>
+                </a>
+                <a href="{{ url_for('tasks_page') }}" class="nav-item {% if page == 'tasks' %}active{% endif %}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 11l3 3L22 4"/>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                    </svg>
+                    <span>Tasks</span>
+                </a>
+                <a href="{{ url_for('analytics_page') }}" class="nav-item {% if page == 'analytics' %}active{% endif %}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="20" x2="18" y2="10"/>
+                        <line x1="12" y1="20" x2="12" y2="4"/>
+                        <line x1="6" y1="20" x2="6" y2="14"/>
+                    </svg>
+                    <span>Analytics</span>
+                </a>
+                <a href="{{ url_for('assistant_page') }}" class="nav-item {% if page == 'assistant' %}active{% endif %}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 16v-4M12 8h.01"/>
+                    </svg>
+                    <span>AI Assistant</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="flakk-badge">
+                    <span>Powered by</span>
+                    <strong>FlakkAi</strong>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            {% if page == 'dashboard' %}
+            <!-- Dashboard View -->
+            <header class="page-header">
+                <h1>Main Dashboard</h1>
+                <p class="subtitle">Overview of incoming shipments and tasks</p>
+            </header>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon upcoming">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="1" y="3" width="15" height="13" rx="2"/>
+                            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                            <circle cx="5.5" cy="18.5" r="2.5"/>
+                            <circle cx="18.5" cy="18.5" r="2.5"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value">{{ stats.upcoming_arrivals }}</span>
+                        <span class="stat-label">Upcoming Arrivals</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon tasks">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 11l3 3L22 4"/>
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value">{{ stats.pending_tasks }}</span>
+                        <span class="stat-label">Pending Tasks</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon units">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                            <line x1="12" y1="22.08" x2="12" y2="12"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value">{{ "{:,}".format(stats.units_this_week) }}</span>
+                        <span class="stat-label">Units This Week</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon skus">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="8" y1="6" x2="21" y2="6"/>
+                            <line x1="8" y1="12" x2="21" y2="12"/>
+                            <line x1="8" y1="18" x2="21" y2="18"/>
+                            <line x1="3" y1="6" x2="3.01" y2="6"/>
+                            <line x1="3" y1="12" x2="3.01" y2="12"/>
+                            <line x1="3" y1="18" x2="3.01" y2="18"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value">{{ "{:,}".format(stats.total_skus) }}</span>
+                        <span class="stat-label">Total SKUs</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <section class="card upcoming-arrivals">
+                    <div class="card-header">
+                        <h2>Upcoming Arrivals</h2>
+                        <a href="{{ url_for('manifests_page') }}" class="view-all">View All</a>
+                    </div>
+                    <div class="card-content">
+                        {% if upcoming %}
+                        <div class="arrivals-list">
+                            {% for manifest in upcoming %}
+                            <a href="{{ url_for('manifest_detail', manifest_id=manifest.id) }}" class="arrival-item">
+                                <div class="arrival-day {% if manifest.arrival_day == 'Monday' %}monday{% else %}wednesday{% endif %}">
+                                    {{ manifest.arrival_day[:3] }}
+                                </div>
+                                <div class="arrival-info">
+                                    <span class="arrival-date">{{ manifest.arrival_date }}</span>
+                                    <span class="arrival-stats">{{ manifest.total_skus }} SKUs · {{ "{:,}".format(manifest.total_units) }} units</span>
+                                </div>
+                                <svg class="arrival-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <p>No upcoming arrivals scheduled</p>
+                            <a href="{{ url_for('manifests_page') }}" class="btn btn-primary btn-sm">Upload Manifest</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </section>
+
+                <section class="card pending-tasks">
+                    <div class="card-header">
+                        <h2>Pending Tasks</h2>
+                        <a href="{{ url_for('tasks_page') }}" class="view-all">View All</a>
+                    </div>
+                    <div class="card-content">
+                        {% if tasks %}
+                        <div class="tasks-list">
+                            {% for task in tasks %}
+                            <div class="task-item" data-task-id="{{ task.id }}">
+                                <button class="task-check" onclick="completeTask({{ task.id }})">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                </button>
+                                <div class="task-info">
+                                    <span class="task-title">{{ task.title }}</span>
+                                    {% if task.due_date %}
+                                    <span class="task-due">Due: {{ task.due_date }}</span>
+                                    {% endif %}
+                                </div>
+                                <span class="task-priority priority-{{ task.priority }}">{{ task.priority }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <p>No pending tasks</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </section>
+
+                <section class="card top-products">
+                    <div class="card-header">
+                        <h2>Top Products (30 Days)</h2>
+                        <a href="{{ url_for('analytics_page') }}" class="view-all">Analytics</a>
+                    </div>
+                    <div class="card-content">
+                        {% if top_products %}
+                        <div class="products-list">
+                            {% for product in top_products %}
+                            <div class="product-item">
+                                <div class="product-rank">#{{ loop.index }}</div>
+                                <div class="product-info">
+                                    <span class="product-sku">{{ product.sku }}</span>
+                                    <span class="product-desc">{{ product.description[:40] }}{% if product.description|length > 40 %}...{% endif %}</span>
+                                </div>
+                                <div class="product-qty">{{ "{:,}".format(product.total_quantity) }}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <p>No product data yet</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </section>
+            </div>
+
+            {% elif page == 'manifests' %}
+            <!-- Manifests View -->
+            <header class="page-header">
+                <h1>Manifests</h1>
+                <p class="subtitle">Upload and manage shipment manifests</p>
+            </header>
+
+            <div class="upload-section card">
+                <div class="card-header">
+                    <h2>Upload New Manifest</h2>
+                </div>
+                <div class="card-content">
+                    <form id="upload-form" class="upload-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="manifest-file">Manifest File (PDF)</label>
+                                <div class="file-input-wrapper">
+                                    <input type="file" id="manifest-file" name="file" accept=".pdf,.csv,.xlsx,.xls" required>
+                                    <div class="file-input-display">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                            <polyline points="17 8 12 3 7 8"/>
+                                            <line x1="12" y1="3" x2="12" y2="15"/>
+                                        </svg>
+                                        <span id="file-name">Choose file or drag here</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="arrival-day">Arrival Day</label>
+                                <select id="arrival-day" name="arrival_day" required>
+                                    <option value="Monday">Monday</option>
+                                    <option value="Wednesday">Wednesday</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="manifest-date">Manifest Date</label>
+                                <input type="date" id="manifest-date" name="manifest_date">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="notes">Notes (optional)</label>
+                            <textarea id="notes" name="notes" rows="2" placeholder="Any special notes about this shipment..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            Upload & Process
+                        </button>
+                    </form>
+                    <div id="upload-status" class="upload-status hidden"></div>
+                </div>
+            </div>
+
+            <section class="card manifests-list-section">
+                <div class="card-header">
+                    <h2>Recent Manifests</h2>
+                </div>
+                <div class="card-content">
+                    {% if manifests %}
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Arrival</th>
+                                    <th>Upload Date</th>
+                                    <th>SKUs</th>
+                                    <th>Units</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for manifest in manifests %}
+                                <tr>
+                                    <td>
+                                        <div class="arrival-cell">
+                                            <span class="day-badge {% if manifest.arrival_day == 'Monday' %}monday{% else %}wednesday{% endif %}">{{ manifest.arrival_day[:3] }}</span>
+                                            {{ manifest.arrival_date }}
+                                        </div>
+                                    </td>
+                                    <td>{{ manifest.upload_date }}</td>
+                                    <td>{{ manifest.total_skus }}</td>
+                                    <td>{{ "{:,}".format(manifest.total_units) }}</td>
+                                    <td><span class="status-badge status-{{ manifest.status }}">{{ manifest.status }}</span></td>
+                                    <td>
+                                        <a href="{{ url_for('manifest_detail', manifest_id=manifest.id) }}" class="btn btn-sm btn-ghost">View</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        <p>No manifests uploaded yet</p>
+                        <p class="text-muted">Upload your first manifest above to get started</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            {% elif page == 'manifest_detail' %}
+            <!-- Manifest Detail View -->
+            <header class="page-header">
+                <div class="header-with-back">
+                    <a href="{{ url_for('manifests_page') }}" class="back-link">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                        Back to Manifests
+                    </a>
+                </div>
+                <h1>{{ manifest.arrival_day }} Manifest - {{ manifest.arrival_date }}</h1>
+                <p class="subtitle">Uploaded {{ manifest.upload_date }}</p>
+            </header>
+
+            <div class="manifest-overview">
+                <div class="stat-card compact">
+                    <span class="stat-value">{{ summary.total_skus }}</span>
+                    <span class="stat-label">Total SKUs</span>
+                </div>
+                <div class="stat-card compact">
+                    <span class="stat-value">{{ "{:,}".format(summary.total_units) }}</span>
+                    <span class="stat-label">Total Units</span>
+                </div>
+                <div class="stat-card compact highlight">
+                    <span class="stat-value">{{ new_items|length }}</span>
+                    <span class="stat-label">New Products</span>
+                </div>
+                <button class="btn btn-primary" onclick="analyzeManifest({{ manifest.id }})">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 16v-4M12 8h.01"/>
+                    </svg>
+                    AI Analysis
+                </button>
+            </div>
+
+            <div id="analysis-result" class="analysis-card hidden">
+                <div class="card-header">
+                    <h2>AI Analysis</h2>
+                    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('analysis-result').classList.add('hidden')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="card-content analysis-content"></div>
+            </div>
+
+            {% if new_items %}
+            <section class="card">
+                <div class="card-header warning">
+                    <h2>New Products Detected</h2>
+                    <span class="badge">{{ new_items|length }} new</span>
+                </div>
+                <div class="card-content">
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>SKU</th>
+                                    <th>Description</th>
+                                    <th>Quantity</th>
+                                    <th>Case Pack</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in new_items %}
+                                <tr class="new-item-row">
+                                    <td><code>{{ item.sku }}</code></td>
+                                    <td>{{ item.description }}</td>
+                                    <td>{{ "{:,}".format(item.quantity) }}</td>
+                                    <td>{{ item.case_pack or '-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+
+            <section class="card">
+                <div class="card-header">
+                    <h2>All Items</h2>
+                    <div class="search-box">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <input type="text" id="item-search" placeholder="Search items..." onkeyup="filterItems()">
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="table-wrapper">
+                        <table class="data-table" id="items-table">
+                            <thead>
+                                <tr>
+                                    <th>SKU</th>
+                                    <th>Description</th>
+                                    <th>Quantity</th>
+                                    <th>Case Pack</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items %}
+                                <tr>
+                                    <td><code>{{ item.sku }}</code></td>
+                                    <td>{{ item.description }}</td>
+                                    <td>{{ "{:,}".format(item.quantity) }}</td>
+                                    <td>{{ item.case_pack or '-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            {% elif page == 'tasks' %}
+            <!-- Tasks View -->
+            <header class="page-header">
+                <h1>Tasks</h1>
+                <p class="subtitle">Manage your shipment and inventory tasks</p>
+            </header>
+
+            <div class="tasks-controls">
+                <div class="filter-tabs">
+                    <a href="{{ url_for('tasks_page') }}" class="filter-tab {% if not filter_status %}active{% endif %}">All</a>
+                    <a href="{{ url_for('tasks_page', status='pending') }}" class="filter-tab {% if filter_status == 'pending' %}active{% endif %}">Pending</a>
+                    <a href="{{ url_for('tasks_page', status='in_progress') }}" class="filter-tab {% if filter_status == 'in_progress' %}active{% endif %}">In Progress</a>
+                    <a href="{{ url_for('tasks_page', status='completed') }}" class="filter-tab {% if filter_status == 'completed' %}active{% endif %}">Completed</a>
+                </div>
+                <button class="btn btn-primary" onclick="showNewTaskModal()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    New Task
+                </button>
+            </div>
+
+            <section class="card">
+                <div class="card-content">
+                    {% if tasks %}
+                    <div class="tasks-full-list">
+                        {% for task in tasks %}
+                        <div class="task-item-full" data-task-id="{{ task.id }}">
+                            <div class="task-status-indicator status-{{ task.status }}"></div>
+                            <div class="task-main">
+                                <div class="task-header">
+                                    <h3 class="task-title">{{ task.title }}</h3>
+                                    <span class="task-priority priority-{{ task.priority }}">{{ task.priority }}</span>
+                                </div>
+                                {% if task.description %}
+                                <p class="task-description">{{ task.description }}</p>
+                                {% endif %}
+                                <div class="task-meta">
+                                    {% if task.due_date %}
+                                    <span class="task-due">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                            <line x1="16" y1="2" x2="16" y2="6"/>
+                                            <line x1="8" y1="2" x2="8" y2="6"/>
+                                            <line x1="3" y1="10" x2="21" y2="10"/>
+                                        </svg>
+                                        {{ task.due_date }}
+                                    </span>
+                                    {% endif %}
+                                    <span class="task-created">Created {{ task.created_at }}</span>
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                {% if task.status != 'completed' %}
+                                <button class="btn btn-sm btn-ghost" onclick="updateTaskStatus({{ task.id }}, 'completed')" title="Complete">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                </button>
+                                {% endif %}
+                                <button class="btn btn-sm btn-ghost danger" onclick="deleteTask({{ task.id }})" title="Delete">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6"/>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M9 11l3 3L22 4"/>
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                        </svg>
+                        <p>No tasks found</p>
+                        <button class="btn btn-primary" onclick="showNewTaskModal()">Create Task</button>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- New Task Modal -->
+            <div id="task-modal" class="modal hidden">
+                <div class="modal-overlay" onclick="closeTaskModal()"></div>
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>New Task</h2>
+                        <button class="btn btn-ghost" onclick="closeTaskModal()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <form id="task-form" onsubmit="createTask(event)">
+                        <div class="form-group">
+                            <label for="task-title">Title</label>
+                            <input type="text" id="task-title" name="title" required placeholder="What needs to be done?">
+                        </div>
+                        <div class="form-group">
+                            <label for="task-description">Description</label>
+                            <textarea id="task-description" name="description" rows="3" placeholder="Add details..."></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="task-priority">Priority</label>
+                                <select id="task-priority" name="priority">
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="task-due">Due Date</label>
+                                <input type="date" id="task-due" name="due_date">
+                            </div>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="btn btn-ghost" onclick="closeTaskModal()">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Create Task</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% elif page == 'analytics' %}
+            <!-- Analytics View -->
+            <header class="page-header">
+                <h1>Analytics</h1>
+                <p class="subtitle">Product insights and inventory trends</p>
+            </header>
+
+            <div class="analytics-grid">
+                <section class="card">
+                    <div class="card-header">
+                        <h2>Top Products (90 Days)</h2>
+                    </div>
+                    <div class="card-content">
+                        {% if top_products %}
+                        <div class="products-chart">
+                            {% for product in top_products[:10] %}
+                            <div class="chart-bar-item">
+                                <div class="chart-label">
+                                    <span class="sku">{{ product.sku }}</span>
+                                    <span class="desc">{{ product.description[:30] }}{% if product.description|length > 30 %}...{% endif %}</span>
+                                </div>
+                                <div class="chart-bar-wrapper">
+                                    <div class="chart-bar" style="width: {{ (product.total_quantity / top_products[0].total_quantity * 100)|int }}%"></div>
+                                    <span class="chart-value">{{ "{:,}".format(product.total_quantity) }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <p>No product data available</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </section>
+
+                <section class="card">
+                    <div class="card-header">
+                        <h2>New Products This Month</h2>
+                        <span class="badge">{{ new_products|length }}</span>
+                    </div>
+                    <div class="card-content">
+                        {% if new_products %}
+                        <div class="new-products-list">
+                            {% for product in new_products[:15] %}
+                            <div class="new-product-item">
+                                <code>{{ product.sku }}</code>
+                                <span>{{ product.description[:40] }}{% if product.description|length > 40 %}...{% endif %}</span>
+                                <span class="first-seen">{{ product.first_seen }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <p>No new products this month</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </section>
+
+                <section class="card full-width">
+                    <div class="card-header">
+                        <h2>All Products</h2>
+                        <div class="search-box">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                            <input type="text" id="product-search" placeholder="Search products..." onkeyup="filterProducts()">
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        {% if products %}
+                        <div class="table-wrapper">
+                            <table class="data-table" id="products-table">
+                                <thead>
+                                    <tr>
+                                        <th>SKU</th>
+                                        <th>Description</th>
+                                        <th>First Seen</th>
+                                        <th>Last Seen</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for product in products %}
+                                    <tr>
+                                        <td><code>{{ product.sku }}</code></td>
+                                        <td>{{ product.description }}</td>
+                                        <td>{{ product.first_seen }}</td>
+                                        <td>{{ product.last_seen }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <p>No products tracked yet</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </section>
+            </div>
+
+            {% elif page == 'assistant' %}
+            <!-- AI Assistant View -->
+            <header class="page-header">
+                <h1>AI Assistant</h1>
+                <p class="subtitle">Get insights and recommendations powered by FlakkAi</p>
+            </header>
+
+            <div class="assistant-container">
+                <div class="chat-window card">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="message assistant">
+                            <div class="message-avatar">
+                                <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+                                    <rect width="32" height="32" rx="8" fill="url(#ai-gradient)"/>
+                                    <circle cx="16" cy="16" r="8" stroke="white" stroke-width="2" fill="none"/>
+                                    <circle cx="16" cy="16" r="3" fill="white"/>
+                                    <defs>
+                                        <linearGradient id="ai-gradient" x1="0" y1="0" x2="32" y2="32">
+                                            <stop offset="0%" stop-color="#0066FF"/>
+                                            <stop offset="100%" stop-color="#00D4FF"/>
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                            </div>
+                            <div class="message-content">
+                                <p>Hello! I'm your FlakkOps assistant. I can help you with:</p>
+                                <ul>
+                                    <li>Planning for upcoming shipments</li>
+                                    <li>Analyzing manifest data</li>
+                                    <li>Identifying trends and patterns</li>
+                                    <li>Prioritizing tasks</li>
+                                    <li>Comparing volumes to historical data</li>
+                                </ul>
+                                <p>What would you like to know?</p>
+                            </div>
+                        </div>
+                    </div>
+                    <form class="chat-input-form" id="chat-form" onsubmit="sendMessage(event)">
+                        <input type="text" id="chat-input" placeholder="Ask about inventory, shipments, or tasks..." autocomplete="off">
+                        <button type="submit" class="btn btn-primary">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="22" y1="2" x2="11" y2="13"/>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="assistant-suggestions">
+                    <h3>Quick Questions</h3>
+                    <div class="suggestion-chips">
+                        <button class="suggestion-chip" onclick="askQuestion('What should I prioritize for the next arrival?')">
+                            What to prioritize?
+                        </button>
+                        <button class="suggestion-chip" onclick="askQuestion('Are there any concerning trends in recent shipments?')">
+                            Any concerning trends?
+                        </button>
+                        <button class="suggestion-chip" onclick="askQuestion('Which products have the highest volume lately?')">
+                            Highest volume products
+                        </button>
+                        <button class="suggestion-chip" onclick="askQuestion('What new products should I prepare space for?')">
+                            New products incoming
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

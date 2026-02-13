@@ -3,7 +3,7 @@
     <div class="social-post-header">
         <a href="{{ url_for('social.profile', username=post.user.username) }}">
             {% if post.user.social_profile and post.user.social_profile.avatar_filename %}
-                <img src="{{ url_for('static', filename='uploads/profile_photos/' + post.user.social_profile.avatar_filename) }}" class="social-avatar-small" alt="{{ post.user.username }}">
+                <img src="{{ url_for('serve_upload', category='profile_photos', filename=post.user.social_profile.avatar_filename) }}" class="social-avatar-small" alt="{{ post.user.username }}">
             {% else %}
                 <div class="social-avatar-small social-avatar-default">{{ post.user.username[0]|upper }}</div>
             {% endif %}
@@ -23,6 +23,7 @@
         </div>
         {% if post.user_id == current_user.id %}
         <form method="POST" action="{{ url_for('social.delete_post', post_id=post.id) }}" class="social-post-delete">
+            <input type="hidden" name="next" value="{{ request.path }}">
             <button type="submit" class="social-delete-btn" onclick="return confirm('Delete this post?')" title="Delete post">&times;</button>
         </form>
         {% endif %}
@@ -33,10 +34,32 @@
         <p>{{ post.content }}</p>
     </div>
 
+    <!-- Location tile -->
+    {% if post.location %}
+    <div class="post-location-tile">
+        <a href="https://www.google.com/maps/search/{{ post.location|urlencode }}" target="_blank" rel="noopener noreferrer" class="post-location-link">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            {{ post.location }}
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Hashtag chips -->
+    {% if post.hashtags %}
+    <div class="post-hashtag-chips">
+        {% for tag in post.hashtags.split(',') %}
+            {% set t = tag.strip() %}
+            {% if t %}
+            <span class="post-hashtag-chip">#{{ t }}</span>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <!-- Attached Image -->
     {% if post.image_filename %}
     <div class="social-post-image">
-        <img src="{{ url_for('static', filename='uploads/social_photos/' + post.image_filename) }}" alt="Post image">
+        <img src="{{ url_for('serve_upload', category='social_photos', filename=post.image_filename) }}" alt="Post image">
     </div>
     {% endif %}
 
@@ -47,11 +70,11 @@
             {% set cover = post.shared_cruise.photos|selectattr('is_cover')|first %}
             {% if cover %}
             <div class="social-cruise-image">
-                <img src="{{ url_for('static', filename='uploads/cruise_photos/' + cover.filename) }}" alt="Cruise photo">
+                <img src="{{ url_for('serve_upload', category='cruise_photos', filename=cover.filename) }}" alt="Cruise photo">
             </div>
             {% elif post.shared_cruise.photos|list %}
             <div class="social-cruise-image">
-                <img src="{{ url_for('static', filename='uploads/cruise_photos/' + post.shared_cruise.photos[0].filename) }}" alt="Cruise photo">
+                <img src="{{ url_for('serve_upload', category='cruise_photos', filename=post.shared_cruise.photos[0].filename) }}" alt="Cruise photo">
             </div>
             {% endif %}
             <div class="social-cruise-info">
@@ -73,7 +96,7 @@
     {% set summary = post.reaction_summary() %}
     <div class="reaction-summary">
         {% for rtype, count in summary.items() %}
-            {% set emoji_map = {'heart':'&#10084;&#65039;','love':'&#128525;','funny':'&#128514;','wow':'&#128558;','jealous':'&#129321;'} %}
+            {% set emoji_map = {'heart':'❤️','love':'😍','funny':'😂','wow':'😮','jealous':'🤩'} %}
             <span class="reaction-chip">{{ emoji_map.get(rtype, rtype) }} {{ count }}</span>
         {% endfor %}
     </div>
@@ -82,22 +105,24 @@
     <div class="social-post-actions">
         <div class="reaction-container" onclick="event.stopPropagation()">
             {% set user_react = post.user_reaction(current_user) %}
-            {% set emoji_map = {'heart':'&#10084;&#65039;','love':'&#128525;','funny':'&#128514;','wow':'&#128558;','jealous':'&#129321;'} %}
+            {% set emoji_map = {'heart':'❤️','love':'😍','funny':'😂','wow':'😮','jealous':'🤩'} %}
             <button class="reaction-trigger {{ 'reacted' if user_react else '' }}"
                     onclick="toggleReactionPicker({{ post.id }}, event)">
-                <span class="reaction-trigger-icon">{{ emoji_map.get(user_react, '&#9825;') }}</span>
+                <span class="reaction-trigger-icon">{{ emoji_map.get(user_react, '♡') }}</span>
+                {% if post.reaction_count > 0 %}
                 <span class="reaction-trigger-count">{{ post.reaction_count }}</span>
+                {% endif %}
             </button>
             <div class="reaction-picker">
-                <button onclick="sendReaction({{ post.id }}, 'heart', this)" title="Heart" class="reaction-btn">&#10084;&#65039;</button>
-                <button onclick="sendReaction({{ post.id }}, 'love', this)" title="Love" class="reaction-btn">&#128525;</button>
-                <button onclick="sendReaction({{ post.id }}, 'funny', this)" title="Funny" class="reaction-btn">&#128514;</button>
-                <button onclick="sendReaction({{ post.id }}, 'wow', this)" title="Wow" class="reaction-btn">&#128558;</button>
-                <button onclick="sendReaction({{ post.id }}, 'jealous', this)" title="Jealous" class="reaction-btn">&#129321;</button>
+                <button onclick="sendReaction({{ post.id }}, 'heart', this)" title="Heart" class="reaction-btn">❤️</button>
+                <button onclick="sendReaction({{ post.id }}, 'love', this)" title="Love" class="reaction-btn">😍</button>
+                <button onclick="sendReaction({{ post.id }}, 'funny', this)" title="Funny" class="reaction-btn">😂</button>
+                <button onclick="sendReaction({{ post.id }}, 'wow', this)" title="Wow" class="reaction-btn">😮</button>
+                <button onclick="sendReaction({{ post.id }}, 'jealous', this)" title="Jealous" class="reaction-btn">🤩</button>
             </div>
         </div>
         <a href="{{ url_for('social.post_detail', post_id=post.id) }}" class="social-comment-btn">
-            &#128172; <span>{{ post.comment_count }}</span> Comments
+            💬 {% if post.comment_count > 0 %}<span>{{ post.comment_count }}</span> {% endif %}Comments
         </a>
     </div>
 
@@ -107,8 +132,20 @@
     <div class="social-comment-preview">
         {% for comment in preview_comments %}
         <div class="social-comment-mini">
-            <strong>{{ comment.user.social_profile.display_name or comment.user.username if comment.user.social_profile else comment.user.username }}</strong>
-            <span>{{ comment.content[:100] }}{% if comment.content|length > 100 %}...{% endif %}</span>
+            <a href="{{ url_for('social.profile', username=comment.user.username) }}" class="comment-avatar-link">
+                {% if comment.user.social_profile and comment.user.social_profile.avatar_filename %}
+                    <img src="{{ url_for('serve_upload', category='profile_photos', filename=comment.user.social_profile.avatar_filename) }}" class="comment-avatar" alt="{{ comment.user.username }}">
+                {% else %}
+                    <div class="comment-avatar comment-avatar-default">{{ comment.user.username[0]|upper }}</div>
+                {% endif %}
+            </a>
+            <div class="comment-body">
+                <div class="comment-bubble">
+                    <strong>{{ comment.user.social_profile.display_name or comment.user.username if comment.user.social_profile else comment.user.username }}</strong>
+                    <span>{{ comment.content[:100] }}{% if comment.content|length > 100 %}...{% endif %}</span>
+                </div>
+                <span class="comment-time">{{ comment.created_at.strftime('%b %d, %Y at %I:%M %p') }}</span>
+            </div>
         </div>
         {% endfor %}
         {% if post.comment_count > 2 %}
@@ -121,6 +158,7 @@
 
     <!-- Quick Comment Form -->
     <form class="social-quick-comment" method="POST" action="{{ url_for('social.add_comment', post_id=post.id) }}">
+        <input type="hidden" name="next" value="{{ request.path }}">
         <input type="text" name="content" placeholder="Write a comment..." maxlength="1000" required>
         <button type="submit" class="btn-primary social-comment-submit">Post</button>
     </form>

@@ -29,7 +29,7 @@
         <div class="discover-user-card">
             <a href="{{ url_for('social.profile', username=user.username) }}" class="discover-avatar-link">
                 {% if user.social_profile and user.social_profile.avatar_filename %}
-                    <img src="{{ url_for('static', filename='uploads/profile_photos/' + user.social_profile.avatar_filename) }}" class="social-avatar-medium" alt="{{ user.username }}">
+                    <img src="{{ url_for('serve_upload', category='profile_photos', filename=user.social_profile.avatar_filename) }}" class="social-avatar-medium" alt="{{ user.username }}">
                 {% else %}
                     <div class="social-avatar-medium social-avatar-default">{{ user.username[0]|upper }}</div>
                 {% endif %}

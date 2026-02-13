@@ -3,14 +3,10 @@
 {% block title %}{{ profile_user.username }}'s Profile{% endblock %}
 
 {% block content %}
-    <div class="social-detail-back">
-        <a href="{{ url_for('social.feed') }}">&larr; Back to Feed</a>
-    </div>
-
     <!-- Cover Photo -->
     <div class="profile-cover-banner">
         {% if profile and profile.cover_filename %}
-            <img src="{{ url_for('static', filename='uploads/cover_photos/' + profile.cover_filename) }}" class="cover-image" alt="Cover photo">
+            <img src="{{ url_for('serve_upload', category='cover_photos', filename=profile.cover_filename) }}" class="cover-image" alt="Cover photo">
         {% else %}
             <div class="cover-placeholder"></div>
         {% endif %}
@@ -34,7 +30,7 @@
         {% endif %}
         <div class="social-profile-avatar-section">
             {% if profile and profile.avatar_filename %}
-                <img src="{{ url_for('static', filename='uploads/profile_photos/' + profile.avatar_filename) }}" class="social-avatar-large" alt="{{ profile_user.username }}">
+                <img src="{{ url_for('serve_upload', category='profile_photos', filename=profile.avatar_filename) }}" class="social-avatar-large" alt="{{ profile_user.username }}">
             {% else %}
                 <div class="social-avatar-large social-avatar-default">{{ profile_user.username[0]|upper }}</div>
             {% endif %}
@@ -53,6 +49,13 @@
                 <p class="social-profile-bio">{{ profile.bio }}</p>
             {% elif is_own_profile %}
                 <p class="social-profile-bio social-profile-bio-empty">Add a bio to tell others about your cruising adventures!</p>
+            {% endif %}
+
+            {% if profile.hometown %}
+            <div class="social-profile-hometown">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                {{ profile.hometown }}
+            </div>
             {% endif %}
 
             <!-- Follow Stats -->
@@ -98,7 +101,7 @@
                     <a href="{{ url_for('social.profile', username=profile_user.username, page=posts.next_num) }}" class="btn-secondary">Next</a>
                 {% endif %}
             </div>
-            {% endif %}
+            {% endif %} 
         </div>
 
         <!-- Right Column: Sidebar Tiles -->
@@ -129,11 +132,11 @@
                     {% set cover = favorite_cruise.photos|selectattr('is_cover')|first %}
                     {% if cover %}
                     <div class="social-cruise-image">
-                        <img src="{{ url_for('static', filename='uploads/cruise_photos/' + cover.filename) }}" alt="Cruise photo">
+                        <img src="{{ url_for('serve_upload', category='cruise_photos', filename=cover.filename) }}" alt="Cruise photo">
                     </div>
                     {% elif favorite_cruise.photos|list %}
                     <div class="social-cruise-image">
-                        <img src="{{ url_for('static', filename='uploads/cruise_photos/' + favorite_cruise.photos[0].filename) }}" alt="Cruise photo">
+                        <img src="{{ url_for('serve_upload', category='cruise_photos', filename=favorite_cruise.photos[0].filename) }}" alt="Cruise photo">
                     </div>
                     {% endif %}
                     <div class="social-cruise-info">
@@ -239,35 +242,89 @@
     <!-- Edit Profile Modal -->
     {% if is_own_profile %}
     <div id="editProfileModal" class="modal">
-        <div class="modal-content-large">
+        <div class="edit-profile-modal" style="background: #fff;">
             <span class="close-modal" onclick="closeEditProfileModal()">&times;</span>
-            <h3>Edit Profile</h3>
-            <form method="POST" action="{{ url_for('social.edit_profile') }}" enctype="multipart/form-data" class="social-create-form">
-                <div>
+
+            <div class="create-post-header">
+                <h3>Edit Profile</h3>
+            </div>
+            <div class="create-post-divider"></div>
+
+            <form method="POST" action="{{ url_for('social.edit_profile') }}" enctype="multipart/form-data" class="edit-profile-form">
+
+                <!-- Display Name -->
+                <div class="edit-profile-field">
                     <label for="displayName">Display Name</label>
                     <input type="text" id="displayName" name="display_name" maxlength="100"
                            value="{{ profile.display_name or '' }}" placeholder="How should we call you?">
                 </div>
-                <div>
+
+                <!-- Bio -->
+                <div class="edit-profile-field">
                     <label for="bio">Bio</label>
                     <textarea id="bio" name="bio" rows="3" maxlength="500"
                               placeholder="Tell us about your cruising adventures...">{{ profile.bio or '' }}</textarea>
+                    <small class="char-counter edit-bio-counter">{{ (profile.bio or '')|length }} / 500</small>
                 </div>
-                <div>
-                    <label for="avatar">Profile Photo</label>
-                    <input type="file" id="avatar" name="avatar" accept="image/*">
-                    {% if profile.avatar_filename %}
-                    <small>Current photo will be replaced if you upload a new one.</small>
-                    {% endif %}
+
+                <!-- Hometown with GPS -->
+                <div class="edit-profile-field">
+                    <label for="editHometown">Where are you from?</label>
+                    <div class="edit-profile-location-row">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        <input type="text" id="editHometown" name="hometown" maxlength="255"
+                               value="{{ profile.hometown or '' }}" placeholder="City, State or Country">
+                        <button type="button" class="create-post-gps-btn" id="editGpsBtn" onclick="useGpsForHometown()" title="Use current location">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line></svg>
+                            <span id="editGpsBtnText">GPS</span>
+                        </button>
+                    </div>
                 </div>
-                <div>
-                    <label for="cover">Cover Photo</label>
-                    <input type="file" id="cover" name="cover" accept="image/*">
-                    {% if profile.cover_filename %}
-                    <small>Current cover will be replaced if you upload a new one.</small>
-                    {% endif %}
+
+                <!-- Profile Photo -->
+                <div class="edit-profile-field">
+                    <label>Profile Photo</label>
+                    <div class="edit-profile-upload-row">
+                        <div class="edit-profile-upload-preview" id="avatarPreviewWrap">
+                            {% if profile.avatar_filename %}
+                                <img src="{{ url_for('serve_upload', category='profile_photos', filename=profile.avatar_filename) }}" id="avatarPreviewImg" class="edit-upload-thumb" alt="Current avatar">
+                            {% else %}
+                                <div class="edit-upload-thumb edit-upload-placeholder" id="avatarPreviewImg">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"></circle><path d="M20 21a8 8 0 1 0-16 0"></path></svg>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <button type="button" class="edit-upload-btn" onclick="document.getElementById('avatarInput').click()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            Change Photo
+                        </button>
+                        <input type="file" id="avatarInput" name="avatar" accept="image/*" style="display:none;" onchange="previewUpload(this, 'avatarPreviewImg')">
+                    </div>
                 </div>
-                <div>
+
+                <!-- Cover Photo -->
+                <div class="edit-profile-field">
+                    <label>Cover Photo</label>
+                    <div class="edit-profile-upload-row">
+                        <div class="edit-profile-upload-preview edit-cover-preview" id="coverPreviewWrap">
+                            {% if profile.cover_filename %}
+                                <img src="{{ url_for('serve_upload', category='cover_photos', filename=profile.cover_filename) }}" id="coverPreviewImg" class="edit-upload-cover" alt="Current cover">
+                            {% else %}
+                                <div class="edit-upload-cover edit-upload-placeholder" id="coverPreviewImg">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <button type="button" class="edit-upload-btn" onclick="document.getElementById('coverInput').click()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            Change Cover
+                        </button>
+                        <input type="file" id="coverInput" name="cover" accept="image/*" style="display:none;" onchange="previewUpload(this, 'coverPreviewImg')">
+                    </div>
+                </div>
+
+                <!-- Favorite Cruise -->
+                <div class="edit-profile-field">
                     <label for="favorite_cruise_id">Favorite Cruise</label>
                     <select id="favorite_cruise_id" name="favorite_cruise_id">
                         <option value="">-- None --</option>
@@ -278,10 +335,12 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="modal-buttons">
-                    <button type="submit" class="btn-primary">Save Changes</button>
-                    <button type="button" class="btn-secondary" onclick="closeEditProfileModal()">Cancel</button>
-                </div>
+
+                <!-- Submit -->
+                <button type="submit" class="create-post-submit-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                    Save Changes
+                </button>
             </form>
         </div>
     </div>
@@ -296,6 +355,77 @@
     function closeEditProfileModal() {
         document.getElementById('editProfileModal').style.display = 'none';
     }
+    /* Image upload preview for edit profile */
+    function previewUpload(input, targetId) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var target = document.getElementById(targetId);
+                var wrap = target.parentElement;
+                /* Replace placeholder or existing img */
+                var img = document.createElement('img');
+                img.id = targetId;
+                img.src = e.target.result;
+                img.alt = 'Preview';
+                img.className = target.classList.contains('edit-upload-cover') || target.classList.contains('edit-upload-thumb')
+                    ? target.className.replace('edit-upload-placeholder', '')
+                    : (targetId === 'coverPreviewImg' ? 'edit-upload-cover' : 'edit-upload-thumb');
+                wrap.replaceChild(img, target);
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    /* GPS for hometown */
+    function useGpsForHometown() {
+        var input = document.getElementById('editHometown');
+        var btn = document.getElementById('editGpsBtn');
+        var btnText = document.getElementById('editGpsBtnText');
+        if (!navigator.geolocation) { input.placeholder = 'Geolocation not supported'; return; }
+        btn.disabled = true;
+        btnText.textContent = '...';
+        input.value = '';
+        input.placeholder = 'Detecting location...';
+        navigator.geolocation.getCurrentPosition(
+            function(pos) {
+                fetch('https://nominatim.openstreetmap.org/reverse?lat=' + pos.coords.latitude + '&lon=' + pos.coords.longitude + '&format=json&zoom=10')
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        var addr = data.address || {};
+                        var parts = [];
+                        var place = addr.city || addr.town || addr.village || addr.hamlet || addr.municipality || '';
+                        if (place) parts.push(place);
+                        if (addr.state && addr.state !== place) parts.push(addr.state);
+                        if (addr.country && addr.country !== place) parts.push(addr.country);
+                        input.value = parts.length ? parts.join(', ') : (data.display_name || '');
+                        input.placeholder = 'City, State or Country';
+                        btn.disabled = false; btnText.textContent = 'GPS';
+                    })
+                    .catch(function() {
+                        input.value = pos.coords.latitude.toFixed(4) + ', ' + pos.coords.longitude.toFixed(4);
+                        btn.disabled = false; btnText.textContent = 'GPS';
+                    });
+            },
+            function(err) {
+                btn.disabled = false; btnText.textContent = 'GPS';
+                input.placeholder = err.code === 1 ? 'Permission denied' : 'Location unavailable';
+                setTimeout(function() { input.placeholder = 'City, State or Country'; }, 3000);
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+        );
+    }
+
+    /* Bio character counter */
+    (function() {
+        var bio = document.getElementById('bio');
+        var counter = document.querySelector('.edit-bio-counter');
+        if (bio && counter) {
+            bio.addEventListener('input', function() {
+                counter.textContent = bio.value.length + ' / 500';
+            });
+        }
+    })();
+
     function openCreatePostModal() {
         document.getElementById('createPostModal').style.display = 'flex';
     }

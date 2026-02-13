@@ -23,7 +23,7 @@
                 <div class="social-comment-header">
                     <a href="{{ url_for('social.profile', username=comment.user.username) }}">
                         {% if comment.user.social_profile and comment.user.social_profile.avatar_filename %}
-                            <img src="{{ url_for('static', filename='uploads/profile_photos/' + comment.user.social_profile.avatar_filename) }}" class="social-avatar-tiny" alt="{{ comment.user.username }}">
+                            <img src="{{ url_for('serve_upload', category='profile_photos', filename=comment.user.social_profile.avatar_filename) }}" class="social-avatar-tiny" alt="{{ comment.user.username }}">
                         {% else %}
                             <div class="social-avatar-tiny social-avatar-default">{{ comment.user.username[0]|upper }}</div>
                         {% endif %}
@@ -49,7 +49,7 @@
         <form class="social-comment-form" method="POST" action="{{ url_for('social.add_comment', post_id=post.id) }}">
             <div class="social-comment-form-row">
                 {% if current_user.social_profile and current_user.social_profile.avatar_filename %}
-                    <img src="{{ url_for('static', filename='uploads/profile_photos/' + current_user.social_profile.avatar_filename) }}" class="social-avatar-tiny" alt="{{ current_user.username }}">
+                    <img src="{{ url_for('serve_upload', category='profile_photos', filename=current_user.social_profile.avatar_filename) }}" class="social-avatar-tiny" alt="{{ current_user.username }}">
                 {% else %}
                     <div class="social-avatar-tiny social-avatar-default">{{ current_user.username[0]|upper }}</div>
                 {% endif %}

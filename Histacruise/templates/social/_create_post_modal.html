@@ -1,22 +1,366 @@
 <div id="createPostModal" class="modal">
-    <div class="modal-content-large">
+    <div class="modal-content-large create-post-modal">
         <span class="close-modal" onclick="closeCreatePostModal()">&times;</span>
-        <h3>Create a Post</h3>
+
+        <!-- Header -->
+        <div class="create-post-header">
+            <h3>Create Post</h3>
+        </div>
+
+        <div class="create-post-divider"></div>
+
+        <!-- Author row -->
+        <div class="create-post-author">
+            {% if current_user.social_profile and current_user.social_profile.avatar_filename %}
+                <img src="{{ url_for('serve_upload', category='profile_photos', filename=current_user.social_profile.avatar_filename) }}" class="social-avatar-small" alt="{{ current_user.username }}">
+            {% else %}
+                <div class="social-avatar-small social-avatar-default">{{ current_user.username[0]|upper }}</div>
+            {% endif %}
+            <span class="create-post-author-name">
+                {{ current_user.social_profile.display_name or current_user.username }}
+            </span>
+        </div>
+
         <form method="POST" action="{{ url_for('social.create_post') }}" enctype="multipart/form-data" class="social-create-form">
-            <div>
-                <label for="postContent">What's happening?</label>
-                <textarea id="postContent" name="content" rows="4" maxlength="2000"
-                          placeholder="Share your cruise experience..." required></textarea>
+            <input type="hidden" name="next" value="{{ request.path }}">
+
+            <!-- Textarea -->
+            <div class="create-post-body">
+                <textarea id="postContent" name="content" rows="3" maxlength="2000"
+                          placeholder="What's on your mind?" required></textarea>
                 <small class="char-counter" id="charCount">0 / 2000</small>
             </div>
-            <div>
-                <label for="postImage">Add a photo (optional)</label>
-                <input type="file" id="postImage" name="image" accept="image/*">
+
+            <!-- Emoji picker with category tabs (hidden by default) -->
+            <div class="create-post-emoji-picker" id="emojiGrid" style="display:none;">
+                <div class="emoji-tabs">
+                    <button type="button" class="emoji-tab active" onclick="switchEmojiTab('smileys', this)">😀</button>
+                    <button type="button" class="emoji-tab" onclick="switchEmojiTab('gestures', this)">👍</button>
+                    <button type="button" class="emoji-tab" onclick="switchEmojiTab('cruise', this)">🚢</button>
+                    <button type="button" class="emoji-tab" onclick="switchEmojiTab('nature', this)">🌊</button>
+                    <button type="button" class="emoji-tab" onclick="switchEmojiTab('food', this)">🍹</button>
+                    <button type="button" class="emoji-tab" onclick="switchEmojiTab('travel', this)">✈️</button>
+                    <button type="button" class="emoji-tab" onclick="switchEmojiTab('hearts', this)">❤️</button>
+                    <button type="button" class="emoji-tab" onclick="switchEmojiTab('objects', this)">🎉</button>
+                </div>
+                <div class="emoji-grid-scroll">
+                    <!-- Smileys & People -->
+                    <div class="emoji-grid-panel" id="emojiPanel-smileys">
+                        😀😃😄😁😆😅🤣😂🙂😊😇🥰😍🤩😘😗😚😙🥲😋😛😜🤪😝🤑🤗🤭🫢🤫🤔🫡🤐🤨😐😑😶🫥😏😒🙄😬🤥🫠😌😔😪🤤😴😷🤒🤕🤢🤮🤧🥵🥶🥴😵🤯😎🥳🤠😈👿
+                    </div>
+                    <!-- Gestures & Hands -->
+                    <div class="emoji-grid-panel" id="emojiPanel-gestures" style="display:none;">
+                        👍👎👊✊🤛🤜👏🙌👐🤲🤝🫶💪🫵👆👇👉👈✌️🤞🫰🤟🤘🤙🖐️✋👋🤚👌🫳🫴🙏💅🤳
+                    </div>
+                    <!-- Cruise & Sea -->
+                    <div class="emoji-grid-panel" id="emojiPanel-cruise" style="display:none;">
+                        🚢⛴️🛳️🚤⛵🛥️🏖️🏝️⚓🌊🐬🐳🐋🦈🐙🦑🐠🐟🦀🦞🦐🐚🪸🧜‍♀️🧜‍♂️🏄‍♂️🏄‍♀️🤿🎣🌅🌴🗺️🧭🧳🪼
+                    </div>
+                    <!-- Nature & Weather -->
+                    <div class="emoji-grid-panel" id="emojiPanel-nature" style="display:none;">
+                        ☀️🌤️⛅🌥️🌦️🌧️🌩️🌈⭐🌟💫✨🌙🌍🌎🌏🌺🌸🌷🌹🌻🌼💐🌿🍀🍃🪷🪻🌾🐦🦅🦜🦩🐢🦋🌵
+                    </div>
+                    <!-- Food & Drink -->
+                    <div class="emoji-grid-panel" id="emojiPanel-food" style="display:none;">
+                        🍹🍸🍷🥂🍾🍻🍺🥃🧉🍶☕🫖🧃🥥🍉🍇🍓🫐🍒🍑🍍🥭🍌🍋🍊🍎🍐🥝🍅🌽🧁🍰🍩🍪🍫🎂🍦
+                    </div>
+                    <!-- Travel & Places -->
+                    <div class="emoji-grid-panel" id="emojiPanel-travel" style="display:none;">
+                        ✈️🛫🛬🗼🗽🏰🏯🎡🎢🎠🏟️⛲🗿🕌🛕⛩️🕍🏛️🌋🏔️⛰️🗻🏕️🏜️🧱🛤️🛣️🚏🗺️🌐🧭🏠🏡🏘️🏗️🌃
+                    </div>
+                    <!-- Hearts & Symbols -->
+                    <div class="emoji-grid-panel" id="emojiPanel-hearts" style="display:none;">
+                        ❤️🧡💛💚💙💜🖤🤍🤎💔❤️‍🔥💕💞💓💗💖💘💝💟♥️🫀💌💋💯✅❌⭕💢💥💫💦💨🕊️🔥⚡💎
+                    </div>
+                    <!-- Objects & Activities -->
+                    <div class="emoji-grid-panel" id="emojiPanel-objects" style="display:none;">
+                        🎉🎊🎈🎁🎀🪅🎆🎇🧨🎶🎵🎤🎧📸📷🎬🎮🏆🥇🎯🎲♟️🎨🎭🎪🏅🎫🎟️🎋🎍🎃👑💍💎🔔📣📢
+                    </div>
+                </div>
             </div>
-            <div class="modal-buttons">
-                <button type="submit" class="btn-primary">Post</button>
-                <button type="button" class="btn-secondary" onclick="closeCreatePostModal()">Cancel</button>
+
+            <!-- Image preview area (shown when file selected) -->
+            <div class="create-post-preview" id="imagePreviewArea" style="display:none;">
+                <img id="imagePreviewImg" src="" alt="Preview">
+                <button type="button" class="create-post-preview-remove" onclick="removeImagePreview()" title="Remove photo">&times;</button>
             </div>
+
+            <!-- Location inline input (hidden by default) -->
+            <div class="create-post-inline-input" id="locationRow" style="display:none;">
+                <span class="create-post-inline-icon" style="color:#e74c3c;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                </span>
+                <input type="text" name="location" id="postLocation" placeholder="Add location (e.g. Nassau, Bahamas)" maxlength="255">
+                <button type="button" class="create-post-gps-btn" id="gpsBtn" onclick="useCurrentLocation()" title="Use current location">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line></svg>
+                    <span id="gpsBtnText">GPS</span>
+                </button>
+                <button type="button" class="create-post-inline-dismiss" onclick="toggleLocationInput()" title="Remove">&times;</button>
+            </div>
+
+            <!-- Hashtags inline input (hidden by default) -->
+            <div class="create-post-inline-input" id="hashtagRow" style="display:none;">
+                <span class="create-post-inline-icon" style="color:#4599ff;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 21c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.5 0 2.5 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"></path><path d="M19.38 20A11.4 11.4 0 0 0 21 14l-9-4-9 4c0 2.9.94 5.34 2.81 7.76"></path><path d="M19 13V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6"></path><line x1="12" y1="1" x2="12" y2="5"></line></svg>
+                </span>
+                <input type="text" name="hashtags" id="postHashtags" placeholder="Tags (comma-separated, e.g. CruiseLife, Caribbean)" maxlength="500" oninput="previewHashtags()">
+                <button type="button" class="create-post-inline-dismiss" onclick="toggleHashtagInput()" title="Remove">&times;</button>
+            </div>
+            <div class="create-post-tag-preview" id="hashtagPreview"></div>
+
+            <!-- Compact attachment bar (icons only, no label) -->
+            <div class="create-post-attach-bar">
+                <div class="create-post-attach-actions">
+                    <!-- Photo -->
+                    <button type="button" class="create-post-icon-btn create-post-photo-btn" onclick="document.getElementById('postImage').click()" title="Photo">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                    </button>
+                    <!-- Emoji -->
+                    <button type="button" class="create-post-icon-btn create-post-emoji-btn" id="emojiToggleBtn" onclick="toggleEmojiGrid()" title="Emoji">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                            <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                            <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                        </svg>
+                    </button>
+                    <!-- Location -->
+                    <button type="button" class="create-post-icon-btn create-post-location-btn" id="locationToggleBtn" onclick="toggleLocationInput()" title="Location">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                    </button>
+                    <!-- Cruise tags -->
+                    <button type="button" class="create-post-icon-btn create-post-ship-btn" id="hashtagToggleBtn" onclick="toggleHashtagInput()" title="Cruise tags">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 21c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.5 0 2.5 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"></path>
+                            <path d="M19.38 20A11.4 11.4 0 0 0 21 14l-9-4-9 4c0 2.9.94 5.34 2.81 7.76"></path>
+                            <path d="M19 13V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6"></path>
+                            <line x1="12" y1="1" x2="12" y2="5"></line>
+                        </svg>
+                    </button>
+                </div>
+                <input type="file" id="postImage" name="image" accept="image/*" style="display:none;" onchange="handleImageSelect(this)">
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="create-post-submit-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+                Share
+            </button>
         </form>
     </div>
 </div>
+
+<script>
+function handleImageSelect(input) {
+    var previewArea = document.getElementById('imagePreviewArea');
+    var previewImg = document.getElementById('imagePreviewImg');
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            previewArea.style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function removeImagePreview() {
+    document.getElementById('postImage').value = '';
+    document.getElementById('imagePreviewArea').style.display = 'none';
+    document.getElementById('imagePreviewImg').src = '';
+}
+
+/* ── Close all panels, deactivate all toggle buttons ── */
+/* Never clear input values here — the hidden inputs still submit with the form.
+   Values are only cleared when the user explicitly dismisses (X or re-toggle). */
+function closeAllPanels(except) {
+    var panels = [
+        { el: 'emojiGrid',   btn: 'emojiToggleBtn' },
+        { el: 'locationRow', btn: 'locationToggleBtn' },
+        { el: 'hashtagRow',  btn: 'hashtagToggleBtn' }
+    ];
+    for (var i = 0; i < panels.length; i++) {
+        if (panels[i].el === except) continue;
+        var el = document.getElementById(panels[i].el);
+        var btn = document.getElementById(panels[i].btn);
+        if (el) el.style.display = 'none';
+        if (btn) btn.classList.remove('active');
+    }
+}
+
+/* ── Emoji picker toggle ── */
+function toggleEmojiGrid() {
+    var grid = document.getElementById('emojiGrid');
+    var btn = document.getElementById('emojiToggleBtn');
+    var isOpen = grid.style.display !== 'none';
+    closeAllPanels(isOpen ? null : 'emojiGrid');
+    grid.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('active', !isOpen);
+}
+
+/* Emoji tab switching */
+function switchEmojiTab(tab, tabBtn) {
+    var panels = document.querySelectorAll('.emoji-grid-panel');
+    for (var i = 0; i < panels.length; i++) panels[i].style.display = 'none';
+    document.getElementById('emojiPanel-' + tab).style.display = 'block';
+    var tabs = document.querySelectorAll('.emoji-tab');
+    for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+    tabBtn.classList.add('active');
+}
+
+/* Click an emoji character inside the panel text */
+(function() {
+    document.addEventListener('click', function(e) {
+        var panel = e.target.closest('.emoji-grid-panel');
+        if (!panel) return;
+        /* Get the exact character(s) clicked via range */
+        var sel = window.getSelection();
+        if (!sel.rangeCount) return;
+        var range = document.caretRangeFromPoint
+            ? document.caretRangeFromPoint(e.clientX, e.clientY)
+            : sel.getRangeAt(0);
+        if (!range || range.startContainer.nodeType !== 3) return;
+        var text = range.startContainer.textContent;
+        var offset = range.startOffset;
+        /* Extract the emoji at that offset (emojis can be 1-4 code units + VS/ZWJ) */
+        var segmenter;
+        try { segmenter = new Intl.Segmenter('en', { granularity: 'grapheme' }); } catch(ex) {}
+        var emoji = null;
+        if (segmenter) {
+            var segs = Array.from(segmenter.segment(text));
+            var pos = 0;
+            for (var i = 0; i < segs.length; i++) {
+                var end = pos + segs[i].segment.length;
+                if (offset >= pos && offset < end) { emoji = segs[i].segment; break; }
+                pos = end;
+            }
+        } else {
+            emoji = String.fromCodePoint(text.codePointAt(offset));
+        }
+        if (!emoji || emoji.trim() === '') return;
+        var ta = document.getElementById('postContent');
+        var start = ta.selectionStart;
+        ta.value = ta.value.substring(0, start) + emoji + ta.value.substring(ta.selectionEnd);
+        ta.selectionStart = ta.selectionEnd = start + emoji.length;
+        ta.focus();
+        document.getElementById('charCount').textContent = ta.value.length + ' / 2000';
+    });
+})();
+
+/* ── Use current GPS location ── */
+function useCurrentLocation() {
+    var input = document.getElementById('postLocation');
+    var btn = document.getElementById('gpsBtn');
+    var btnText = document.getElementById('gpsBtnText');
+
+    if (!navigator.geolocation) {
+        input.placeholder = 'Geolocation not supported by your browser';
+        return;
+    }
+
+    /* Show loading state */
+    btn.disabled = true;
+    btnText.textContent = '...';
+    input.value = '';
+    input.placeholder = 'Detecting location...';
+
+    navigator.geolocation.getCurrentPosition(
+        function(pos) {
+            var lat = pos.coords.latitude;
+            var lng = pos.coords.longitude;
+            /* Reverse geocode via OpenStreetMap Nominatim (free, no key) */
+            fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lng + '&format=json&zoom=14')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var addr = data.address || {};
+                    /* Build a readable name: city/town, state/country */
+                    var parts = [];
+                    var place = addr.city || addr.town || addr.village || addr.hamlet || addr.municipality || '';
+                    if (place) parts.push(place);
+                    if (addr.state && addr.state !== place) parts.push(addr.state);
+                    if (addr.country && addr.country !== place) parts.push(addr.country);
+                    input.value = parts.length ? parts.join(', ') : (data.display_name || (lat.toFixed(4) + ', ' + lng.toFixed(4)));
+                    input.placeholder = 'Add location (e.g. Nassau, Bahamas)';
+                    btn.disabled = false;
+                    btnText.textContent = 'GPS';
+                })
+                .catch(function() {
+                    /* Fallback to raw coordinates */
+                    input.value = lat.toFixed(4) + ', ' + lng.toFixed(4);
+                    input.placeholder = 'Add location (e.g. Nassau, Bahamas)';
+                    btn.disabled = false;
+                    btnText.textContent = 'GPS';
+                });
+        },
+        function(err) {
+            btn.disabled = false;
+            btnText.textContent = 'GPS';
+            if (err.code === 1) {
+                input.placeholder = 'Location permission denied';
+            } else if (err.code === 2) {
+                input.placeholder = 'Location unavailable';
+            } else {
+                input.placeholder = 'Location timed out — try again';
+            }
+            setTimeout(function() {
+                input.placeholder = 'Add location (e.g. Nassau, Bahamas)';
+            }, 3000);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+}
+
+/* ── Location input toggle ── */
+function toggleLocationInput() {
+    var row = document.getElementById('locationRow');
+    var btn = document.getElementById('locationToggleBtn');
+    var isOpen = row.style.display !== 'none';
+    closeAllPanels(isOpen ? null : 'locationRow');
+    row.style.display = isOpen ? 'none' : 'flex';
+    btn.classList.toggle('active', !isOpen);
+    if (isOpen) {
+        document.getElementById('postLocation').value = '';
+    } else {
+        document.getElementById('postLocation').focus();
+    }
+}
+
+/* ── Hashtag input toggle ── */
+function toggleHashtagInput() {
+    var row = document.getElementById('hashtagRow');
+    var btn = document.getElementById('hashtagToggleBtn');
+    var isOpen = row.style.display !== 'none';
+    closeAllPanels(isOpen ? null : 'hashtagRow');
+    row.style.display = isOpen ? 'none' : 'flex';
+    btn.classList.toggle('active', !isOpen);
+    if (isOpen) {
+        document.getElementById('postHashtags').value = '';
+        document.getElementById('hashtagPreview').innerHTML = '';
+    } else {
+        document.getElementById('postHashtags').focus();
+    }
+}
+
+/* ── Live hashtag chip preview ── */
+function previewHashtags() {
+    var val = document.getElementById('postHashtags').value;
+    var preview = document.getElementById('hashtagPreview');
+    var tags = val.split(',');
+    var html = '';
+    for (var i = 0; i < tags.length; i++) {
+        var t = tags[i].trim().replace(/^#+/, '');
+        if (t) html += '<span class="post-hashtag-chip">#' + t + '</span> ';
+    }
+    preview.innerHTML = html;
+}
+</script>

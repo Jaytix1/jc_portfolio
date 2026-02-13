@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlakkOps - Inventory & Shipment Management | Case Study</title>
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        .case-study-hero {
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(135deg, #060B18 0%, #0A1628 50%, #0F2140 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .case-study-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(0, 128, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 200, 255, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .hero-content-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 120px 2rem 80px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-text .project-label {
+            display: inline-block;
+            background: linear-gradient(135deg, #0070EE, #00B4FF);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .hero-text h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .hero-text .tagline {
+            font-size: 1.4rem;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .hero-logo {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero-logo img {
+            max-width: 320px;
+            filter: drop-shadow(0 20px 40px rgba(0, 128, 255, 0.3));
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .impact-banner {
+            background: linear-gradient(135deg, #0070EE 0%, #00B4FF 100%);
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .impact-banner h2 {
+            color: white;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .impact-banner p {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .case-study-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .section-block {
+            margin-bottom: 4rem;
+        }
+
+        .section-block h2 {
+            font-size: 1.8rem;
+            color: #ccd6f6;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .section-block h2 .number {
+            color: #0080FF;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.2rem;
+        }
+
+        .section-block p {
+            color: #8892b0;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .section-block ul {
+            color: #8892b0;
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-block li {
+            margin-bottom: 0.75rem;
+            line-height: 1.7;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(0, 128, 255, 0.1), rgba(0, 200, 255, 0.05));
+            border-left: 4px solid #0080FF;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .highlight-box p {
+            color: #ccd6f6;
+            margin: 0;
+            font-size: 1.05rem;
+        }
+
+        .problem-highlight {
+            background: rgba(255, 100, 100, 0.1);
+            border-left-color: #ff6464;
+        }
+
+        .problem-highlight p {
+            color: #ffb3b3;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background: rgba(10, 22, 40, 0.8);
+            border: 1px solid rgba(0, 128, 255, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(0, 128, 255, 0.5);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 128, 255, 0.15);
+        }
+
+        .feature-card h3 {
+            color: #0080FF;
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-card p {
+            color: #8892b0;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin: 2rem 0;
+        }
+
+        .tech-tag {
+            background: rgba(0, 128, 255, 0.15);
+            color: #40A0FF;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(0, 128, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 128, 255, 0.15);
+        }
+
+        .stat-item .number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #0080FF;
+            display: block;
+        }
+
+        .stat-item .label {
+            color: #8892b0;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .wip-banner {
+            background: linear-gradient(135deg, rgba(255, 184, 0, 0.1), rgba(255, 184, 0, 0.05));
+            border: 1px solid rgba(255, 184, 0, 0.3);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin: 3rem 0;
+        }
+
+        .wip-banner h3 {
+            color: #FFB800;
+            margin-bottom: 0.5rem;
+        }
+
+        .wip-banner p {
+            color: #ccd6f6;
+            margin: 0;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #0080FF;
+            text-decoration: none;
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #40A0FF;
+            transform: translateX(-5px);
+        }
+
+        @media (max-width: 768px) {
+            .hero-content-wrapper {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .hero-text h1 {
+                font-size: 2.5rem;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-logo img {
+                max-width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="../../index.html" class="nav-logo">
+                <span class="logo-bracket">&lt;</span>JC<span class="logo-bracket">/&gt;</span>
+            </a>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="../../index.html#projects" class="nav-link">Back to Projects</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="case-study-hero">
+        <div class="hero-content-wrapper">
+            <div class="hero-text">
+                <span class="project-label">Real-World Workplace Tool</span>
+                <h1>FlakkOps</h1>
+                <p class="tagline">
+                    A custom-built inventory and shipment management dashboard designed specifically for
+                    my current workplace to dramatically improve operational efficiency and decision-making.
+                </p>
+                <div class="tech-stack">
+                    <span class="tech-tag">Python</span>
+                    <span class="tech-tag">Flask</span>
+                    <span class="tech-tag">FlakkAi</span>
+                    <span class="tech-tag">SQLite</span>
+                    <span class="tech-tag">pdfplumber</span>
+                    <span class="tech-tag">JavaScript</span>
+                </div>
+            </div>
+            <div class="hero-logo">
+                <img src="images/logo.png" alt="FlakkOps Logo">
+            </div>
+        </div>
+    </section>
+
+    <!-- Impact Banner -->
+    <section class="impact-banner">
+        <h2>Built to Solve Real Problems at Work</h2>
+        <p>
+            This isn't just a portfolio project &mdash; it's a tool I built specifically for my job as Operations Manager
+            to automate tedious tasks, reduce errors, and make smarter decisions about incoming inventory.
+        </p>
+    </section>
+
+    <!-- Case Study Content -->
+    <div class="case-study-content">
+        <a href="../../index.html#projects" class="back-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            Back to All Projects
+        </a>
+
+        <!-- Problem Section -->
+        <section class="section-block">
+            <h2><span class="number">01.</span> The Problem</h2>
+            <p>
+                As an Operations Manager at a retail store, I handle <strong>two major shipments every week</strong>
+                (Monday and Wednesday arrivals). Each manifest contains <strong>hundreds of SKUs and thousands of units</strong>.
+                The challenges I faced daily included:
+            </p>
+
+            <div class="highlight-box problem-highlight">
+                <p>
+                    <strong>Manual manifest review</strong> was time-consuming and error-prone. Identifying new products,
+                    tracking quantities, and planning for incoming shipments required scrolling through lengthy PDFs
+                    and manually comparing data week over week.
+                </p>
+            </div>
+
+            <ul>
+                <li><strong>No visibility into new products</strong> until they physically arrived, making it impossible to prepare locations or train staff</li>
+                <li><strong>No historical comparison</strong> to understand volume trends or predict busy receiving periods</li>
+                <li><strong>Task management scattered</strong> across notes, emails, and memory</li>
+                <li><strong>Decision-making based on gut feeling</strong> rather than data-driven insights</li>
+            </ul>
+        </section>
+
+        <!-- Solution Section -->
+        <section class="section-block">
+            <h2><span class="number">02.</span> The Solution</h2>
+            <p>
+                I built <strong>FlakkOps</strong> to automate the entire manifest processing workflow and provide
+                actionable intelligence for better operational planning. The system:
+            </p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>Automated PDF Parsing</h3>
+                    <p>Upload manifest PDFs and automatically extract all SKUs, descriptions, quantities, and case packs using intelligent table detection.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>New Product Detection</h3>
+                    <p>Instantly identifies products that have never been received before, allowing proactive preparation for new inventory.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Task Automation</h3>
+                    <p>Automatically creates tasks when new products are detected, with priority levels and due dates tied to arrival schedules.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>AI-Powered Insights</h3>
+                    <p>Powered by FlakkAi, get intelligent analysis of manifests, trend identification, and planning recommendations.</p>
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <p>
+                    <strong>Key Innovation:</strong> The AI assistant understands the context of inventory management
+                    and can answer questions like "What should I prioritize for Monday's truck?" or
+                    "Are there any concerning trends in recent shipments?"
+                </p>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="section-block">
+            <h2><span class="number">03.</span> Key Features</h2>
+
+            <ul>
+                <li><strong>Dashboard Overview:</strong> At-a-glance stats showing upcoming arrivals, pending tasks, units expected, and total SKUs tracked</li>
+                <li><strong>Manifest Management:</strong> Upload, process, and review manifests with detailed item breakdowns</li>
+                <li><strong>Smart Product Tracking:</strong> Historical database of all products with first-seen dates and volume history</li>
+                <li><strong>Task System:</strong> Create, prioritize, and track tasks with automatic creation for new product reviews</li>
+                <li><strong>Analytics Dashboard:</strong> Top products by volume, new product tracking, and trend analysis</li>
+                <li><strong>AI Assistant:</strong> Chat interface for getting insights and recommendations about inventory operations</li>
+            </ul>
+        </section>
+
+        <!-- Impact Section -->
+        <section class="section-block">
+            <h2><span class="number">04.</span> Expected Impact</h2>
+
+            <div class="stats-row">
+                <div class="stat-item">
+                    <span class="number">80%</span>
+                    <div class="label">Reduction in Manual Review Time</div>
+                </div>
+                <div class="stat-item">
+                    <span class="number">100%</span>
+                    <div class="label">New Product Visibility Before Arrival</div>
+                </div>
+                <div class="stat-item">
+                    <span class="number">2x</span>
+                    <div class="label">Weekly Shipments Tracked</div>
+                </div>
+            </div>
+
+            <p>
+                By automating manifest processing and providing intelligent insights, FlakkOps transforms
+                reactive inventory management into <strong>proactive operational planning</strong>.
+                Staff can be prepared for new products, space can be allocated in advance, and decisions
+                are backed by historical data rather than guesswork.
+            </p>
+        </section>
+
+        <!-- Technical Section -->
+        <section class="section-block">
+            <h2><span class="number">05.</span> Technical Implementation</h2>
+
+            <p>FlakkOps is built as a full-stack web application with a focus on reliability and ease of use:</p>
+
+            <ul>
+                <li><strong>Backend:</strong> Python/Flask with SQLite database for persistent storage</li>
+                <li><strong>PDF Processing:</strong> pdfplumber for intelligent table extraction with fallback text parsing</li>
+                <li><strong>AI Integration:</strong> Connected to FlakkAi (self-hosted Ollama) for intelligent analysis</li>
+                <li><strong>Frontend:</strong> Clean, responsive UI with real-time updates and intuitive workflows</li>
+                <li><strong>Data Model:</strong> Normalized schema tracking manifests, products, items, tasks, and history</li>
+            </ul>
+
+            <div class="tech-stack">
+                <span class="tech-tag">Flask</span>
+                <span class="tech-tag">SQLite</span>
+                <span class="tech-tag">pdfplumber</span>
+                <span class="tech-tag">Pandas</span>
+                <span class="tech-tag">FlakkAi</span>
+                <span class="tech-tag">Ollama</span>
+                <span class="tech-tag">JavaScript</span>
+                <span class="tech-tag">CSS Grid</span>
+            </div>
+        </section>
+
+        <!-- Work in Progress -->
+        <section class="section-block">
+            <div class="wip-banner">
+                <h3>Project In Active Development</h3>
+                <p>
+                    FlakkOps is actively being developed and refined based on real-world usage at my workplace.
+                    Future enhancements include year-over-year comparisons, predictive analytics, and mobile optimization.
+                </p>
+            </div>
+        </section>
+
+        <!-- Why This Matters -->
+        <section class="section-block">
+            <h2><span class="number">06.</span> Why This Project Matters</h2>
+
+            <p>
+                This project demonstrates my ability to <strong>identify real problems and build practical solutions</strong>.
+                Rather than creating a hypothetical tool, I analyzed the pain points in my actual job and engineered
+                a system to address them directly.
+            </p>
+
+            <div class="highlight-box">
+                <p>
+                    <strong>This is what I do:</strong> I see inefficiencies, understand the underlying data problems,
+                    and build tools that make work faster, smarter, and more reliable. FlakkOps showcases the
+                    intersection of my technical skills and my operational management experience.
+                </p>
+            </div>
+        </section>
+
+        <a href="../../index.html#projects" class="back-link" style="margin-top: 3rem;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            Back to All Projects
+        </a>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p class="footer-text">Designed & Built by Joshua Cundiff</p>
+            <p class="footer-copyright">&copy; 2025 All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="../../js/main.js"></script>
+</body>
+</html>

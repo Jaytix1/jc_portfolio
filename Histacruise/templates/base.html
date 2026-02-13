@@ -5,9 +5,9 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <title>Histacruise - {% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2">
 
-    {% if request.endpoint != "home" %}
+    {% if request.endpoint != "home" and request.endpoint != "social.profile" %}
         <img src="{{url_for('static', filename='images/banner.png') }}" class="smallbanner" alt="Histacruise Banner" style="display: block; margin-left: auto; margin-right: auto;" >
 
     {% endif %}
@@ -19,7 +19,7 @@
             {% if current_user.is_authenticated %}
             <a href="{{ url_for('social.profile', username=current_user.username) }}" class="nav-profile-link" title="My Profile">
                 {% if current_user.social_profile and current_user.social_profile.avatar_filename %}
-                    <img src="{{ url_for('static', filename='uploads/profile_photos/' + current_user.social_profile.avatar_filename) }}" class="nav-profile-avatar" alt="">
+                    <img src="{{ url_for('serve_upload', category='profile_photos', filename=current_user.social_profile.avatar_filename) }}" class="nav-profile-avatar" alt="{{ current_user.username }}">
                 {% else %}
                     <div class="nav-profile-avatar nav-profile-default">{{ current_user.username[0]|upper }}</div>
                 {% endif %}
@@ -61,6 +61,37 @@
         {% block content %}
         {% endblock %}
     </div>
+
+    <script>
+        // Handle broken profile/avatar/cover images using event capturing (fires before DOMContentLoaded)
+        document.addEventListener('error', function(e) {
+            var img = e.target;
+            if (img.tagName !== 'IMG') return;
+
+            var letter = (img.alt && img.alt.length > 0) ? img.alt[0].toUpperCase() : '?';
+
+            if (img.classList.contains('cover-image')) {
+                var placeholder = document.createElement('div');
+                placeholder.className = 'cover-placeholder';
+                img.parentElement.replaceChild(placeholder, img);
+            } else if (img.classList.contains('nav-profile-avatar')) {
+                var div = document.createElement('div');
+                div.className = 'nav-profile-avatar nav-profile-default';
+                div.textContent = letter;
+                img.parentElement.replaceChild(div, img);
+            } else if (img.classList.contains('social-avatar-small') || img.classList.contains('social-avatar-large') || img.classList.contains('social-avatar-tiny') || img.classList.contains('social-avatar-medium')) {
+                var sizeClass = '';
+                if (img.classList.contains('social-avatar-small')) sizeClass = 'social-avatar-small';
+                else if (img.classList.contains('social-avatar-large')) sizeClass = 'social-avatar-large';
+                else if (img.classList.contains('social-avatar-tiny')) sizeClass = 'social-avatar-tiny';
+                else if (img.classList.contains('social-avatar-medium')) sizeClass = 'social-avatar-medium';
+                var div = document.createElement('div');
+                div.className = sizeClass + ' social-avatar-default';
+                div.textContent = letter;
+                img.parentElement.replaceChild(div, img);
+            }
+        }, true);
+    </script>
 
     {% if current_user.is_authenticated %}
     <script>

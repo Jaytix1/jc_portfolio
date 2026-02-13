@@ -13,9 +13,8 @@
       "Bash(python:*)",
       "Bash(pip install:*)",
       "Bash(start:*)",
-      "Bash(taskkill:*)",
-      "Bash(curl:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git stash:*)"
     ]
   }
 }

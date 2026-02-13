@@ -17,7 +17,7 @@
         <div class="notification-item {{ 'unread' if not notif.is_read else '' }}">
             <a href="{{ url_for('social.profile', username=notif.actor.username) }}">
                 {% if notif.actor.social_profile and notif.actor.social_profile.avatar_filename %}
-                    <img src="{{ url_for('static', filename='uploads/profile_photos/' + notif.actor.social_profile.avatar_filename) }}" class="social-avatar-small" alt="">
+                    <img src="{{ url_for('serve_upload', category='profile_photos', filename=notif.actor.social_profile.avatar_filename) }}" class="social-avatar-small" alt="{{ notif.actor.username }}">
                 {% else %}
                     <div class="social-avatar-small social-avatar-default">{{ notif.actor.username[0]|upper }}</div>
                 {% endif %}
