@@ -3,24 +3,156 @@
 {% block title %}About{% endblock %}
 
 {% block content %}
-    <div class="about-section">
-        <h2>About Histacruise</h2>
-        
-        <p>Histacruise is a personal cruise tracking application designed to help you organize and analyze your cruising history.</p>
-        
-        <div class="features-box">
-            <h3>What You Can Track:</h3>
-            <ul class="feature-list">
-                <li>🚢 Cruise lines you've sailed with</li>
-                <li>⚓ Ships you've been aboard</li>
-                <li>📅 Sailing dates and cruise lengths</li>
-                <li>🗺️ Regions and destinations visited</li>
-                <li>⏱️ Total days spent cruising</li>
-            </ul>
+    <!-- Hero Section -->
+    <div class="about-hero">
+        <h1>Welcome to Histacruise</h1>
+        <p class="about-hero-sub">Your personal cruise journal, statistics dashboard, and social community — all in one place.</p>
+    </div>
+
+    <!-- Feature Showcase Grid -->
+    <div class="about-features-grid">
+
+        <div class="about-feature-card">
+            <img class="about-feature-icon-img" src="{{ url_for('static', filename='images/icon_images/cruisetracker.png') }}" alt="Cruise Tracker">
+            <h3>Track Every Voyage</h3>
+            <p>Log each cruise with dates, ship, cruise line, region, cabin details, cost, and personal ratings. Upload photos and attach port itineraries with drag-and-drop ordering.</p>
         </div>
-        
-        <p>As you add cruises to your history, Histacruise generates statistics that reveal your cruising patterns and preferences. Discover which cruise lines you favor, which regions you visit most, and track your maritime adventures over time.</p>
-        
-        <p class="call-to-action">Create your account today and start building your personal cruise history!</p>
+
+        <div class="about-feature-card">
+            <img class="about-feature-icon-img" src="{{ url_for('static', filename='images/icon_images/statistics.png') }}" alt="Statistics">
+            <h3>Detailed Statistics</h3>
+            <p>Watch your numbers grow. See total days at sea, cruises by year, spending trends, favorite cruise lines, most-sailed ships, and cost breakdowns with interactive charts.</p>
+        </div>
+
+        <div class="about-feature-card">
+            <img class="about-feature-icon-img" src="{{ url_for('static', filename='images/icon_images/interactivemap.png') }}" alt="Interactive Map">
+            <h3>Interactive Cruise Map</h3>
+            <p>Visualize every port you've visited on a world map. See your routes traced across the globe and discover how much of the world you've explored by sea.</p>
+        </div>
+
+        <div class="about-feature-card">
+            <img class="about-feature-icon-img" src="{{ url_for('static', filename='images/icon_images/photogallery.png') }}" alt="Photo Gallery">
+            <h3>Photo Galleries</h3>
+            <p>Upload photos to each cruise and set cover images. Browse your memories in a built-in gallery — attach images when creating a cruise or add them later.</p>
+        </div>
+
+        <div class="about-feature-card">
+            <div class="about-feature-icon">&#127942;</div>
+            <h3>Badges &amp; Achievements</h3>
+            <p>Earn 12 unique badges as you cruise — from "First Voyage" to "Fleet Commander." Your trophy case is displayed on your profile for others to admire.</p>
+        </div>
+
+        <div class="about-feature-card">
+            <div class="about-feature-icon">&#128172;</div>
+            <h3>Social Community</h3>
+            <p>Share posts, photos, and cruise stories with fellow cruisers. React with hearts, follow other travelers, and discover new members in the community feed.</p>
+        </div>
+
+    </div>
+
+    <!-- How It Works Section -->
+    <div class="about-how-section">
+        <h2>How It Works</h2>
+        <div class="about-steps">
+            <div class="about-step">
+                <div class="about-step-number">1</div>
+                <h4>Create an Account</h4>
+                <p>Sign up for free and set up your cruiser profile with a photo, bio, and hometown.</p>
+            </div>
+            <div class="about-step-arrow">&#10132;</div>
+            <div class="about-step">
+                <div class="about-step-number">2</div>
+                <h4>Log Your Cruises</h4>
+                <p>Add each voyage with details, photos, and ports visited. Search ports by name and drag to reorder your itinerary.</p>
+            </div>
+            <div class="about-step-arrow">&#10132;</div>
+            <div class="about-step">
+                <div class="about-step-number">3</div>
+                <h4>Explore &amp; Share</h4>
+                <p>Browse your stats, view your cruise map, earn badges, and share experiences with the community.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- More Features -->
+    <div class="about-more-features">
+        <h2>More to Explore</h2>
+        <div class="about-features-grid">
+            <div class="about-feature-card">
+                <img class="about-feature-icon-img" src="{{ url_for('static', filename='images/icon_images/cruisetracker.png') }}" alt="Cruise Passport">
+                <h3>Cruise Passport</h3>
+                <p>Your profile shows total voyages, days at sea, unique ships sailed, and regions explored — each with a fun title based on your experience level.</p>
+            </div>
+            <div class="about-feature-card">
+                <img class="about-feature-icon-img" src="{{ url_for('static', filename='images/icon_images/budgettracking.png') }}" alt="Budget Tracking">
+                <h3>Budget Tracking</h3>
+                <p>Set a yearly cruise budget and track spending in real-time. See cost per day, average per cruise, and breakdowns by cruise line.</p>
+            </div>
+            <div class="about-feature-card">
+                <img class="about-feature-icon-img" src="{{ url_for('static', filename='images/icon_images/timeline.png') }}" alt="Timeline View">
+                <h3>Timeline View</h3>
+                <p>See your complete cruise history laid out chronologically. Each card shows the ship, dates, region, and duration at a glance.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Social Community Section -->
+    <div class="about-social-section">
+        <div class="about-social-header">
+            <h2>Connect with Fellow Cruisers</h2>
+            <p>Histacruise isn't just a tracker — it's a community of people who live for the cruise life.</p>
+        </div>
+
+        <div class="about-social-grid">
+            <div class="about-social-card">
+                <div class="about-social-icon">&#128100;</div>
+                <h4>Your Cruiser Profile</h4>
+                <p>Build your identity with a custom avatar, cover photo, bio, and hometown. Show off your Cruise Passport stats, favorite cruise, sailing status, and a trophy case of earned badges.</p>
+            </div>
+
+            <div class="about-social-card">
+                <div class="about-social-icon">&#128230;</div>
+                <h4>Community Feed</h4>
+                <p>Share cruise stories, photos, and tips with the community. Post about your latest voyage or an upcoming trip — and see what others are sharing in the feed.</p>
+            </div>
+
+            <div class="about-social-card">
+                <div class="about-social-icon">&#128588;</div>
+                <h4>Reactions &amp; Follows</h4>
+                <p>React to posts with hearts, love, funny, wow, or jealous. Follow your favorite cruisers to build a personalized feed and never miss their next adventure.</p>
+            </div>
+
+            <div class="about-social-card">
+                <div class="about-social-icon">&#9875;</div>
+                <h4>Share Your Voyages</h4>
+                <p>Share any cruise directly from your history to the community feed with one click. Let others see where you've been and inspire their next booking.</p>
+            </div>
+
+            <div class="about-social-card">
+                <div class="about-social-icon">&#128269;</div>
+                <h4>Discover Cruisers</h4>
+                <p>Browse and search for other members on the Discover page. Find cruisers by name, see who's currently at sea, and connect with people who share your passion.</p>
+            </div>
+
+            <div class="about-social-card">
+                <div class="about-social-icon">&#128276;</div>
+                <h4>Stay in the Loop</h4>
+                <p>Get real-time notifications when someone follows you, reacts to your post, or comments on your stories. You'll never miss a connection.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="about-cta">
+        {% if current_user.is_authenticated %}
+            <h2>Ready to log your next cruise?</h2>
+            <a href="{{ url_for('history') }}" class="about-cta-btn">Go to My History</a>
+        {% else %}
+            <h2>Start tracking your cruise adventures today</h2>
+            <div class="about-cta-buttons">
+                <a href="{{ url_for('register') }}" class="about-cta-btn">Create Free Account</a>
+                <a href="{{ url_for('login') }}" class="about-cta-btn about-cta-secondary">Sign In</a>
+            </div>
+        {% endif %}
     </div>
 {% endblock %}

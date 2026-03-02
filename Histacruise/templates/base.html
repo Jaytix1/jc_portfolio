@@ -48,11 +48,14 @@
             </div>
         </nav>
         
-        <div class="flash-messages">
-            {% with messages = get_flashed_messages() %}
+        <div class="flash-messages" id="flashMessages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
-                    {% for message in messages %}
-                        <p>{{ message }}</p>
+                    {% for category, message in messages %}
+                        <div class="flash-toast flash-{{ category }}">
+                            <span class="flash-text">{{ message }}</span>
+                            <button class="flash-close" onclick="this.parentElement.remove()">&times;</button>
+                        </div>
                     {% endfor %}
                 {% endif %}
             {% endwith %}
@@ -61,6 +64,20 @@
         {% block content %}
         {% endblock %}
     </div>
+
+    <script>
+        // Auto-dismiss flash messages
+        (function() {
+            var toasts = document.querySelectorAll('.flash-toast');
+            toasts.forEach(function(toast) {
+                var delay = toast.classList.contains('flash-error') ? 5000 : 3000;
+                setTimeout(function() {
+                    toast.classList.add('flash-fade-out');
+                    setTimeout(function() { toast.remove(); }, 400);
+                }, delay);
+            });
+        })();
+    </script>
 
     <script>
         // Handle broken profile/avatar/cover images using event capturing (fires before DOMContentLoaded)

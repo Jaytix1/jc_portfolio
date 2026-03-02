@@ -967,6 +967,28 @@ def add_cruise():
             )
             db.session.add(cruise_port)
 
+    # Handle photo uploads
+    photos = request.files.getlist('photos')
+    photo_count = 0
+    for file in photos:
+        if file and file.filename and allowed_file(file.filename):
+            if photo_count >= MAX_PHOTOS_PER_CRUISE:
+                break
+            filename = secure_filename(file.filename)
+            unique_filename = f"{new_cruise.cruiseid}_{datetime.now().strftime('%Y%m%d%H%M%S%f')}_{filename}"
+            file_data = file.read()
+            mimetype = get_mimetype(filename)
+            photo = CruisePhoto(
+                cruise_id=new_cruise.cruiseid,
+                filename=unique_filename,
+                original_filename=filename,
+                image_data=file_data,
+                image_mimetype=mimetype,
+                is_cover=(photo_count == 0)
+            )
+            db.session.add(photo)
+            photo_count += 1
+
     db.session.commit()
 
     flash('Cruise added successfully!', 'success')

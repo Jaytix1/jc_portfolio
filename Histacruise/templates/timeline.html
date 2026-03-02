@@ -13,6 +13,7 @@
         <div class="timeline-container">
             <div class="timeline-line"></div>
 
+            {% set _cabin_labels = {'interior': 'Interior', 'oceanview': 'Ocean View', 'balcony': 'Balcony', 'suite': 'Suite', 'haven': 'Haven', 'studio': 'Studio'} %}
             {% for cruise in cruises %}
             <div class="timeline-item {{ 'left' if loop.index % 2 == 1 else 'right' }}">
                 <div class="timeline-dot"></div>
@@ -54,6 +55,27 @@
                         </div>
                     </div>
                 </div>
+                {# Floating collage - photos & info bubbles #}
+                {% if cruise.photos|length > 1 or cruise.cabin_type or cruise.cruise_ports|length > 0 %}
+                <div class="timeline-collage">
+                    {% if cruise.photos|length > 1 %}
+                        {% set _card_cover = cruise.photos|selectattr('is_cover')|first or cruise.photos[0] %}
+                        {% for photo in cruise.photos if photo.id != _card_cover.id %}
+                            {% if loop.index0 < 3 %}
+                            <div class="collage-photo">
+                                <img src="{{ url_for('serve_upload', category='cruise_photos', filename=photo.filename) }}" alt="">
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                    {% if cruise.cabin_type %}
+                    <div class="collage-badge">{{ _cabin_labels.get(cruise.cabin_type, cruise.cabin_type|title) }}</div>
+                    {% endif %}
+                    {% if cruise.cruise_ports|length > 0 %}
+                    <div class="collage-badge collage-badge-alt">{{ cruise.cruise_ports|length }} port{{ 's' if cruise.cruise_ports|length != 1 else '' }}</div>
+                    {% endif %}
+                </div>
+                {% endif %}
             </div>
             {% endfor %}
         </div>
