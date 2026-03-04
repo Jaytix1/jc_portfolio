@@ -61,9 +61,10 @@ document.addEventListener('DOMContentLoaded', function() {
     codeInput.addEventListener('input', updateCharCount);
     updateCharCount();
 
-    // Ctrl+Enter to submit
+    // Enter to submit, Shift+Enter for new line
     codeInput.addEventListener('keydown', function(e) {
-        if (e.ctrlKey && e.key === 'Enter') {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
             submitReview();
         }
     });
