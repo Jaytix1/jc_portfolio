@@ -14,13 +14,13 @@
     --text-muted: #6e7681;
     --accent: #58a6ff;
     --accent-hover: #79b8ff;
-    --accent-secondary: #a371f7;
+    --accent-secondary: #1a7fe8;
     --success: #3fb950;
     --warning: #d29922;
     --error: #f85149;
     --border: #30363d;
     --border-light: #21262d;
-    --glow: rgba(88, 166, 255, 0.15);
+    --glow: rgba(88, 166, 255, 0.2);
 }
 
 html {
@@ -70,6 +70,37 @@ body {
     width: 40px;
     height: 40px;
     filter: drop-shadow(0 0 8px rgba(88, 166, 255, 0.3));
+}
+
+.nav-features {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    justify-content: center;
+}
+
+.nav-feature-tag {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0.25rem 0.75rem;
+}
+
+.nav-feature-tag svg {
+    width: 12px;
+    height: 12px;
+    color: var(--accent);
+}
+
+@media (max-width: 768px) {
+    .nav-features { display: none; }
 }
 
 .logo-text {
