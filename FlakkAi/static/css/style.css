@@ -329,7 +329,7 @@ body {
 
 #code-input:focus {
     outline: none;
-    background: #080b0f;
+    background: var(--bg-secondary);
 }
 
 #code-input::placeholder {
