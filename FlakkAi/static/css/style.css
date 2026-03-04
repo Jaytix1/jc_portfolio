@@ -72,6 +72,10 @@ body {
     filter: drop-shadow(0 0 8px rgba(88, 166, 255, 0.3));
 }
 
+.nav-spacer {
+    flex: 1;
+}
+
 .nav-subtitle {
     font-size: 1rem;
     font-weight: 600;
@@ -85,8 +89,6 @@ body {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    flex: 1;
-    justify-content: center;
 }
 
 .nav-feature-tag {
