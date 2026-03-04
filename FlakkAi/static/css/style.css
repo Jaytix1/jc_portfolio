@@ -72,6 +72,15 @@ body {
     filter: drop-shadow(0 0 8px rgba(88, 166, 255, 0.3));
 }
 
+.nav-subtitle {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    padding-right: 1rem;
+    border-right: 1px solid var(--border);
+}
+
 .nav-features {
     display: flex;
     align-items: center;
