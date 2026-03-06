@@ -15,7 +15,7 @@
         <nav class="navbar">
             <div class="nav-brand">
                 <div class="logo">
-                    <img src="{{ url_for('static', filename='img/FlakkAI_MainLogo.png') }}" alt="FlakkAi" class="logo-icon" style="height: 90px; width: auto; object-fit: contain;">
+                    <img src="{{ url_for('static', filename='img/FlakkAI_CodeLogo.png') }}" alt="FlakkAi" class="logo-icon" style="height: 90px; width: auto; object-fit: contain;">
                 </div>
             </div>
             <div class="nav-subtitle">Intelligent Code Analysis</div>
@@ -119,19 +119,6 @@
                     </div>
                 </div>
 
-                <!-- File Upload Zone -->
-                <div class="file-upload-zone" id="file-upload-zone">
-                    <input type="file" id="file-input" multiple accept=".py,.js,.ts,.java,.cpp,.c,.cs,.go,.rs,.php,.rb,.html,.css,.sql,.txt,.jsx,.tsx,.vue,.swift,.kt,.scala,.sh,.bash,.ps1,.json,.xml,.yaml,.yml,.md" hidden>
-                    <div class="upload-content">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="upload-icon">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                            <polyline points="17 8 12 3 7 8"/>
-                            <line x1="12" y1="3" x2="12" y2="15"/>
-                        </svg>
-                        <p class="upload-text">Drop files here or <span class="upload-link" onclick="document.getElementById('file-input').click()">browse</span></p>
-                        <p class="upload-hint">Supports multiple files - analyze them all at once</p>
-                    </div>
-                </div>
                 <div class="editor-actions">
                     <button id="review-btn" onclick="submitReview()">
                         <svg viewBox="0 0 20 20" fill="currentColor" class="btn-icon">
@@ -141,6 +128,17 @@
                         <span class="btn-text">Analyze Code</span>
                         <span class="btn-loader hidden"></span>
                     </button>
+                    <div class="file-upload-zone" id="file-upload-zone">
+                        <input type="file" id="file-input" multiple accept=".py,.js,.ts,.java,.cpp,.c,.cs,.go,.rs,.php,.rb,.html,.css,.sql,.txt,.jsx,.tsx,.vue,.swift,.kt,.scala,.sh,.bash,.ps1,.json,.xml,.yaml,.yml,.md" hidden>
+                        <div class="upload-content">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="upload-icon">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            <p class="upload-text">Drop file or <span class="upload-link" onclick="document.getElementById('file-input').click()">browse</span></p>
+                        </div>
+                    </div>
                     <button id="analyze-all-btn" class="btn-secondary hidden" onclick="analyzeAllFiles()">
                         <svg viewBox="0 0 20 20" fill="currentColor" class="btn-icon">
                             <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2h-1.528A6 6 0 004 9.528V4z"/>
@@ -320,7 +318,7 @@ def calculate_average(numbers):
         <footer class="footer">
             <div class="footer-content">
                 <div class="footer-brand">
-                    <img src="{{ url_for('static', filename='img/FlakkAI_MainLogo.png') }}" alt="FlakkAi" style="height: 28px; width: auto; object-fit: contain;">
+                    <img src="{{ url_for('static', filename='img/FlakkAI_CodeLogo.png') }}" alt="FlakkAi" style="height: 28px; width: auto; object-fit: contain;">
                 </div>
                 <div class="footer-info">
                     <span>Built by Joshua C.</span>

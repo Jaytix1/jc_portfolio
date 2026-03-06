@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joshua Cundiff — Resume</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --accent: #4f46e5;
+            --accent-light: #6366f1;
+            --text: #111827;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            font-size: 13.5px;
+            line-height: 1.5;
+            color: var(--text);
+            background: var(--bg);
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 48px 52px;
+        }
+
+        /* ── Header ── */
+        .header {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: start;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding-bottom: 18px;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .header-name {
+            font-size: 30px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--text);
+        }
+
+        .header-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--accent-light);
+            margin-top: 3px;
+            letter-spacing: 0.3px;
+        }
+
+        .header-contact {
+            text-align: right;
+            font-size: 12.5px;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .header-contact a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        /* ── Sections ── */
+        .section {
+            margin-bottom: 18px;
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--accent);
+            margin-bottom: 10px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* ── Skills ── */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: 110px 1fr;
+            gap: 5px 12px;
+        }
+
+        .skill-label {
+            font-weight: 600;
+            font-size: 12.5px;
+            color: var(--text);
+        }
+
+        .skill-value {
+            font-size: 12.5px;
+            color: var(--muted);
+        }
+
+        /* ── Experience / Education ── */
+        .entry {
+            margin-bottom: 13px;
+        }
+
+        .entry:last-child {
+            margin-bottom: 0;
+        }
+
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .entry-title {
+            font-weight: 600;
+            font-size: 13.5px;
+        }
+
+        .entry-date {
+            font-size: 12px;
+            color: var(--muted);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .entry-org {
+            font-size: 12.5px;
+            color: var(--accent-light);
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        ul {
+            padding-left: 16px;
+            margin-top: 4px;
+        }
+
+        ul li {
+            font-size: 12.5px;
+            color: var(--muted);
+            margin-bottom: 3px;
+        }
+
+        ul li strong {
+            color: var(--text);
+        }
+
+        /* ── Projects ── */
+        .project-entry {
+            margin-bottom: 11px;
+        }
+
+        .project-entry:last-child {
+            margin-bottom: 0;
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .project-name {
+            font-weight: 600;
+            font-size: 13.5px;
+        }
+
+        .project-stack {
+            font-size: 11.5px;
+            color: var(--muted);
+        }
+
+        .project-desc {
+            font-size: 12.5px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .project-link {
+            font-size: 11.5px;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        /* ── Summary ── */
+        .summary {
+            font-size: 12.5px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        /* ── Print ── */
+        @media print {
+            body {
+                padding: 32px 44px;
+                font-size: 12.5px;
+            }
+            .header-name { font-size: 26px; }
+            a { color: var(--accent) !important; text-decoration: none; }
+            @page { margin: 0; size: letter; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div>
+            <div class="header-name">Joshua Cundiff</div>
+            <div class="header-title">Computer Scientist &nbsp;·&nbsp; Full Stack Developer &nbsp;·&nbsp; Data Analyst</div>
+        </div>
+        <div class="header-contact">
+            Hudson, FL &nbsp;·&nbsp; 941-981-2632<br>
+            <a href="mailto:joshuacundiff321@gmail.com">joshuacundiff321@gmail.com</a><br>
+            <a href="https://linkedin.com/in/jc137">linkedin.com/in/jc137</a> &nbsp;·&nbsp;
+            <a href="https://github.com/Jaytix1">github.com/Jaytix1</a>
+        </div>
+    </header>
+
+    <!-- Summary -->
+    <section class="section">
+        <div class="section-title">Summary</div>
+        <p class="summary">
+            Computer Science graduate (USF, May 2026) with hands-on experience building full-stack web applications,
+            data analysis pipelines, and AI-powered tools. Six years of operations management experience at a national
+            retail brand, including developing internal software to automate shipment processing and reporting.
+            Seeking full-time roles in software development or data analysis — available immediately or upon graduation in May 2026.
+        </p>
+    </section>
+
+    <!-- Skills -->
+    <section class="section">
+        <div class="section-title">Technical Skills</div>
+        <div class="skills-grid">
+            <span class="skill-label">Languages</span>
+            <span class="skill-value">Python, SQL, JavaScript, R, Ruby, C, C++, C#, HTML/CSS</span>
+
+            <span class="skill-label">Frameworks</span>
+            <span class="skill-value">Flask, Ruby on Rails, SQLAlchemy, Pandas, NumPy, Scikit-learn, Chart.js, Leaflet.js</span>
+
+            <span class="skill-label">AI & ML</span>
+            <span class="skill-value">Ollama, Claude API, Mistral LLM, Gradient Boosting, Feature Engineering, OpenCV, Pillow, Computer Vision</span>
+
+            <span class="skill-label">Tools</span>
+            <span class="skill-value">Git, Tableau, Excel, Google Sheets, pdfplumber</span>
+
+            <span class="skill-label">Databases</span>
+            <span class="skill-value">SQLite, PostgreSQL, MySQL, SQL Relational Databases</span>
+        </div>
+    </section>
+
+    <!-- Projects -->
+    <section class="section">
+        <div class="section-title">Projects</div>
+
+        <div class="project-entry">
+            <div class="project-header">
+                <span class="project-name">FlakkAi &mdash; Self-Hosted AI Platform</span>
+                <span class="project-stack">Python · Flask · Ollama · Mistral LLM · JavaScript</span>
+            </div>
+            <p class="project-desc">
+                Built a self-hosted AI platform supporting locally-run LLMs via Ollama. Features FlakkChat (general assistant),
+                FlakkCode (code analysis), multi-file upload, analysis history, and a hybrid engine supporting both local models and cloud APIs.
+                &nbsp;<a class="project-link" href="https://github.com/Jaytix1/jc_portfolio/tree/main/FlakkAi">github →</a>
+            </p>
+        </div>
+
+        <div class="project-entry">
+            <div class="project-header">
+                <span class="project-name">FlakkOps &mdash; Operational Intelligence Dashboard</span>
+                <span class="project-stack">Python · Flask · SQLite · pdfplumber · Pandas</span>
+            </div>
+            <p class="project-desc">
+                Built for current employer to automate weekly shipment manifest processing, track hundreds of SKUs, detect new
+                products before arrival, and surface AI-powered operational insights. Reduced manual data processing time by ~80%.
+                &nbsp;<a class="project-link" href="https://github.com/Jaytix1/jc_portfolio/tree/main/FlakkOps">github →</a>
+            </p>
+        </div>
+
+        <div class="project-entry">
+            <div class="project-header">
+                <span class="project-name">Histacruise &mdash; Full-Stack Cruise Tracking Application <span style="font-size:11px; color:#6366f1; font-weight:500;">(In Progress)</span></span>
+                <span class="project-stack">Python · Flask · SQLAlchemy · Chart.js · Leaflet.js · SQLite</span>
+            </div>
+            <p class="project-desc">
+                A thoroughly architected full-stack web application for tracking personal cruise history with comprehensive analytics.
+                Features user authentication, interactive port maps via Leaflet.js, Chart.js spending visualizations, photo galleries
+                stored as BLOBs, a social community layer, and a full data pipeline. Demonstrates end-to-end system design from
+                database schema to front-end UX.
+                &nbsp;<a class="project-link" href="https://github.com/Jaytix1/jc_portfolio/tree/main/Histacruise">github →</a>
+            </p>
+        </div>
+
+        <div class="project-entry">
+            <div class="project-header">
+                <span class="project-name">Data & ML Mini-Projects</span>
+                <span class="project-stack">Python · Pandas · NumPy · Scikit-learn · Matplotlib</span>
+            </div>
+            <p class="project-desc">
+                A collection of focused analytical projects including a <strong>Customer Segmentation Analysis</strong> (2,000 records, 5 personas, r = 0.02 income-spending correlation)
+                and a <strong>Cruise Price Predictor</strong> ML model (5,000 records, 93.5% accuracy, Gradient Boosting vs. 4 benchmarked models).
+                &nbsp;<a class="project-link" href="https://github.com/Jaytix1/jc_portfolio">github →</a>
+            </p>
+        </div>
+    </section>
+
+    <!-- Experience -->
+    <section class="section">
+        <div class="section-title">Experience</div>
+
+        <div class="entry">
+            <div class="entry-header">
+                <span class="entry-title">Operations Manager (1st ASM)</span>
+                <span class="entry-date">Jan 2020 – Present</span>
+            </div>
+            <div class="entry-org">Skechers USA</div>
+            <ul>
+                <li>Developed <strong>FlakkOps</strong>, an internal tool automating weekly shipment manifest processing and SKU tracking</li>
+                <li>Analyzed sales data and KPIs to identify trends and drive daily operational decisions</li>
+                <li>Built and maintained scheduling systems to optimize team coverage and labor efficiency</li>
+                <li>Led cross-functional coordination across departments for process improvement initiatives</li>
+            </ul>
+        </div>
+
+        <div class="entry">
+            <div class="entry-header">
+                <span class="entry-title">Sales & Office Associate</span>
+                <span class="entry-date">Jan 2017 – Dec 2019</span>
+            </div>
+            <div class="entry-org">Three Seasons LLC</div>
+            <ul>
+                <li>Managed garden center operations including inventory tracking and shipment intake</li>
+                <li>Created digital sales materials and maintained customer database and appointment scheduling</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Education -->
+    <section class="section">
+        <div class="section-title">Education</div>
+
+        <div class="entry">
+            <div class="entry-header">
+                <span class="entry-title">B.S. in Computer Science</span>
+                <span class="entry-date">Aug 2022 – May 2026</span>
+            </div>
+            <div class="entry-org">University of South Florida, Tampa FL</div>
+            <ul>
+                <li>Coursework: Algorithms, Data Structures, Databases, Software Engineering</li>
+                <li>Built full-stack applications and data analytics projects as practical coursework extensions</li>
+            </ul>
+        </div>
+
+        <div class="entry">
+            <div class="entry-header">
+                <span class="entry-title">Associate in Arts Degree</span>
+                <span class="entry-date">Aug 2017 – May 2020</span>
+            </div>
+            <div class="entry-org">State College of Florida, Bradenton FL</div>
+            <ul>
+                <li>Completed via dual enrollment while in high school</li>
+            </ul>
+        </div>
+    </section>
+
+</body>
+</html>

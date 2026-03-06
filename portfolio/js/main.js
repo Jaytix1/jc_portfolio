@@ -18,7 +18,9 @@
         ],
         typingSpeed: 80,
         deletingSpeed: 50,
-        pauseDuration: 2000
+        pauseDuration: 2000,
+        // Replace with your Formspree endpoint: https://formspree.io/f/YOUR_FORM_ID
+        formspreeUrl: ''
     };
 
     // ===================================
@@ -177,28 +179,30 @@
             submitBtn.innerHTML = '<span>Sending...</span>';
             submitBtn.disabled = true;
 
-            // Simulate form submission (replace with actual endpoint)
             try {
-                // For now, we'll just simulate a delay
-                // In production, you'd send to your backend or a service like Formspree
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                if (CONFIG.formspreeUrl) {
+                    const response = await fetch(CONFIG.formspreeUrl, {
+                        method: 'POST',
+                        headers: { 'Accept': 'application/json' },
+                        body: new FormData(elements.contactForm)
+                    });
 
-                // Show success message
+                    if (!response.ok) throw new Error('Form submission failed');
+                } else {
+                    // Formspree URL not set — simulate for local testing
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    console.log('Form submitted (simulated):', data);
+                }
+
                 submitBtn.innerHTML = '<span>Message Sent!</span>';
                 submitBtn.style.background = 'var(--success)';
-
-                // Reset form
                 elements.contactForm.reset();
 
-                // Reset button after delay
                 setTimeout(() => {
                     submitBtn.innerHTML = originalText;
                     submitBtn.style.background = '';
                     submitBtn.disabled = false;
                 }, 3000);
-
-                // Log form data (for testing)
-                console.log('Form submitted:', data);
 
             } catch (error) {
                 submitBtn.innerHTML = '<span>Error - Try Again</span>';
