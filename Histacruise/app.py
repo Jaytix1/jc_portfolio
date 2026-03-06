@@ -1,5 +1,6 @@
 from flask import Flask, render_template, redirect, url_for, flash, request, jsonify, make_response
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -275,6 +276,7 @@ def get_mimetype(filename):
     return MIMETYPE_MAP.get(ext, 'application/octet-stream')
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
@@ -702,27 +704,7 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 with app.app_context():
-    db.create_all()
-
-    # Idempotent migration: add location and hashtags columns to social_post
-    import sqlite3 as _sqlite3
-    _conn = _sqlite3.connect(os.path.join(basedir, 'instance', 'histacruise.db'))
-    _cur = _conn.cursor()
-    _cur.execute("PRAGMA table_info(social_post)")
-    _existing_cols = {row[1] for row in _cur.fetchall()}
-    if 'location' not in _existing_cols:
-        _cur.execute("ALTER TABLE social_post ADD COLUMN location VARCHAR(255)")
-    if 'hashtags' not in _existing_cols:
-        _cur.execute("ALTER TABLE social_post ADD COLUMN hashtags VARCHAR(500)")
-    _conn.commit()
-
-    # Add hometown column to social_profile
-    _cur.execute("PRAGMA table_info(social_profile)")
-    _profile_cols = {row[1] for row in _cur.fetchall()}
-    if 'hometown' not in _profile_cols:
-        _cur.execute("ALTER TABLE social_profile ADD COLUMN hometown VARCHAR(255)")
-    _conn.commit()
-    _conn.close()
+    db.create_all()  # Creates tables for fresh deployments; use `flask db upgrade` for migrations
 
 # Register Pipeline API blueprint
 import sys
