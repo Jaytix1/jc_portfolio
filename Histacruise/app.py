@@ -1770,5 +1770,21 @@ def setup_scheduler():
 if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     scheduler = setup_scheduler()
 
+    # Run full pipeline on startup in background so data is ready immediately
+    def _initial_pipeline_run():
+        import time
+        time.sleep(3)  # Brief pause to let app fully initialize
+        try:
+            from HC_Pipeline.main import Pipeline
+            print('[Startup] Running initial pipeline...')
+            pipeline = Pipeline(app)
+            results = pipeline.run_all()
+            print(f'[Startup] Pipeline complete: {results}')
+        except Exception as e:
+            print(f'[Startup] Pipeline failed: {e}')
+
+    import threading
+    threading.Thread(target=_initial_pipeline_run, daemon=True).start()
+
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=False)  # use_reloader=False prevents double scheduler
