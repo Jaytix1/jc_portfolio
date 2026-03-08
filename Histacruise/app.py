@@ -344,6 +344,7 @@ class CruiseHistory(db.Model):
     cost = db.Column(db.Float, nullable=True)
     notes = db.Column(db.Text, nullable=True)
     rating = db.Column(db.Integer, nullable=True)
+    visibility = db.Column(db.String(20), nullable=False, server_default='public')
     
     # Relationships
     cruiseline = db.relationship('CruiseLine', backref='cruises')
@@ -634,6 +635,8 @@ class UserFollow(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     follower_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     following_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    # status: 'pending' (friend request sent) or 'accepted' (friends)
+    status = db.Column(db.String(20), nullable=False, server_default='accepted')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     follower = db.relationship('User', foreign_keys=[follower_id], backref='following_assocs')
@@ -644,7 +647,26 @@ class UserFollow(db.Model):
     )
 
     def __repr__(self):
-        return f'<UserFollow {self.follower_id} -> {self.following_id}>'
+        return f'<UserFollow {self.follower_id} -> {self.following_id} [{self.status}]>'
+
+
+class UserBlock(db.Model):
+    __tablename__ = 'user_block'
+
+    id = db.Column(db.Integer, primary_key=True)
+    blocker_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    blocked_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    blocker = db.relationship('User', foreign_keys=[blocker_id], backref='blocked_assocs')
+    blocked = db.relationship('User', foreign_keys=[blocked_id], backref='blocked_by_assocs')
+
+    __table_args__ = (
+        db.UniqueConstraint('blocker_id', 'blocked_id', name='unique_user_block'),
+    )
+
+    def __repr__(self):
+        return f'<UserBlock {self.blocker_id} -> {self.blocked_id}>'
 
 
 class PostReaction(db.Model):
@@ -711,6 +733,18 @@ if _db_url.startswith('sqlite'):
     os.makedirs(os.path.join(basedir, 'instance'), exist_ok=True)
 with app.app_context():
     db.create_all()  # Creates tables for fresh deployments; use `flask db upgrade` for migrations
+
+    # Safe column additions — ignored if column already exists
+    _migrations = [
+        "ALTER TABLE user_follow ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'accepted'",
+        "ALTER TABLE cruise_history ADD COLUMN visibility VARCHAR(20) NOT NULL DEFAULT 'public'",
+    ]
+    for _sql in _migrations:
+        try:
+            db.session.execute(db.text(_sql))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
 
 # Register Pipeline API blueprint
 import sys
@@ -848,6 +882,9 @@ def add_cruise():
     cost = request.form.get('cost', None)
     notes = request.form.get('notes', '').strip()
     rating = request.form.get('rating', None)
+    visibility = request.form.get('visibility', 'public')
+    if visibility not in ('public', 'followers', 'private'):
+        visibility = 'public'
 
     # Validate required fields
     if not all([begindate, enddate, cruiseline_id, ship_id, region_id]):
@@ -937,6 +974,7 @@ def add_cruise():
         cost=cost,
         notes=notes if notes else None,
         rating=rating,
+        visibility=visibility,
         user_id=current_user.id
     )
 
@@ -1035,6 +1073,9 @@ def edit_cruise(cruise_id):
     cost = request.form.get('cost', None)
     notes = request.form.get('notes', '').strip()
     rating = request.form.get('rating', None)
+    visibility = request.form.get('visibility', 'public')
+    if visibility not in ('public', 'followers', 'private'):
+        visibility = 'public'
 
     # Validate required fields
     if not all([begindate, enddate, cruiseline_id, ship_id, region_id]):
@@ -1123,6 +1164,7 @@ def edit_cruise(cruise_id):
     cruise.cost = cost
     cruise.notes = notes if notes else None
     cruise.rating = rating
+    cruise.visibility = visibility
 
     # Handle ports - remove old ones and add new (with duplicate check)
     CruisePort.query.filter_by(cruise_id=cruise_id).delete()

@@ -114,7 +114,8 @@
                                     data-deck="{{ cruise.deck or '' }}"
                                     data-cost="{{ cruise.cost or '' }}"
                                     data-rating="{{ cruise.rating or '' }}"
-                                    data-notes="{{ cruise.notes or '' }}">
+                                    data-notes="{{ cruise.notes or '' }}"
+                                    data-visibility="{{ cruise.visibility or 'public' }}">
                                 Edit
                             </button>
                             <form method="POST" action="{{ url_for('social.share_cruise', cruise_id=cruise.cruiseid) }}" style="margin: 0;">
@@ -200,7 +201,8 @@
                         data-deck="{{ cruise.deck or '' }}"
                         data-cost="{{ cruise.cost or '' }}"
                         data-rating="{{ cruise.rating or '' }}"
-                        data-notes="{{ cruise.notes or '' }}">Edit</button>
+                        data-notes="{{ cruise.notes or '' }}"
+                        data-visibility="{{ cruise.visibility or 'public' }}">Edit</button>
                     <form method="POST" action="{{ url_for('social.share_cruise', cruise_id=cruise.cruiseid) }}" style="margin: 0; background: transparent; padding: 0; flex: 1;">
                         <button type="submit" class="action-btn social-share-btn" style="width: 100%;" onclick="return confirm('Share this cruise to the community feed?')">Share</button>
                     </form>
@@ -325,6 +327,15 @@
                         <div class="edit-profile-field">
                             <label for="notes">Notes / Memories</label>
                             <textarea id="notes" name="notes" rows="3" placeholder="Share your thoughts..."></textarea>
+                        </div>
+
+                        <div class="edit-profile-field">
+                            <label for="visibility">Visibility</label>
+                            <select id="visibility" name="visibility">
+                                <option value="public">&#127760; Public — visible to everyone</option>
+                                <option value="followers">&#128101; Friends only — visible to friends</option>
+                                <option value="private">&#128274; Private — only you can see</option>
+                            </select>
                         </div>
 
                         <div class="add-cruise-section-header" style="margin-top: 14px;">Photos</div>
@@ -464,6 +475,15 @@
                         <div class="edit-profile-field">
                             <label for="edit_notes">Notes / Memories</label>
                             <textarea id="edit_notes" name="notes" rows="3" placeholder="Share your thoughts..."></textarea>
+                        </div>
+
+                        <div class="edit-profile-field">
+                            <label for="edit_visibility">Visibility</label>
+                            <select id="edit_visibility" name="visibility">
+                                <option value="public">&#127760; Public — visible to everyone</option>
+                                <option value="followers">&#128101; Friends only — visible to friends</option>
+                                <option value="private">&#128274; Private — only you can see</option>
+                            </select>
                         </div>
 
                         <div class="add-cruise-section-header" style="margin-top: 14px;">Photos</div>
@@ -964,6 +984,7 @@
                     const cost = this.dataset.cost;
                     const rating = this.dataset.rating;
                     const notes = this.dataset.notes;
+                    const visibility = this.dataset.visibility || 'public';
 
                     // Track cruise ID for photo uploads
                     currentEditCruiseId = cruiseId;
@@ -984,6 +1005,7 @@
                     document.getElementById('edit_cost').value = cost;
                     document.getElementById('edit_rating').value = rating;
                     document.getElementById('edit_notes').value = notes;
+                    document.getElementById('edit_visibility').value = visibility;
 
                     // Filter and select ship
                     filterEditShips(parseInt(cruiselineId), parseInt(shipId));

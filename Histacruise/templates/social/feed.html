@@ -19,7 +19,7 @@
     <!-- Feed Filter Tabs -->
     <div class="feed-filter-tabs">
         <a href="{{ url_for('social.feed', filter='all') }}" class="feed-tab {{ 'active' if feed_filter == 'all' else '' }}">All Posts</a>
-        <a href="{{ url_for('social.feed', filter='following') }}" class="feed-tab {{ 'active' if feed_filter == 'following' else '' }}">Following</a>
+        <a href="{{ url_for('social.feed', filter='friends') }}" class="feed-tab {{ 'active' if feed_filter == 'friends' else '' }}">Friends</a>
     </div>
 
     {% include 'social/_create_post_modal.html' %}

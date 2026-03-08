@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile_user.username }}'s Friends{% endblock %}
+
+{% block content %}
+    <div class="social-detail-back">
+        <a href="{{ url_for('social.profile', username=profile_user.username) }}">&larr; Back to Profile</a>
+    </div>
+
+    <div class="social-page-header">
+        <h2>{{ profile_user.username }}'s Friends</h2>
+        <p class="social-page-subtitle">{{ friends|length }} friend{{ 's' if friends|length != 1 else '' }}</p>
+    </div>
+
+    {% if friends %}
+    <div class="friends-grid" style="margin-top: 20px;">
+        {% for friend in friends %}
+        <a href="{{ url_for('social.profile', username=friend.username) }}" class="friend-card">
+            {% if friend.social_profile and friend.social_profile.avatar_filename %}
+                <img src="{{ url_for('serve_upload', category='profile_photos', filename=friend.social_profile.avatar_filename) }}" class="social-avatar-small" alt="{{ friend.username }}">
+            {% else %}
+                <div class="social-avatar-small social-avatar-default">{{ friend.username[0]|upper }}</div>
+            {% endif %}
+            <span class="friend-name">{{ friend.social_profile.display_name or friend.username if friend.social_profile else friend.username }}</span>
+            <span class="friend-username">@{{ friend.username }}</span>
+            {% if friend.social_profile and friend.social_profile.sailing_status == 'currently_sailing' %}
+                <span class="sailing-badge-mini sailing-active">&#9875; Sailing</span>
+            {% endif %}
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-data-message" style="margin-top: 30px;">
+        <p>{% if profile_user.id == current_user.id %}You haven't connected with any friends yet. Find people on the <a href="{{ url_for('social.discover') }}">Discover</a> page!{% else %}{{ profile_user.username }} hasn't connected with any friends yet.{% endif %}</p>
+    </div>
+    {% endif %}
+{% endblock %}

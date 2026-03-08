@@ -27,8 +27,10 @@
                     <a href="{{ url_for('social.profile', username=notif.actor.username) }}" class="notif-actor">
                         {{ notif.actor.social_profile.display_name or notif.actor.username if notif.actor.social_profile else notif.actor.username }}
                     </a>
-                    {% if notif.type == 'follow' %}
-                        started following you.
+                    {% if notif.type == 'follow' or notif.type == 'friend_request' %}
+                        sent you a friend request.
+                    {% elif notif.type == 'friend_accepted' %}
+                        accepted your friend request.
                     {% elif notif.type == 'reaction' %}
                         reacted to your
                         {% if notif.post %}
