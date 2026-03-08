@@ -703,6 +703,7 @@ class UserBadge(db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+os.makedirs(os.path.join(basedir, 'instance'), exist_ok=True)
 with app.app_context():
     db.create_all()  # Creates tables for fresh deployments; use `flask db upgrade` for migrations
 
