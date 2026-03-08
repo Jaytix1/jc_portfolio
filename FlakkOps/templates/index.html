@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlakkOps - Inventory & Shipment Management</title>
+    <title>FlakkOps — {% if page == 'dashboard' %}Dashboard{% elif page == 'manifests' %}Manifests{% elif page == 'manifest_detail' %}Manifest Detail{% elif page == 'tasks' %}Tasks{% elif page == 'analytics' %}Analytics{% elif page == 'assistant' %}AI Assistant{% else %}App{% endif %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/FlakkOps_MainLogo.png') }}" type="image/png">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -64,15 +66,28 @@
             </nav>
 
             <div class="sidebar-footer">
-                <div class="flakk-badge">
-                    <span>Powered by</span>
-                    <strong>FlakkAi</strong>
+                <div class="tech-stack-badge">
+                    <span class="tech-stack-label">Stack</span>
+                    <div class="tech-pills">
+                        <span class="tech-pill">Python</span>
+                        <span class="tech-pill">Flask</span>
+                        <span class="tech-pill">SQLite</span>
+                        <span class="tech-pill">Chart.js</span>
+                    </div>
                 </div>
             </div>
         </aside>
 
         <!-- Main Content -->
         <main class="main-content">
+            <div class="demo-banner">
+                <span class="demo-dot"></span>
+                <span class="demo-label">Live Demo</span>
+                <span class="demo-sep">·</span>
+                <span>Python · Flask · SQLite · Chart.js · Jinja2</span>
+                <span class="demo-sep">·</span>
+                <span>Seed data auto-loads on startup</span>
+            </div>
             {% if page == 'dashboard' %}
             <!-- Dashboard View -->
             <header class="page-header">
@@ -81,7 +96,7 @@
             </header>
 
             <div class="stats-grid">
-                <div class="stat-card">
+                <div class="stat-card stat-card--blue">
                     <div class="stat-icon upcoming">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="1" y="3" width="15" height="13" rx="2"/>
@@ -95,7 +110,7 @@
                         <span class="stat-label">Upcoming Arrivals</span>
                     </div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card stat-card--cyan">
                     <div class="stat-icon tasks">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M9 11l3 3L22 4"/>
@@ -107,7 +122,7 @@
                         <span class="stat-label">Pending Tasks</span>
                     </div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card stat-card--green">
                     <div class="stat-icon units">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
@@ -120,7 +135,7 @@
                         <span class="stat-label">Units This Week</span>
                     </div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card stat-card--yellow">
                     <div class="stat-icon skus">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <line x1="8" y1="6" x2="21" y2="6"/>
@@ -148,13 +163,16 @@
                         {% if upcoming %}
                         <div class="arrivals-list">
                             {% for manifest in upcoming %}
-                            <a href="{{ url_for('manifest_detail', manifest_id=manifest.id) }}" class="arrival-item">
+                            <a href="{{ url_for('manifest_detail', manifest_id=manifest.id) }}" class="arrival-item {% if manifest.arrival_day == 'Monday' %}monday-item{% else %}wednesday-item{% endif %}">
                                 <div class="arrival-day {% if manifest.arrival_day == 'Monday' %}monday{% else %}wednesday{% endif %}">
                                     {{ manifest.arrival_day[:3] }}
                                 </div>
                                 <div class="arrival-info">
-                                    <span class="arrival-date">{{ manifest.arrival_date }}</span>
+                                    <span class="arrival-date">{{ manifest.arrival_day }} · {{ manifest.arrival_date }}</span>
                                     <span class="arrival-stats">{{ manifest.total_skus }} SKUs · {{ "{:,}".format(manifest.total_units) }} units</span>
+                                    {% if manifest.notes %}
+                                    <span class="arrival-notes">{{ manifest.notes[:100] }}{% if manifest.notes|length > 100 %}…{% endif %}</span>
+                                    {% endif %}
                                 </div>
                                 <svg class="arrival-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <polyline points="9 18 15 12 9 6"/>
@@ -180,7 +198,7 @@
                         {% if tasks %}
                         <div class="tasks-list">
                             {% for task in tasks %}
-                            <div class="task-item" data-task-id="{{ task.id }}">
+                            <div class="task-item" data-task-id="{{ task.id }}" data-priority="{{ task.priority }}">
                                 <button class="task-check" onclick="completeTask({{ task.id }})">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <polyline points="20 6 9 17 4 12"/>
@@ -188,8 +206,11 @@
                                 </button>
                                 <div class="task-info">
                                     <span class="task-title">{{ task.title }}</span>
+                                    {% if task.description %}
+                                    <span class="task-desc">{{ task.description[:90] }}{% if task.description|length > 90 %}…{% endif %}</span>
+                                    {% endif %}
                                     {% if task.due_date %}
-                                    <span class="task-due">Due: {{ task.due_date }}</span>
+                                    <span class="task-due">Due {{ task.due_date }}</span>
                                     {% endif %}
                                 </div>
                                 <span class="task-priority priority-{{ task.priority }}">{{ task.priority }}</span>
@@ -203,34 +224,313 @@
                         {% endif %}
                     </div>
                 </section>
+            </div>
 
-                <section class="card top-products">
-                    <div class="card-header">
-                        <h2>Top Products (30 Days)</h2>
-                        <a href="{{ url_for('analytics_page') }}" class="view-all">Analytics</a>
+            <!-- Incoming Manifest Preview -->
+            {% if upcoming %}
+            <section class="card incoming-manifest-card">
+                <div class="card-header">
+                    <h2>
+                        Next Truck —
+                        <span style="color: var(--accent-blue);">{{ upcoming[0].arrival_day }} {{ upcoming[0].arrival_date }}</span>
+                    </h2>
+                    <span class="day-badge monday">{{ upcoming[0].arrival_day[:3] }}</span>
+                </div>
+                <div class="card-content" style="padding: 0;">
+                    {% if incoming_preview %}
+                    <div class="table-wrapper">
+                        <table class="data-table incoming-preview-table">
+                            <thead>
+                                <tr>
+                                    <th>SKU</th>
+                                    <th>Description</th>
+                                    <th>Qty</th>
+                                    <th>Case Pack</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in incoming_preview %}
+                                <tr>
+                                    <td>
+                                        <code>{{ item.sku }}</code>
+                                        {% if item.is_new_product %}<span class="new-badge">NEW</span>{% endif %}
+                                    </td>
+                                    <td>{{ item.description }}</td>
+                                    <td><strong>{{ "{:,}".format(item.quantity) }}</strong></td>
+                                    <td>{{ item.case_pack or '—' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="card-content">
-                        {% if top_products %}
-                        <div class="products-list">
-                            {% for product in top_products %}
-                            <div class="product-item">
-                                <div class="product-rank">#{{ loop.index }}</div>
-                                <div class="product-info">
-                                    <span class="product-sku">{{ product.sku }}</span>
-                                    <span class="product-desc">{{ product.description[:40] }}{% if product.description|length > 40 %}...{% endif %}</span>
-                                </div>
-                                <div class="product-qty">{{ "{:,}".format(product.total_quantity) }}</div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% else %}
-                        <div class="empty-state">
-                            <p>No product data yet</p>
-                        </div>
-                        {% endif %}
+                    {% else %}
+                    <div class="empty-state">
+                        <p>No manifest items loaded yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+            {% endif %}
+
+            <!-- Charts Row (3-col) -->
+            <div class="charts-row">
+                <section class="card chart-card-wide">
+                    <div class="card-header">
+                        <h2>Year-over-Year Units</h2>
+                        <span style="font-size: 12px; color: var(--text-muted);">Last 8 weeks · 2025 vs 2026</span>
+                    </div>
+                    <div class="card-content chart-canvas-card">
+                        <canvas id="weeklyUnitsChart"></canvas>
+                    </div>
+                </section>
+                <section class="card chart-card-narrow">
+                    <div class="card-header">
+                        <h2>SKU Categories</h2>
+                    </div>
+                    <div class="card-content chart-canvas-card">
+                        <canvas id="categoryDonutChart"></canvas>
+                    </div>
+                </section>
+                <section class="card chart-card-narrow">
+                    <div class="card-header">
+                        <h2>Task Status</h2>
+                    </div>
+                    <div class="card-content chart-canvas-card">
+                        <canvas id="taskStatusChart"></canvas>
                     </div>
                 </section>
             </div>
+
+            <!-- Manifest Timeline -->
+            <section class="card manifest-timeline-card">
+                <div class="card-header">
+                    <h2>Manifest Timeline</h2>
+                    <span style="font-size: 12px; color: var(--text-muted);">Processed <span style="color:#2176d9">━</span> · Upcoming <span style="color:#f59e0b">╌</span></span>
+                </div>
+                <div class="card-content chart-canvas-card">
+                    <canvas id="manifestTimelineChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Top Products -->
+            <section class="card top-products-section">
+                <div class="card-header">
+                    <h2>Top Products (30 Days)</h2>
+                    <a href="{{ url_for('analytics_page') }}" class="view-all">Analytics</a>
+                </div>
+                <div class="card-content">
+                    {% if top_products %}
+                    <div class="products-list">
+                        {% for product in top_products %}
+                        <div class="product-item">
+                            <div class="product-rank">#{{ loop.index }}</div>
+                            <div class="product-info">
+                                <span class="product-sku">{{ product.sku }}</span>
+                                <span class="product-desc">{{ product.description[:48] }}{% if product.description|length > 48 %}…{% endif %}</span>
+                                <div class="product-vol-bar">
+                                    <div class="product-vol-fill" style="width: {{ (product.total_quantity / top_products[0].total_quantity * 100)|int }}%"></div>
+                                </div>
+                            </div>
+                            <div class="product-qty">
+                                {{ "{:,}".format(product.total_quantity) }}
+                                <small>units</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <p>No product data yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <script>
+            // ── YoY Grouped Bar Chart ───────────────────────────────────
+            (function() {
+                var rawData = {{ yoy_chart | tojson }};
+                var labels = rawData.map(function(d) { return 'Wk ' + d.week_number; });
+                var vals2026 = rawData.map(function(d) { return d.units_2026; });
+                var vals2025 = rawData.map(function(d) { return d.units_2025; });
+                var ctx = document.getElementById('weeklyUnitsChart');
+                if (!ctx) return;
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: '2026',
+                                data: vals2026,
+                                backgroundColor: 'rgba(33,118,217,0.85)',
+                                borderColor: 'rgba(33,118,217,1)',
+                                borderWidth: 1,
+                                borderRadius: 4
+                            },
+                            {
+                                label: '2025',
+                                data: vals2025,
+                                backgroundColor: 'rgba(33,118,217,0.3)',
+                                borderColor: 'rgba(33,118,217,0.5)',
+                                borderWidth: 1,
+                                borderRadius: 4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: { color: '#4a4a4a', font: { size: 11 }, boxWidth: 12, padding: 12 }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: 'rgba(0,0,0,0.06)' },
+                                ticks: { color: '#6e6b66', font: { size: 11 } }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: '#6e6b66', font: { size: 11 } }
+                            }
+                        }
+                    }
+                });
+            })();
+
+            // ── Category Donut Chart ────────────────────────────────────
+            (function() {
+                var rawData = {{ category_breakdown | tojson }};
+                var labels = rawData.map(function(d) { return d.category; });
+                var values = rawData.map(function(d) { return d.count; });
+                var palette = ['#2176d9','#f59e0b','#10b981','#ef4444','#8b5cf6','#06b6d4','#f97316','#84cc16'];
+                var ctx = document.getElementById('categoryDonutChart');
+                if (!ctx) return;
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: values,
+                            backgroundColor: palette.slice(0, labels.length),
+                            borderWidth: 2,
+                            borderColor: '#ccc8c2',
+                            hoverOffset: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '62%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: '#4a4a4a',
+                                    font: { size: 11 },
+                                    padding: 12,
+                                    boxWidth: 12
+                                }
+                            }
+                        }
+                    }
+                });
+            })();
+
+            // ── Task Status Donut ───────────────────────────────────────
+            (function() {
+                var counts = {{ task_counts | tojson }};
+                var labels = ['Pending', 'In Progress', 'Completed'];
+                var keys   = ['pending', 'in_progress', 'completed'];
+                var values = keys.map(function(k) { return counts[k] || 0; });
+                var colors = ['#f59e0b', '#2176d9', '#10b981'];
+                var ctx = document.getElementById('taskStatusChart');
+                if (!ctx) return;
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: values,
+                            backgroundColor: colors,
+                            borderWidth: 2,
+                            borderColor: '#ccc8c2',
+                            hoverOffset: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '62%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { color: '#4a4a4a', font: { size: 11 }, padding: 12, boxWidth: 12 }
+                            }
+                        }
+                    }
+                });
+            })();
+
+            // ── Manifest Timeline ───────────────────────────────────────
+            (function() {
+                var manifests = {{ manifest_timeline | tojson }};
+                if (!manifests.length) return;
+                var labels    = manifests.map(function(m) { return m.arrival_date; });
+                var values    = manifests.map(function(m) { return m.total_units; });
+                var processed = manifests.map(function(m) { return !!m.processed; });
+                var ptColors  = processed.map(function(p) { return p ? '#2176d9' : '#f59e0b'; });
+                var ctx = document.getElementById('manifestTimelineChart');
+                if (!ctx) return;
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Units',
+                            data: values,
+                            borderColor: '#2176d9',
+                            borderWidth: 2,
+                            pointBackgroundColor: ptColors,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            fill: true,
+                            backgroundColor: 'rgba(33,118,217,0.08)',
+                            tension: 0.3,
+                            segment: {
+                                borderColor: function(ctx) {
+                                    return processed[ctx.p1DataIndex] ? '#2176d9' : '#f59e0b';
+                                },
+                                borderDash: function(ctx) {
+                                    return processed[ctx.p1DataIndex] ? [] : [6, 4];
+                                }
+                            }
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: 'rgba(0,0,0,0.06)' },
+                                ticks: { color: '#6e6b66', font: { size: 11 } }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: '#6e6b66', font: { size: 11 } }
+                            }
+                        }
+                    }
+                });
+            })();
+            </script>
 
             {% elif page == 'manifests' %}
             <!-- Manifests View -->
@@ -276,14 +576,16 @@
                             <label for="notes">Notes (optional)</label>
                             <textarea id="notes" name="notes" rows="2" placeholder="Any special notes about this shipment..."></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="17 8 12 3 7 8"/>
-                                <line x1="12" y1="3" x2="12" y2="15"/>
-                            </svg>
-                            Upload & Process
-                        </button>
+                        <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+                            <button type="submit" class="btn btn-primary">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="17 8 12 3 7 8"/>
+                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                                Upload & Process
+                            </button>
+                        </div>
                     </form>
                     <div id="upload-status" class="upload-status hidden"></div>
                 </div>
@@ -596,27 +898,60 @@
                 <p class="subtitle">Product insights and inventory trends</p>
             </header>
 
+            <!-- Weekly Volume Heat Map -->
+            {% if heatmap_data %}
+            {% set ns = namespace(max_val=1) %}
+            {% for row in heatmap_data %}
+                {% if row.units_2026 > ns.max_val %}{% set ns.max_val = row.units_2026 %}{% endif %}
+                {% if row.units_2025 > ns.max_val %}{% set ns.max_val = row.units_2025 %}{% endif %}
+            {% endfor %}
+            <section class="card heat-map-section">
+                <div class="card-header">
+                    <h2>Weekly Volume Heat Map</h2>
+                    <span style="font-size: 12px; color: var(--text-muted);">8-week intensity · darker = more units</span>
+                </div>
+                <div class="card-content">
+                    <div class="heat-map-grid">
+                        <div class="heat-map-row">
+                            <span class="heat-map-year-label">2026</span>
+                            {% for row in heatmap_data %}
+                            {% set intensity = (row.units_2026 / ns.max_val) | round(2) %}
+                            <div class="heat-map-cell" style="--intensity: {{ intensity }};" title="Wk {{ row.week_number }}: {{ row.units_2026 }} units">
+                                Wk{{ row.week_number }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="heat-map-row">
+                            <span class="heat-map-year-label">2025</span>
+                            {% for row in heatmap_data %}
+                            {% set intensity = (row.units_2025 / ns.max_val) | round(2) %}
+                            <div class="heat-map-cell" style="--intensity: {{ intensity }};" title="Wk {{ row.week_number }}: {{ row.units_2025 }} units">
+                                Wk{{ row.week_number }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="heat-map-legend">
+                        <span>Low</span>
+                        <div style="display:flex;gap:3px;">
+                            {% for i in range(1, 6) %}
+                            <div style="width:28px;height:16px;border-radius:3px;background:rgba(33,118,217,{{ (i * 0.2) | round(1) }});"></div>
+                            {% endfor %}
+                        </div>
+                        <span>High</span>
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+
             <div class="analytics-grid">
                 <section class="card">
                     <div class="card-header">
                         <h2>Top Products (90 Days)</h2>
                     </div>
-                    <div class="card-content">
+                    <div class="card-content chart-canvas-card" style="height:380px;">
                         {% if top_products %}
-                        <div class="products-chart">
-                            {% for product in top_products[:10] %}
-                            <div class="chart-bar-item">
-                                <div class="chart-label">
-                                    <span class="sku">{{ product.sku }}</span>
-                                    <span class="desc">{{ product.description[:30] }}{% if product.description|length > 30 %}...{% endif %}</span>
-                                </div>
-                                <div class="chart-bar-wrapper">
-                                    <div class="chart-bar" style="width: {{ (product.total_quantity / top_products[0].total_quantity * 100)|int }}%"></div>
-                                    <span class="chart-value">{{ "{:,}".format(product.total_quantity) }}</span>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
+                        <canvas id="topProductsChart"></canvas>
                         {% else %}
                         <div class="empty-state">
                             <p>No product data available</p>
@@ -648,6 +983,33 @@
                         {% endif %}
                     </div>
                 </section>
+
+                <!-- Product Velocity Sparklines -->
+                {% if product_sparklines %}
+                <section class="card full-width">
+                    <div class="card-header">
+                        <h2>Product Velocity</h2>
+                        <span style="font-size:12px;color:var(--text-muted);">Units per shipment · top SKUs</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="velocity-grid">
+                            {% for sku, qty_list in product_sparklines.items() %}
+                            {% if qty_list %}
+                            {% set first_qty = qty_list[0] %}
+                            {% set last_qty = qty_list[-1] %}
+                            {% set trend = 'up' if last_qty > first_qty else ('down' if last_qty < first_qty else 'flat') %}
+                            <div class="velocity-row">
+                                <span class="velocity-sku">{{ sku }}</span>
+                                <canvas class="velocity-canvas" width="80" height="28" data-spark="{{ qty_list | tojson }}"></canvas>
+                                <span class="trend-{{ trend }}">{% if trend == 'up' %}↑{% elif trend == 'down' %}↓{% else %}→{% endif %}</span>
+                                <span style="font-size:12px;color:var(--text-secondary);">{{ qty_list | min }}–{{ qty_list | max }} units</span>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </section>
+                {% endif %}
 
                 <section class="card full-width">
                     <div class="card-header">
@@ -692,6 +1054,74 @@
                     </div>
                 </section>
             </div>
+
+            <script>
+            // ── Top Products Horizontal Bar ─────────────────────────────
+            (function() {
+                var rawData = {{ top_products[:10] | tojson }};
+                if (!rawData.length) return;
+                var labels = rawData.map(function(d) { return d.sku; });
+                var values = rawData.map(function(d) { return d.total_quantity; });
+                var ctx = document.getElementById('topProductsChart');
+                if (!ctx) return;
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Total Units',
+                            data: values,
+                            backgroundColor: 'rgba(33,118,217,0.8)',
+                            borderColor: 'rgba(33,118,217,1)',
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                grid: { color: 'rgba(0,0,0,0.06)' },
+                                ticks: { color: '#6e6b66', font: { size: 11 } }
+                            },
+                            y: {
+                                grid: { display: false },
+                                ticks: { color: '#4a4a4a', font: { size: 11, family: 'IBM Plex Mono' } }
+                            }
+                        }
+                    }
+                });
+            })();
+
+            // ── Velocity Sparklines ─────────────────────────────────────
+            document.querySelectorAll('.velocity-canvas').forEach(function(canvas) {
+                var data = JSON.parse(canvas.dataset.spark || '[]');
+                if (data.length < 2) return;
+                var ctx = canvas.getContext('2d');
+                var W = canvas.width, H = canvas.height;
+                var min = Math.min.apply(null, data);
+                var max = Math.max.apply(null, data);
+                var range = max - min || 1;
+                var last = data[data.length - 1];
+                var first = data[0];
+                var color = last > first ? '#10b981' : (last < first ? '#ef4444' : '#9ca3af');
+                ctx.clearRect(0, 0, W, H);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1.5;
+                ctx.lineJoin = 'round';
+                ctx.beginPath();
+                data.forEach(function(v, i) {
+                    var x = (i / (data.length - 1)) * W;
+                    var y = H - ((v - min) / range) * (H - 4) - 2;
+                    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+            });
+            </script>
 
             {% elif page == 'assistant' %}
             <!-- AI Assistant View -->

@@ -4,6 +4,10 @@ from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
 import requests
 import json
+import anthropic
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from models import (
     init_db, get_db,
@@ -11,7 +15,10 @@ from models import (
     update_manifest_totals, add_manifest_item, get_manifest_items,
     get_new_items_in_manifest, create_task, get_tasks, update_task_status,
     delete_task, get_dashboard_stats, get_top_products_by_volume,
-    get_product_history, get_all_products, get_new_products
+    get_product_history, get_all_products, get_new_products,
+    get_weekly_units_chart, get_category_breakdown,
+    get_yoy_chart_data, get_task_status_counts, get_manifest_timeline,
+    get_product_sparklines
 )
 from pdf_parser import parse_manifest, get_manifest_summary
 
@@ -30,6 +37,84 @@ init_db()
 FLAKK_API = "http://localhost:5002"
 
 
+def _demo_analysis(manifest, items, new_items):
+    """Generate a data-driven analysis without FlakkAi."""
+    top = sorted(items, key=lambda x: x['quantity'], reverse=True)[:5]
+    top_lines = '\n'.join(f"- {i['sku']}: {i['description'][:40]} — {i['quantity']} units" for i in top)
+    new_section = ''
+    if new_items:
+        new_lines = '\n'.join(f"- {i['sku']}: {i['description'][:40]}" for i in new_items)
+        new_section = f"\n\n**New Products Detected ({len(new_items)})**\n{new_lines}\nAllocate floor space and set up signage before arrival."
+
+    volume_note = 'above average' if manifest['total_units'] > 280 else 'within normal range'
+
+    return f"""**Shipment Analysis — {manifest['arrival_day']} {manifest['arrival_date']}**
+
+**Overview**
+{manifest['total_skus']} SKUs · {manifest['total_units']:,} units · Volume is {volume_note} for a single truck.
+
+**Top Items by Quantity**
+{top_lines}{new_section}
+
+**Recommendations**
+1. Pre-stage the receiving area at least 1 hour before truck arrival
+2. Verify quantities line-by-line against this manifest — flag discrepancies immediately
+3. {"Set up new SKU locations before the truck arrives" if new_items else "Standard replenishment — prioritize shelf restocking for high-velocity SKUs"}
+4. Update inventory counts in the system within 2 hours of receiving"""
+
+
+def _demo_chat_response(message):
+    """Keyword-matched canned response when FlakkAi is offline."""
+    msg = message.lower()
+    note = ''
+
+    if any(w in msg for w in ['priorit', 'focus', 'should i', 'what first', 'important']):
+        return """Here are your top priorities right now:
+
+1. **High — Prepare for Monday truck** (330 units, 8 SKUs) — clear the receiving area and brief your team on the 2 new Spring SKUs
+2. **High — Update inventory counts** after arrival, flagging any discrepancies immediately
+3. **Medium — Prepare for Wednesday mid-week truck** (192 units, running/athletic) — straightforward replenishment
+4. **Low — Complete in-progress review** of SK-3300-RED and SK-1200-MUL from last week's shipment""" + note
+
+    elif any(w in msg for w in ['trend', 'pattern', 'concern', 'compar', 'year', 'volume']):
+        return """Looking at your recent data:
+
+- **YoY volume:** 2026 weekly units average ~293/week vs ~257/week in 2025 — a solid **14% increase**
+- **Top performers:** SK-8750-BLK (Arch Fit) and SK-2330-WHT (Summits) consistently lead volume across all manifests
+- **New product pace:** 4 new SKUs added this month — slightly elevated, worth monitoring floor space
+- **No anomalies** detected in recent shipment sizes or frequencies""" + note
+
+    elif any(w in msg for w in ['new product', 'new sku', 'spring', 'space', 'floor', 'display']):
+        return """For the incoming new Spring 2026 products:
+
+- **SK-SPNG-WHT** — Spring Stride Pro White (48 units, 12-pack cases)
+- **SK-SPNG-BLU** — Spring Stride Pro Blue (48 units, 12-pack cases)
+
+**Recommended prep:**
+1. Allocate 4–6 linear feet in the Running category for the Spring Stride Pro line
+2. Set up signage before the Monday truck arrives — 96 units total is a strong intro quantity
+3. Check planogram for Running and identify display location in advance""" + note
+
+    elif any(w in msg for w in ['how many', 'total', 'count', 'unit', 'quantity', 'expect']):
+        return """Current volume snapshot:
+
+- **This week incoming:** 522 units across 2 trucks (330 Mon + 192 Wed)
+- **Last week received:** 204 units (Wednesday truck, fully processed)
+- **Pending tasks:** 4 open, 2 high priority tied to Monday arrival
+- **2026 vs 2025:** Running approximately 14% higher volume for this same period""" + note
+
+    else:
+        return """Here's your current operations overview:
+
+**Incoming this week:** 2 trucks — Monday (330 units, 8 SKUs including 2 new Spring products) and Wednesday (192 units, 5 SKUs, running/athletic replenishment).
+
+**Task status:** 4 pending tasks, 1 in progress. Two high-priority items require action before Monday's truck arrives.
+
+**Top products this month:** Arch Fit Slip Resistant (SK-8750-BLK) and Summits Fast Attraction (SK-2330-WHT) continue to lead volume across all recent manifests.
+
+**Recommendation:** Focus on Monday truck prep — largest incoming shipment with new SKUs that need floor setup before arrival.""" + note
+
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
@@ -46,13 +131,25 @@ def dashboard():
     upcoming = get_upcoming_arrivals()
     tasks = get_tasks(status='pending', limit=5)
     top_products = get_top_products_by_volume(days=30, limit=5)
+    weekly_chart = get_weekly_units_chart()
+    category_breakdown = get_category_breakdown()
+    incoming_preview = get_manifest_items(upcoming[0]['id']) if upcoming else []
+    yoy_chart = get_yoy_chart_data()
+    task_counts = get_task_status_counts()
+    manifest_timeline = get_manifest_timeline()
 
     return render_template('index.html',
                            page='dashboard',
                            stats=stats,
                            upcoming=upcoming,
                            tasks=tasks,
-                           top_products=top_products)
+                           top_products=top_products,
+                           weekly_chart=weekly_chart,
+                           category_breakdown=category_breakdown,
+                           incoming_preview=incoming_preview,
+                           yoy_chart=yoy_chart,
+                           task_counts=task_counts,
+                           manifest_timeline=manifest_timeline)
 
 
 @app.route('/manifests')
@@ -100,12 +197,16 @@ def analytics_page():
     top_products = get_top_products_by_volume(days=90, limit=20)
     products = get_all_products()
     new_products = get_new_products()
+    heatmap_data = get_yoy_chart_data(limit=8)
+    product_sparklines = get_product_sparklines([p['sku'] for p in top_products[:10]])
 
     return render_template('index.html',
                            page='analytics',
                            top_products=top_products,
                            products=products,
-                           new_products=new_products)
+                           new_products=new_products,
+                           heatmap_data=heatmap_data,
+                           product_sparklines=product_sparklines)
 
 
 @app.route('/assistant')
@@ -292,19 +393,15 @@ def api_product_history(sku):
 
 @app.route('/api/assistant/chat', methods=['POST'])
 def assistant_chat():
-    """
-    Chat with AI assistant about manifest/inventory data.
-    Routes through FlakkAi with context injection.
-    """
+    """Chat with Claude about manifest/inventory data."""
     data = request.json
     user_message = data.get('message', '')
 
-    # Build context from current data
     stats = get_dashboard_stats()
     upcoming = get_upcoming_arrivals()
     top_products = get_top_products_by_volume(days=30, limit=10)
 
-    context = f"""You are FlakkOps Assistant, an AI helper for inventory and shipment management.
+    system_prompt = f"""You are FlakkOps Assistant, an AI helper for inventory and shipment management at a retail shoe store.
 
 Current Status:
 - Upcoming truck arrivals (next 7 days): {stats['upcoming_arrivals']}
@@ -321,35 +418,24 @@ Top Products (Last 30 Days):
 
 The user manages inventory receiving for trucks arriving every Monday and Wednesday.
 Help them plan, prioritize, and make decisions about incoming shipments.
-Be concise and actionable."""
+Be concise and actionable. Use markdown formatting."""
 
-    # Call FlakkAi
+    api_key = os.environ.get('ANTHROPIC_API_KEY')
+    if not api_key or api_key == 'your-api-key-here':
+        return jsonify({'response': _demo_chat_response(user_message)})
+
     try:
-        response = requests.post(
-            f"{FLAKK_API}/api/chat",
-            json={
-                'messages': [
-                    {'role': 'system', 'content': context},
-                    {'role': 'user', 'content': user_message}
-                ],
-                'model': 'mistral',
-                'persona': 'technical'
-            },
-            timeout=120
+        client = anthropic.Anthropic(api_key=api_key)
+        message = client.messages.create(
+            model='claude-haiku-4-5-20251001',
+            max_tokens=1024,
+            system=system_prompt,
+            messages=[{'role': 'user', 'content': user_message}]
         )
+        return jsonify({'response': message.content[0].text})
 
-        if response.ok:
-            result = response.json()
-            return jsonify({'response': result['response']})
-        else:
-            return jsonify({'error': 'AI service unavailable'}), 503
-
-    except requests.ConnectionError:
-        return jsonify({
-            'error': 'Cannot connect to FlakkAi. Make sure it is running on port 5002.'
-        }), 503
-    except requests.Timeout:
-        return jsonify({'error': 'AI request timed out'}), 504
+    except Exception:
+        return jsonify({'response': _demo_chat_response(user_message)})
 
 
 @app.route('/api/manifest/<int:manifest_id>/analyze', methods=['POST'])
@@ -383,25 +469,47 @@ Provide:
 
 Be specific and actionable."""
 
+    api_key = os.environ.get('ANTHROPIC_API_KEY')
+    if not api_key or api_key == 'your-api-key-here':
+        return jsonify({'analysis': _demo_analysis(manifest, items, new_items)})
+
     try:
-        response = requests.post(
-            f"{FLAKK_API}/api/chat",
-            json={
-                'messages': [{'role': 'user', 'content': prompt}],
-                'model': 'mistral',
-                'persona': 'technical'
-            },
-            timeout=120
+        client = anthropic.Anthropic(api_key=api_key)
+        message = client.messages.create(
+            model='claude-haiku-4-5-20251001',
+            max_tokens=1024,
+            messages=[{'role': 'user', 'content': prompt}]
         )
+        return jsonify({'analysis': message.content[0].text})
 
-        if response.ok:
-            result = response.json()
-            return jsonify({'analysis': result['response']})
-        else:
-            return jsonify({'error': 'AI service unavailable'}), 503
+    except Exception:
+        return jsonify({'analysis': _demo_analysis(manifest, items, new_items)})
 
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+
+# ============================================
+# Demo Utilities
+# ============================================
+
+@app.route('/api/sample-manifest')
+def sample_manifest():
+    """Download a sample manifest CSV for demo purposes."""
+    from flask import Response
+    content = (
+        "SKU,Description,Quantity,CasePack,Weight\n"
+        "SK-8750-BLK,Arch Fit Slip Resistant - Black,48,6,18.2\n"
+        "SK-8751-NVY,Arch Fit Slip Resistant - Navy,36,6,18.2\n"
+        "SK-2330-WHT,Summits Fast Attraction - White,60,12,12.4\n"
+        "SK-2331-GRY,Summits Fast Attraction - Grey,48,12,12.4\n"
+        "SK-4040-PNK,D'Lites Fresh Start - Pink,36,6,16.8\n"
+        "SK-6600-TAN,Relaxed Fit Expected Avillo - Tan,42,6,19.5\n"
+        "SK-9010-BLK,GO Run Consistent - Black,24,6,13.1\n"
+        "SK-5500-GRN,Max Cushioning Premier - Green,18,6,14.6\n"
+    )
+    return Response(
+        content,
+        mimetype='text/csv',
+        headers={'Content-Disposition': 'attachment; filename=sample_manifest.csv'}
+    )
 
 
 # ============================================

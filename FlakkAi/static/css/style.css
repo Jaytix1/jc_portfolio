@@ -5,21 +5,21 @@
 }
 
 :root {
-    --bg-primary: #e8e5e0;
-    --bg-secondary: #d6d2cc;
-    --bg-tertiary: #c4c0ba;
-    --bg-elevated: #b8b4ae;
-    --text-primary: #1a1a1a;
-    --text-secondary: #4a4a4a;
-    --text-muted: #6e6b66;
+    --bg-primary: #f0f4f8;
+    --bg-secondary: #e8eef4;
+    --bg-tertiary: rgba(248, 250, 252, 0.72);
+    --bg-elevated: rgba(255, 255, 255, 0.55);
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-muted: #64748b;
     --accent: #2176d9;
     --accent-hover: #1a5fb0;
-    --accent-secondary: #1a7fe8;
-    --success: #2d8a4e;
-    --warning: #b5860d;
-    --error: #c0392b;
-    --border: #b0aca6;
-    --border-light: #c8c4be;
+    --accent-secondary: #3b9eff;
+    --success: #059669;
+    --warning: #d97706;
+    --error: #dc2626;
+    --border: #e2e8f0;
+    --border-light: #e8eef4;
     --glow: rgba(33, 118, 217, 0.15);
 }
 
@@ -28,8 +28,14 @@ html {
 }
 
 body {
-    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background-color: var(--bg-primary);
+    background-image:
+        linear-gradient(rgba(240, 244, 248, 0.22), rgba(240, 244, 248, 0.22)),
+        url('/static/img/backdrop.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
     color: var(--text-primary);
     line-height: 1.6;
     min-height: 100vh;
@@ -47,12 +53,11 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 2rem;
-    background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
-    border-bottom: 1px solid var(--border-light);
+    background: #1e293b;
+    border-bottom: 1px solid #283a50;
     position: sticky;
     top: 0;
     z-index: 100;
-    backdrop-filter: blur(10px);
 }
 
 .nav-brand {
@@ -79,16 +84,17 @@ body {
 .nav-subtitle {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: #94a3b8;
     white-space: nowrap;
     padding-right: 1.25rem;
-    border-right: 1px solid var(--border);
+    border-right: 1px solid #283a50;
 }
 
 .nav-features {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    margin-left: 1.25rem;
 }
 
 .nav-feature-tag {
@@ -97,9 +103,9 @@ body {
     gap: 0.4rem;
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--text-secondary);
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid #283a50;
     border-radius: 20px;
     padding: 0.4rem 1rem;
 }
@@ -134,7 +140,7 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--text-secondary);
+    color: #94a3b8;
     font-size: 0.95rem;
 }
 
@@ -155,8 +161,10 @@ body {
 .hero {
     text-align: center;
     padding: 3rem 2rem;
-    background: radial-gradient(ellipse at top, var(--bg-secondary) 0%, var(--bg-primary) 70%);
-    border-bottom: 1px solid var(--border-light);
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border-bottom: 1px solid var(--border);
 }
 
 .hero-content {
@@ -234,7 +242,9 @@ body {
 /* ===== PANELS ===== */
 .editor-panel,
 .results-panel {
-    background: var(--bg-secondary);
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid var(--border);
     border-radius: 16px;
     overflow: hidden;
@@ -1243,8 +1253,8 @@ body {
     width: 400px;
     max-width: 90vw;
     height: 100vh;
-    background: var(--bg-secondary);
-    border-left: 1px solid var(--border);
+    background: #1e293b;
+    border-left: 1px solid #283a50;
     z-index: 200;
     display: flex;
     flex-direction: column;
@@ -1261,13 +1271,13 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 1.25rem;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid #283a50;
 }
 
 .history-header h3 {
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: #f1f5f9;
 }
 
 .history-close {
@@ -1275,14 +1285,14 @@ body {
     border: none;
     padding: 0.5rem;
     cursor: pointer;
-    color: var(--text-muted);
+    color: #94a3b8;
     border-radius: 8px;
     transition: all 0.2s ease;
 }
 
 .history-close:hover {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.08);
+    color: #f1f5f9;
 }
 
 .history-close svg {
@@ -1292,7 +1302,7 @@ body {
 
 .history-actions {
     padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: 1px solid #283a50;
 }
 
 .btn-clear-history {
@@ -1353,8 +1363,8 @@ body {
 
 .history-item {
     padding: 1rem;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid #283a50;
     border-radius: 12px;
     margin-bottom: 0.75rem;
     cursor: pointer;
@@ -1363,8 +1373,8 @@ body {
 }
 
 .history-item:hover {
-    border-color: var(--accent);
-    background: rgba(88, 166, 255, 0.05);
+    border-color: #3b9eff;
+    background: rgba(59, 158, 255, 0.08);
 }
 
 .history-item-header {
@@ -1386,20 +1396,20 @@ body {
 
 .history-item-time {
     font-size: 0.75rem;
-    color: var(--text-muted);
+    color: #64748b;
 }
 
 .history-item-file {
     font-size: 0.85rem;
-    color: var(--text-secondary);
+    color: #cbd5e1;
     margin-bottom: 0.5rem;
     font-weight: 500;
 }
 
 .history-item-preview {
     font-size: 0.8rem;
-    color: var(--text-muted);
-    font-family: 'SF Mono', 'Consolas', monospace;
+    color: #64748b;
+    font-family: 'IBM Plex Mono', 'Consolas', monospace;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1437,19 +1447,18 @@ body {
     align-items: center;
     gap: 0.5rem;
     padding: 0.6rem 1.25rem;
-    font-size: 0.95rem;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid #283a50;
     border-radius: 8px;
-    color: var(--text-secondary);
+    color: #94a3b8;
     font-size: 0.875rem;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .nav-btn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
+    border-color: #3b9eff;
+    color: #3b9eff;
 }
 
 .nav-btn svg {

@@ -455,6 +455,100 @@ def get_dashboard_stats():
     return stats
 
 
+def get_weekly_units_chart(limit=8):
+    """Last N weeks of units from weekly_history for 2026, oldest first."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT week_number, total_units
+        FROM weekly_history
+        WHERE year = 2026
+        ORDER BY week_number DESC
+        LIMIT ?
+    ''', (limit,))
+    results = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in reversed(results)]
+
+
+def get_category_breakdown():
+    """Product count grouped by category (COALESCE NULL → 'Other')."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT COALESCE(category, 'Other') as category, COUNT(*) as count
+        FROM products
+        GROUP BY COALESCE(category, 'Other')
+        ORDER BY count DESC
+    ''')
+    results = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in results]
+
+
+def get_yoy_chart_data(limit=8):
+    """2026 + 2025 units side-by-side by week_number, oldest first."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT h26.week_number,
+               h26.total_units AS units_2026,
+               COALESCE(h25.total_units, 0) AS units_2025
+        FROM weekly_history h26
+        LEFT JOIN weekly_history h25
+            ON h25.week_number = h26.week_number AND h25.year = 2025
+        WHERE h26.year = 2026
+        ORDER BY h26.week_number DESC
+        LIMIT ?
+    ''', (limit,))
+    results = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in reversed(results)]
+
+
+def get_task_status_counts():
+    """Returns {status: count} dict."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT status, COUNT(*) as count FROM tasks GROUP BY status')
+    results = cursor.fetchall()
+    conn.close()
+    return {row['status']: row['count'] for row in results}
+
+
+def get_manifest_timeline():
+    """All manifests sorted by arrival_date ASC."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT arrival_date, arrival_day, total_units, total_skus, processed
+        FROM manifests
+        ORDER BY arrival_date ASC
+    ''')
+    results = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in results]
+
+
+def get_product_sparklines(skus):
+    """Returns {sku: [qty, qty, ...]} ordered by manifest_date ASC per SKU."""
+    conn = get_db()
+    cursor = conn.cursor()
+    result = {}
+    for sku in skus:
+        cursor.execute('''
+            SELECT mi.quantity
+            FROM manifest_items mi
+            JOIN manifests m ON mi.manifest_id = m.id
+            WHERE mi.sku = ?
+            ORDER BY m.manifest_date ASC
+        ''', (sku,))
+        rows = cursor.fetchall()
+        result[sku] = [row['quantity'] for row in rows]
+    conn.close()
+    return result
+
+
 # Initialize database when module is imported
 if not os.path.exists(DATABASE):
     init_db()
