@@ -746,6 +746,35 @@ with app.app_context():
         except Exception:
             db.session.rollback()
 
+    # Auto-seed reference data on first run (no-op if already populated)
+    if CruiseLine.query.count() == 0:
+        try:
+            from reference_data import CRUISE_LINES, SHIPS, REGIONS, PORTS
+            _lines = {}
+            for _name in CRUISE_LINES:
+                _cl = CruiseLine.query.filter_by(name=_name).first()
+                if not _cl:
+                    _cl = CruiseLine(name=_name)
+                    db.session.add(_cl)
+                    db.session.flush()
+                _lines[_name] = _cl
+            for _line_name, _ship_names in SHIPS.items():
+                for _ship_name in _ship_names:
+                    if not Ship.query.filter_by(name=_ship_name, cruiseline_id=_lines[_line_name].id).first():
+                        db.session.add(Ship(name=_ship_name, cruiseline_id=_lines[_line_name].id))
+            for _rname in REGIONS:
+                if not Region.query.filter_by(name=_rname).first():
+                    db.session.add(Region(name=_rname))
+            for _pname, _city, _country, _lat, _lon in PORTS:
+                if not Port.query.filter_by(name=_pname).first():
+                    db.session.add(Port(name=_pname, city=_city, country=_country,
+                                        latitude=_lat, longitude=_lon))
+            db.session.commit()
+            print('[Startup] Reference data seeded.')
+        except Exception as _e:
+            db.session.rollback()
+            print(f'[Startup] Reference data seed failed: {_e}')
+
 # Register Pipeline API blueprint
 import sys
 import os
