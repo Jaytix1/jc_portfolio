@@ -1765,7 +1765,10 @@ def setup_scheduler():
 
     return scheduler
 
-if __name__ == '__main__':
-    # Start the scheduler when running the app directly
+# Start scheduler — runs under both gunicorn and direct python app.py
+# Guard prevents double-start when Flask dev reloader forks a second process
+if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     scheduler = setup_scheduler()
+
+if __name__ == '__main__':
     app.run(debug=True, use_reloader=False)  # use_reloader=False prevents double scheduler
