@@ -711,6 +711,10 @@ with app.app_context():
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Gunicorn imports this module as 'app', but social routes import from 'Histacruise.app'.
+# Alias them to the same module so Python doesn't import app.py a second time.
+sys.modules.setdefault('Histacruise.app', sys.modules[__name__])
 from HC_Pipeline.api.routes import pipeline_api
 app.register_blueprint(pipeline_api)
 
