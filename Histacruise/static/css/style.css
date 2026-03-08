@@ -121,16 +121,33 @@ nav {
 .nav-links {
     flex: 1;
     text-align: right;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 4px;
 }
 
 nav a, .nav-links a {
     color: rgb(255, 255, 255);
     text-decoration: none;
-    padding: 10px 20px;
-    margin: 0 5px;
+    padding: 8px 14px;
+    margin: 0;
     border-radius: 5px;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(9, 9, 9, 0.4);
+    white-space: nowrap;
+    font-size: 0.95rem;
+}
+
+@media (max-width: 900px) {
+    nav a, .nav-links a { padding: 6px 10px; font-size: 0.88rem; }
+}
+
+@media (max-width: 650px) {
+    nav { flex-wrap: wrap; }
+    nav a, .nav-links a { padding: 5px 8px; font-size: 0.82rem; }
+    .nav-links { gap: 2px; }
 }
 
 nav a:hover, .nav-links a:hover {
