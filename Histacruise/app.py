@@ -1664,8 +1664,9 @@ def register():
         new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
-        
-        flash('Registration successful!')
+
+        login_user(new_user)
+        flash('Welcome to Histacruise!')
         return redirect(url_for('home'))
     
     return render_template('register.html')
