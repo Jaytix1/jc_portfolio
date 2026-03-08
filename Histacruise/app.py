@@ -253,7 +253,11 @@ def sanitize_text(text):
 # Use absolute path for database to ensure consistency
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-fallback-key')
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(basedir, "instance", "histacruise.db")}'
+_db_url = os.environ.get('DATABASE_URL', f'sqlite:///{os.path.join(basedir, "instance", "histacruise.db")}')
+# SQLAlchemy requires postgresql:// not postgres:// (Supabase/Render may give postgres://)
+if _db_url.startswith('postgres://'):
+    _db_url = _db_url.replace('postgres://', 'postgresql://', 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = _db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Photo upload configuration
@@ -703,7 +707,8 @@ class UserBadge(db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-os.makedirs(os.path.join(basedir, 'instance'), exist_ok=True)
+if _db_url.startswith('sqlite'):
+    os.makedirs(os.path.join(basedir, 'instance'), exist_ok=True)
 with app.app_context():
     db.create_all()  # Creates tables for fresh deployments; use `flask db upgrade` for migrations
 
