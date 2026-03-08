@@ -31,14 +31,70 @@ from datetime import date, datetime
 # ─── Reference Data ──────────────────────────────────────────────────────────
 
 CRUISE_LINES = ['Royal Caribbean', 'Carnival Cruise Line', 'Norwegian Cruise Line',
-                'Celebrity Cruises', 'Disney Cruise Line']
+                'Celebrity Cruises', 'Disney Cruise Line', 'MSC Cruises',
+                'Princess Cruises', 'Holland America Line']
 
 SHIPS = {
-    'Royal Caribbean':       ['Wonder of the Seas', 'Symphony of the Seas', 'Oasis of the Seas'],
-    'Carnival Cruise Line':  ['Carnival Sunshine', 'Carnival Celebration', 'Mardi Gras'],
-    'Norwegian Cruise Line': ['Norwegian Escape', 'Norwegian Bliss', 'Norwegian Prima'],
-    'Celebrity Cruises':     ['Celebrity Edge', 'Celebrity Apex', 'Celebrity Beyond'],
-    'Disney Cruise Line':    ['Disney Wish', 'Disney Dream', 'Disney Magic'],
+    'Royal Caribbean': [
+        'Wonder of the Seas', 'Symphony of the Seas', 'Harmony of the Seas',
+        'Allure of the Seas', 'Oasis of the Seas', 'Icon of the Seas',
+        'Odyssey of the Seas', 'Quantum of the Seas', 'Anthem of the Seas',
+        'Ovation of the Seas', 'Navigator of the Seas', 'Mariner of the Seas',
+        'Explorer of the Seas', 'Adventure of the Seas', 'Freedom of the Seas',
+        'Liberty of the Seas', 'Independence of the Seas', 'Brilliance of the Seas',
+        'Serenade of the Seas', 'Jewel of the Seas', 'Enchantment of the Seas',
+        'Vision of the Seas',
+    ],
+    'Carnival Cruise Line': [
+        'Mardi Gras', 'Carnival Celebration', 'Carnival Jubilee',
+        'Carnival Horizon', 'Carnival Vista', 'Carnival Panorama',
+        'Carnival Sunshine', 'Carnival Sunrise', 'Carnival Magic',
+        'Carnival Breeze', 'Carnival Dream', 'Carnival Freedom',
+        'Carnival Liberty', 'Carnival Valor', 'Carnival Conquest',
+        'Carnival Glory', 'Carnival Miracle', 'Carnival Legend',
+        'Carnival Pride', 'Carnival Spirit', 'Carnival Elation',
+        'Carnival Paradise',
+    ],
+    'Norwegian Cruise Line': [
+        'Norwegian Prima', 'Norwegian Viva', 'Norwegian Escape',
+        'Norwegian Bliss', 'Norwegian Encore', 'Norwegian Joy',
+        'Norwegian Breakaway', 'Norwegian Getaway', 'Norwegian Epic',
+        'Norwegian Pearl', 'Norwegian Jade', 'Norwegian Gem',
+        'Norwegian Dawn', 'Norwegian Star', 'Norwegian Sun',
+        'Norwegian Sky', 'Norwegian Spirit',
+    ],
+    'Celebrity Cruises': [
+        'Celebrity Ascent', 'Celebrity Beyond', 'Celebrity Apex',
+        'Celebrity Edge', 'Celebrity Reflection', 'Celebrity Silhouette',
+        'Celebrity Equinox', 'Celebrity Eclipse', 'Celebrity Solstice',
+        'Celebrity Constellation', 'Celebrity Summit', 'Celebrity Millennium',
+        'Celebrity Infinity', 'Celebrity Xcel',
+    ],
+    'Disney Cruise Line': [
+        'Disney Wish', 'Disney Dream', 'Disney Fantasy',
+        'Disney Magic', 'Disney Wonder', 'Disney Treasure',
+    ],
+    'MSC Cruises': [
+        'MSC World Europa', 'MSC Seashore', 'MSC Seascape',
+        'MSC Virtuosa', 'MSC Grandiosa', 'MSC Bellissima',
+        'MSC Meraviglia', 'MSC Seaview', 'MSC Seaside',
+        'MSC Preziosa', 'MSC Divina', 'MSC Splendida',
+        'MSC Fantasia', 'MSC Musica', 'MSC Orchestra',
+    ],
+    'Princess Cruises': [
+        'Sun Princess', 'Star Princess', 'Discovery Princess',
+        'Enchanted Princess', 'Sky Princess', 'Majestic Princess',
+        'Regal Princess', 'Royal Princess', 'Caribbean Princess',
+        'Crown Princess', 'Emerald Princess', 'Ruby Princess',
+        'Sapphire Princess', 'Diamond Princess', 'Coral Princess',
+        'Island Princess',
+    ],
+    'Holland America Line': [
+        'Rotterdam', 'Nieuw Statendam', 'Koningsdam',
+        'Oosterdam', 'Westerdam', 'Noordam',
+        'Zuiderdam', 'Eurodam', 'Nieuw Amsterdam',
+        'Volendam', 'Zaandam',
+    ],
 }
 
 REGIONS = ['Caribbean', 'Mediterranean', 'Alaska', 'Bahamas',
@@ -283,16 +339,18 @@ def seed_social(demo, second, cruises):
 
 def main():
     with app.app_context():
+        # Reference data always syncs — safe to run on existing DBs (uses get_or_create)
+        print('Syncing reference data (cruise lines, ships, regions, ports)...')
+        lines, ships, regions, ports = seed_reference_data()
+
         demo_exists = User.query.filter_by(email='demo@histacruise.com').first()
         if demo_exists:
-            print('Demo user already exists — skipping to avoid duplicates.')
-            print('To reseed, delete the database and run again.')
+            print('Demo user already exists — skipping user/social seed.')
             return
 
         print('Seeding Histacruise database...')
-        lines, ships, regions, ports = seed_reference_data()
-        demo, second                 = seed_users()
-        cruises                      = seed_cruises(demo, second, lines, ships, regions)
+        demo, second = seed_users()
+        cruises      = seed_cruises(demo, second, lines, ships, regions)
         seed_cruise_ports(cruises, ports)
         seed_social(demo, second, cruises)
 
