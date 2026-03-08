@@ -252,7 +252,7 @@ def sanitize_text(text):
 
 # Use absolute path for database to ensure consistency
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SECRET_KEY'] = 'your-secret-key-here'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-fallback-key')
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(basedir, "instance", "histacruise.db")}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
