@@ -795,6 +795,59 @@ app.register_blueprint(pipeline_api)
 from Histacruise.social import social_bp
 app.register_blueprint(social_bp)
 
+# ── Lazy DB init ──────────────────────────────────────────────────────────────
+# db.create_all() at module level fails on Render free tier (IPv6 unreachable
+# during gunicorn's import phase). Instead we run it on the first request, when
+# the worker process is fully running and the network is available.
+_db_initialized = False
+
+@app.before_request
+def _lazy_db_init():
+    global _db_initialized
+    if _db_initialized:
+        return
+    _db_initialized = True
+    try:
+        db.create_all()
+        _lazy_migrations = [
+            "ALTER TABLE user_follow ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'accepted'",
+            "ALTER TABLE cruise_history ADD COLUMN visibility VARCHAR(20) NOT NULL DEFAULT 'public'",
+        ]
+        for _sql in _lazy_migrations:
+            try:
+                db.session.execute(db.text(_sql))
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+        if CruiseLine.query.count() == 0:
+            from reference_data import CRUISE_LINES, SHIPS, REGIONS, PORTS
+            _lines = {}
+            for _name in CRUISE_LINES:
+                _cl = CruiseLine.query.filter_by(name=_name).first()
+                if not _cl:
+                    _cl = CruiseLine(name=_name)
+                    db.session.add(_cl)
+                    db.session.flush()
+                _lines[_name] = _cl
+            for _line_name, _ship_names in SHIPS.items():
+                for _ship_name in _ship_names:
+                    if not Ship.query.filter_by(name=_ship_name, cruiseline_id=_lines[_line_name].id).first():
+                        db.session.add(Ship(name=_ship_name, cruiseline_id=_lines[_line_name].id))
+            for _rname in REGIONS:
+                if not Region.query.filter_by(name=_rname).first():
+                    db.session.add(Region(name=_rname))
+            for _pname, _city, _country, _lat, _lon in PORTS:
+                if not Port.query.filter_by(name=_pname).first():
+                    db.session.add(Port(name=_pname, city=_city, country=_country,
+                                        latitude=_lat, longitude=_lon))
+            db.session.commit()
+            print('[DB] Reference data seeded.')
+        print('[DB] Init complete.')
+    except Exception as _lazy_err:
+        _db_initialized = False  # retry on next request
+        db.session.rollback()
+        print(f'[DB] Init failed, will retry: {_lazy_err}')
+
 @app.route('/uploads/<category>/<filename>')
 def serve_upload(category, filename):
     """Serve uploaded images from the database."""
