@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histacruise - Cruise History Tracker | Joshua Cundiff</title>
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        .project-hero {
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #020d18 0%, #041826 50%, #062235 100%);
+            position: relative;
+            overflow: hidden;
+            padding: 120px 20px 80px;
+        }
+
+        .project-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(0, 168, 204, 0.12) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 120, 180, 0.1) 0%, transparent 50%);
+        }
+
+        .project-hero-content {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+        }
+
+        .project-hero-label {
+            color: #00c8e0;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .project-hero-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+            background: linear-gradient(135deg, #e6edf3 0%, #00c8e0 50%, #0090cc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .project-hero-subtitle {
+            font-size: 1.2rem;
+            color: #8b949e;
+            line-height: 1.7;
+            margin-bottom: 2rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2.5rem;
+        }
+
+        .btn-demo {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #0090cc, #00c8e0);
+            color: white;
+            padding: 0.85rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 168, 204, 0.3);
+        }
+
+        .btn-demo:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 168, 204, 0.45);
+        }
+
+        .btn-source {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: transparent;
+            color: #e6edf3;
+            padding: 0.85rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            border: 1px solid rgba(230, 237, 243, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .btn-source:hover {
+            border-color: #00c8e0;
+            color: #00c8e0;
+            transform: translateY(-2px);
+        }
+
+        .hero-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            justify-content: center;
+        }
+
+        .hero-tag {
+            background: rgba(0, 168, 204, 0.12);
+            color: #00c8e0;
+            border: 1px solid rgba(0, 168, 204, 0.25);
+            padding: 0.35rem 0.9rem;
+            border-radius: 20px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.82rem;
+        }
+
+        /* Stats bar */
+        .stats-bar {
+            background: linear-gradient(135deg, #0090cc 0%, #00c8e0 100%);
+            padding: 2.5rem 2rem;
+        }
+
+        .stats-bar-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .stats-bar .stat-num {
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+            display: block;
+        }
+
+        .stats-bar .stat-lbl {
+            color: rgba(255,255,255,0.85);
+            font-size: 0.88rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Content */
+        .cs-body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #00c8e0;
+            text-decoration: none;
+            font-size: 0.95rem;
+            margin-bottom: 3rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover { transform: translateX(-5px); }
+
+        .cs-section {
+            margin-bottom: 4rem;
+        }
+
+        .cs-section h2 {
+            font-size: 1.8rem;
+            color: #e6edf3;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .cs-num {
+            color: #00c8e0;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 1rem;
+        }
+
+        .cs-section p {
+            color: #8b949e;
+            line-height: 1.85;
+            margin-bottom: 1.1rem;
+        }
+
+        .cs-section ul {
+            color: #8b949e;
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .cs-section li {
+            margin-bottom: 0.75rem;
+            line-height: 1.75;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(0, 168, 204, 0.08), rgba(0, 120, 180, 0.05));
+            border-left: 4px solid #00c8e0;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .highlight-box p {
+            color: #c9d1d9;
+            margin: 0;
+            font-size: 1.05rem;
+        }
+
+        .problem-box {
+            background: rgba(255, 100, 100, 0.07);
+            border-left-color: #f85149;
+        }
+
+        .problem-box p { color: #ffa198; }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background: rgba(4, 24, 38, 0.9);
+            border: 1px solid rgba(0, 168, 204, 0.18);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(0, 168, 204, 0.45);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0, 168, 204, 0.12);
+        }
+
+        .feature-card .icon {
+            font-size: 1.75rem;
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+
+        .feature-card h3 {
+            color: #00c8e0;
+            font-size: 1.05rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .feature-card p {
+            color: #8b949e;
+            font-size: 0.93rem;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+            margin: 2rem 0;
+        }
+
+        .tech-block {
+            background: rgba(4, 24, 38, 0.9);
+            border: 1px solid rgba(0, 168, 204, 0.15);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .tech-block h3 {
+            color: #00c8e0;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .tag {
+            background: rgba(0, 168, 204, 0.12);
+            color: #00c8e0;
+            border: 1px solid rgba(0, 168, 204, 0.2);
+            padding: 0.3rem 0.75rem;
+            border-radius: 20px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.8rem;
+        }
+
+        .pipeline-diagram {
+            background: rgba(4, 24, 38, 0.9);
+            border: 1px solid rgba(0, 168, 204, 0.2);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .pipeline-diagram h3 {
+            color: #e6edf3;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            font-family: 'IBM Plex Mono', monospace;
+            color: #00c8e0;
+        }
+
+        .pipeline-steps {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .p-step {
+            background: rgba(0, 168, 204, 0.1);
+            border: 1px solid rgba(0, 168, 204, 0.25);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            color: #c9d1d9;
+            font-size: 0.88rem;
+            text-align: center;
+        }
+
+        .p-arrow {
+            color: #00c8e0;
+            font-size: 1.2rem;
+        }
+
+        .skills-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+            margin: 2rem 0;
+        }
+
+        .skill-item {
+            text-align: center;
+            padding: 1.5rem 1rem;
+            background: rgba(4, 24, 38, 0.9);
+            border: 1px solid rgba(0, 168, 204, 0.15);
+            border-radius: 12px;
+        }
+
+        .skill-item .skill-icon {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 0.75rem;
+        }
+
+        .skill-item h3 {
+            color: #e6edf3;
+            font-size: 0.95rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .skill-item p {
+            color: #8b949e;
+            font-size: 0.82rem;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .stats-bar-inner { grid-template-columns: repeat(2, 1fr); }
+            .feature-grid, .tech-grid, .skills-row { grid-template-columns: 1fr; }
+            .pipeline-steps { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="../../index.html" class="nav-logo">
+                <span class="logo-bracket">&lt;</span>JC<span class="logo-bracket">/&gt;</span>
+            </a>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="../../index.html#projects" class="nav-link">Back to Projects</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="project-hero">
+        <div class="project-hero-content">
+            <p class="project-hero-label">Full-Stack Web Application</p>
+            <h1 class="project-hero-title">Histacruise</h1>
+            <p class="project-hero-subtitle">
+                A full-stack cruise history tracker built from a personal need — combining interactive maps,
+                spending analytics, a live data pipeline, and a social community into one platform.
+            </p>
+            <div class="hero-actions">
+                <a href="https://jc-portfolio-2.onrender.com/" class="btn-demo" target="_blank" rel="noopener noreferrer">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    Live Demo
+                </a>
+                <a href="https://github.com/Jaytix1/jc_portfolio/tree/main/Histacruise" class="btn-source" target="_blank" rel="noopener noreferrer">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    Source Code
+                </a>
+            </div>
+            <div class="hero-tags">
+                <span class="hero-tag">Python</span>
+                <span class="hero-tag">Flask</span>
+                <span class="hero-tag">PostgreSQL</span>
+                <span class="hero-tag">SQLAlchemy</span>
+                <span class="hero-tag">Leaflet.js</span>
+                <span class="hero-tag">Chart.js</span>
+                <span class="hero-tag">APScheduler</span>
+                <span class="hero-tag">Render</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+        <div class="stats-bar-inner">
+            <div>
+                <span class="stat-num">8+</span>
+                <div class="stat-lbl">Core Features</div>
+            </div>
+            <div>
+                <span class="stat-num">4</span>
+                <div class="stat-lbl">Live Data Pipelines</div>
+            </div>
+            <div>
+                <span class="stat-num">20+</span>
+                <div class="stat-lbl">Database Models</div>
+            </div>
+            <div>
+                <span class="stat-num">100%</span>
+                <div class="stat-lbl">Full-Stack</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="cs-body">
+        <a href="../../index.html#projects" class="back-link">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            Back to All Projects
+        </a>
+
+        <!-- Origin -->
+        <section class="cs-section">
+            <h2><span class="cs-num">01.</span> The Origin</h2>
+            <p>
+                Histacruise started from a personal frustration. After several cruises, I wanted a proper way to
+                track where I'd been — not just a spreadsheet, but something that could show me a map of every port
+                I'd visited, how much I'd spent per cruise line, which ships I'd sailed, and how my trips compared
+                over the years.
+            </p>
+            <p>
+                Every tool I found was either too basic or buried inside a cruise line's own app. So I built my own.
+                What started as a simple history log grew into a full platform with live industry data, analytics
+                dashboards, and a social community for sharing voyages with other cruisers.
+            </p>
+            <div class="highlight-box">
+                <p>
+                    <strong>The goal:</strong> Build the cruise tracker I actually wanted to use — one that treats
+                    personal travel data seriously and turns it into something visually meaningful.
+                </p>
+            </div>
+        </section>
+
+        <!-- Problem -->
+        <section class="cs-section">
+            <h2><span class="cs-num">02.</span> The Problem</h2>
+            <div class="highlight-box problem-box">
+                <p>
+                    Cruise enthusiasts have no dedicated tool that combines personal history tracking, real-time
+                    industry data, and a social layer in one place. Existing options are spreadsheets, note apps,
+                    or scattered across multiple cruise line portals.
+                </p>
+            </div>
+            <ul>
+                <li><strong>No visual history</strong> — no map showing where you've actually been across all cruise lines</li>
+                <li><strong>No consolidated analytics</strong> — spending, nights at sea, cabin types, regions all scattered</li>
+                <li><strong>No live context</strong> — no connection to what's happening in the industry (stock prices, news, deals)</li>
+                <li><strong>No community</strong> — no way to share trips, follow other cruisers, or discover what others are experiencing</li>
+            </ul>
+        </section>
+
+        <!-- Features -->
+        <section class="cs-section">
+            <h2><span class="cs-num">03.</span> Key Features</h2>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <span class="icon">🗺️</span>
+                    <h3>Interactive Port Map</h3>
+                    <p>Leaflet.js map with markers for every port visited. Each marker shows visit dates, cruise details, and links back to the full history entry.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="icon">📊</span>
+                    <h3>Spending Analytics</h3>
+                    <p>Chart.js dashboards breaking down spending by cruise line, region, cabin type, and year. Track total days at sea, favorite ships, and more.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="icon">📡</span>
+                    <h3>Live Data Pipeline</h3>
+                    <p>HC_Pipeline runs on a schedule — pulling cruise stock prices (CCL, RCL, NCLH), industry news, deals, and ship specs automatically.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="icon">👥</span>
+                    <h3>Social Community</h3>
+                    <p>Follow other cruisers, share posts about your voyages, react and comment, earn badges, and discover new users on the Discover page.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="icon">🔐</span>
+                    <h3>User Authentication</h3>
+                    <p>Flask-Login with secure session management. Registration auto-logs users in. Profiles are private by default with selective sharing.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="icon">🏆</span>
+                    <h3>Badges & Milestones</h3>
+                    <p>Achievement system that awards badges for cruise milestones — first voyage, ship hopper, globe trotter, days at sea thresholds, and more.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="icon">📸</span>
+                    <h3>Photo Galleries</h3>
+                    <p>Upload cruise photos and profile/cover images stored directly in the database as BLOBs — no external storage service required.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="icon">🔔</span>
+                    <h3>Notifications</h3>
+                    <p>Real-time notification system for follows, likes, and comments. Unread badge count updates on every page load.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pipeline -->
+        <section class="cs-section">
+            <h2><span class="cs-num">04.</span> The HC_Pipeline</h2>
+            <p>
+                One of the most technically interesting parts of Histacruise is the <strong>HC_Pipeline</strong> —
+                a standalone data collection system that runs as a background service alongside the Flask app.
+            </p>
+            <p>
+                Rather than showing static data, Histacruise surfaces real, current information about the cruise
+                industry every time you load the homepage. The pipeline is orchestrated by APScheduler and runs
+                four collectors on different intervals:
+            </p>
+
+            <div class="pipeline-diagram">
+                <h3>// Pipeline Architecture</h3>
+                <div class="pipeline-steps">
+                    <div class="p-step">App Startup</div>
+                    <span class="p-arrow">→</span>
+                    <div class="p-step">Initial Full Run</div>
+                    <span class="p-arrow">→</span>
+                    <div class="p-step">APScheduler</div>
+                    <span class="p-arrow">→</span>
+                    <div class="p-step">Stocks (2hr)</div>
+                    <span class="p-arrow">+</span>
+                    <div class="p-step">News (3hr)</div>
+                    <span class="p-arrow">+</span>
+                    <div class="p-step">Deals (6hr)</div>
+                    <span class="p-arrow">+</span>
+                    <div class="p-step">Ships (24hr)</div>
+                </div>
+            </div>
+
+            <ul>
+                <li><strong>Stock Collector:</strong> Pulls CCL, RCL, and NCLH share prices via yfinance. Shows current price, daily change, and sparklines on the dashboard.</li>
+                <li><strong>News Collector:</strong> Parses RSS feeds from CruiseHive and other maritime publications. Stores headlines with links for the news section.</li>
+                <li><strong>Deals Collector:</strong> Scrapes active promotions from major cruise lines. Falls back to generated sample deals when pages are inaccessible.</li>
+                <li><strong>Ship Collector:</strong> Gathers technical specs for ships in the database. Attempts Wikipedia API; gracefully handles rate limiting.</li>
+            </ul>
+
+            <div class="highlight-box">
+                <p>
+                    <strong>Design decision:</strong> The pipeline runs in a daemon thread at startup so data is
+                    always ready on first visit — employers and users never see empty sections.
+                </p>
+            </div>
+        </section>
+
+        <!-- Tech Stack -->
+        <section class="cs-section">
+            <h2><span class="cs-num">05.</span> Technical Stack</h2>
+
+            <div class="tech-grid">
+                <div class="tech-block">
+                    <h3>Backend</h3>
+                    <div class="tag-list">
+                        <span class="tag">Python 3.13</span>
+                        <span class="tag">Flask 3.0</span>
+                        <span class="tag">Flask-SQLAlchemy</span>
+                        <span class="tag">Flask-Login</span>
+                        <span class="tag">Flask-Migrate</span>
+                        <span class="tag">APScheduler</span>
+                        <span class="tag">Gunicorn</span>
+                    </div>
+                </div>
+                <div class="tech-block">
+                    <h3>Database</h3>
+                    <div class="tag-list">
+                        <span class="tag">PostgreSQL</span>
+                        <span class="tag">Supabase</span>
+                        <span class="tag">SQLAlchemy ORM</span>
+                        <span class="tag">Alembic Migrations</span>
+                        <span class="tag">BLOB Storage</span>
+                    </div>
+                </div>
+                <div class="tech-block">
+                    <h3>Data Pipeline</h3>
+                    <div class="tag-list">
+                        <span class="tag">yfinance</span>
+                        <span class="tag">feedparser</span>
+                        <span class="tag">BeautifulSoup4</span>
+                        <span class="tag">requests</span>
+                        <span class="tag">pandas</span>
+                        <span class="tag">lxml</span>
+                    </div>
+                </div>
+                <div class="tech-block">
+                    <h3>Frontend</h3>
+                    <div class="tag-list">
+                        <span class="tag">Leaflet.js</span>
+                        <span class="tag">Chart.js</span>
+                        <span class="tag">Jinja2</span>
+                        <span class="tag">JavaScript</span>
+                        <span class="tag">CSS Grid</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills -->
+        <section class="cs-section">
+            <h2><span class="cs-num">06.</span> Skills Demonstrated</h2>
+
+            <div class="skills-row">
+                <div class="skill-item">
+                    <span class="skill-icon">🏗️</span>
+                    <h3>Full-Stack Architecture</h3>
+                    <p>Designed the entire system from DB schema to UI — 20+ related models, blueprints, and API endpoints.</p>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-icon">🗄️</span>
+                    <h3>Database Design</h3>
+                    <p>Relational schema with foreign keys, migrations via Alembic, and PostgreSQL in production via Supabase.</p>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-icon">⚙️</span>
+                    <h3>Background Processing</h3>
+                    <p>APScheduler for recurring jobs, threading for non-blocking startup runs, graceful error handling per collector.</p>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-icon">🔒</span>
+                    <h3>Auth & Security</h3>
+                    <p>Flask-Login sessions, password hashing, env-var secrets, CSRF-safe forms, and input validation.</p>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-icon">📈</span>
+                    <h3>Data Visualization</h3>
+                    <p>Chart.js dashboards and Leaflet.js maps turning raw cruise data into interactive visual stories.</p>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-icon">🚀</span>
+                    <h3>Deployment & DevOps</h3>
+                    <p>Deployed on Render with Gunicorn, seed scripts, schema migrations, and persistent cloud database.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Demo -->
+        <section class="cs-section">
+            <h2><span class="cs-num">07.</span> Try It Yourself</h2>
+            <p>
+                Histacruise is fully live with demo credentials pre-loaded. Log in to explore the dashboard,
+                community feed, analytics, and live pipeline data — or register your own account and start
+                tracking your cruise history.
+            </p>
+            <div class="highlight-box">
+                <p>
+                    <strong>Demo credentials:</strong> Email: <code style="font-family: 'IBM Plex Mono', monospace; color: #00c8e0;">demo@histacruise.com</code>
+                    &nbsp;&nbsp;Password: <code style="font-family: 'IBM Plex Mono', monospace; color: #00c8e0;">Demo1234!</code>
+                </p>
+            </div>
+            <div style="margin-top: 1.5rem;">
+                <a href="https://jc-portfolio-2.onrender.com/" class="btn-demo" target="_blank" rel="noopener noreferrer">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    Open Histacruise
+                </a>
+            </div>
+        </section>
+
+        <a href="../../index.html#projects" class="back-link" style="margin-top: 2rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            Back to All Projects
+        </a>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p class="footer-text">Designed & Built by Joshua Cundiff</p>
+            <p class="footer-copyright">&copy; 2025 All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="../../js/main.js"></script>
+</body>
+</html>
