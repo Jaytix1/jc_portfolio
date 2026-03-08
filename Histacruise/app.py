@@ -732,48 +732,53 @@ def load_user(user_id):
 if _db_url.startswith('sqlite'):
     os.makedirs(os.path.join(basedir, 'instance'), exist_ok=True)
 with app.app_context():
-    db.create_all()  # Creates tables for fresh deployments; use `flask db upgrade` for migrations
+    try:
+        db.create_all()  # Creates tables for fresh deployments; use `flask db upgrade` for migrations
 
-    # Safe column additions — ignored if column already exists
-    _migrations = [
-        "ALTER TABLE user_follow ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'accepted'",
-        "ALTER TABLE cruise_history ADD COLUMN visibility VARCHAR(20) NOT NULL DEFAULT 'public'",
-    ]
-    for _sql in _migrations:
-        try:
-            db.session.execute(db.text(_sql))
-            db.session.commit()
-        except Exception:
-            db.session.rollback()
+        # Safe column additions — ignored if column already exists
+        _migrations = [
+            "ALTER TABLE user_follow ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'accepted'",
+            "ALTER TABLE cruise_history ADD COLUMN visibility VARCHAR(20) NOT NULL DEFAULT 'public'",
+        ]
+        for _sql in _migrations:
+            try:
+                db.session.execute(db.text(_sql))
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
 
-    # Auto-seed reference data on first run (no-op if already populated)
-    if CruiseLine.query.count() == 0:
-        try:
-            from reference_data import CRUISE_LINES, SHIPS, REGIONS, PORTS
-            _lines = {}
-            for _name in CRUISE_LINES:
-                _cl = CruiseLine.query.filter_by(name=_name).first()
-                if not _cl:
-                    _cl = CruiseLine(name=_name)
-                    db.session.add(_cl)
-                    db.session.flush()
-                _lines[_name] = _cl
-            for _line_name, _ship_names in SHIPS.items():
-                for _ship_name in _ship_names:
-                    if not Ship.query.filter_by(name=_ship_name, cruiseline_id=_lines[_line_name].id).first():
-                        db.session.add(Ship(name=_ship_name, cruiseline_id=_lines[_line_name].id))
-            for _rname in REGIONS:
-                if not Region.query.filter_by(name=_rname).first():
-                    db.session.add(Region(name=_rname))
-            for _pname, _city, _country, _lat, _lon in PORTS:
-                if not Port.query.filter_by(name=_pname).first():
-                    db.session.add(Port(name=_pname, city=_city, country=_country,
-                                        latitude=_lat, longitude=_lon))
-            db.session.commit()
-            print('[Startup] Reference data seeded.')
-        except Exception as _e:
-            db.session.rollback()
-            print(f'[Startup] Reference data seed failed: {_e}')
+        # Auto-seed reference data on first run (no-op if already populated)
+        if CruiseLine.query.count() == 0:
+            try:
+                from reference_data import CRUISE_LINES, SHIPS, REGIONS, PORTS
+                _lines = {}
+                for _name in CRUISE_LINES:
+                    _cl = CruiseLine.query.filter_by(name=_name).first()
+                    if not _cl:
+                        _cl = CruiseLine(name=_name)
+                        db.session.add(_cl)
+                        db.session.flush()
+                    _lines[_name] = _cl
+                for _line_name, _ship_names in SHIPS.items():
+                    for _ship_name in _ship_names:
+                        if not Ship.query.filter_by(name=_ship_name, cruiseline_id=_lines[_line_name].id).first():
+                            db.session.add(Ship(name=_ship_name, cruiseline_id=_lines[_line_name].id))
+                for _rname in REGIONS:
+                    if not Region.query.filter_by(name=_rname).first():
+                        db.session.add(Region(name=_rname))
+                for _pname, _city, _country, _lat, _lon in PORTS:
+                    if not Port.query.filter_by(name=_pname).first():
+                        db.session.add(Port(name=_pname, city=_city, country=_country,
+                                            latitude=_lat, longitude=_lon))
+                db.session.commit()
+                print('[Startup] Reference data seeded.')
+            except Exception as _e:
+                db.session.rollback()
+                print(f'[Startup] Reference data seed failed: {_e}')
+    except Exception as _startup_err:
+        # DB unreachable during gunicorn's import phase (e.g. IPv6-only on free tier).
+        # Tables already exist from prior deploys; runtime connections will work normally.
+        print(f'[Startup] DB init skipped (will connect on first request): {_startup_err}')
 
 # Register Pipeline API blueprint
 import sys
