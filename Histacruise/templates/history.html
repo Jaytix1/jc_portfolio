@@ -272,12 +272,16 @@
                             </select>
                         </div>
 
-                        <div class="add-cruise-section-header" style="margin-top: 14px;">Ports Visited</div>
+                        <div class="add-cruise-section-header" style="margin-top: 14px; display: flex; align-items: center; gap: 8px;">
+                            Ports Visited
+                            <span id="addPortCount" class="port-count-badge">0</span>
+                        </div>
                         <p style="color: #888; font-size: 0.82em; margin-bottom: 8px;">Search and add ports, drag to reorder</p>
 
                         <div id="addPortsContainer" class="ports-container">
                             <!-- First port entry will be added by JS -->
                         </div>
+                        <div id="addPortsScrollHint" class="ports-scroll-hint" style="display:none;">Scroll to see all ports</div>
                         <button type="button" class="btn-secondary" id="addMorePorts" style="margin-top: 8px; font-size: 0.82em;">+ Add Port</button>
                     </div>
 
@@ -420,12 +424,16 @@
                             </select>
                         </div>
 
-                        <div class="add-cruise-section-header" style="margin-top: 14px;">Ports Visited</div>
+                        <div class="add-cruise-section-header" style="margin-top: 14px; display: flex; align-items: center; gap: 8px;">
+                            Ports Visited
+                            <span id="editPortCount" class="port-count-badge">0</span>
+                        </div>
                         <p style="color: #888; font-size: 0.82em; margin-bottom: 8px;">Search and add ports, drag to reorder</p>
 
                         <div id="editPortsContainer" class="ports-container">
                             <!-- Ports will be populated by JavaScript -->
                         </div>
+                        <div id="editPortsScrollHint" class="ports-scroll-hint" style="display:none;">Scroll to see all ports</div>
                         <button type="button" class="btn-secondary" id="editAddMorePorts" style="margin-top: 8px; font-size: 0.82em;">+ Add Port</button>
                     </div>
 
@@ -627,13 +635,20 @@
                 return n + (s[(v-20)%10] || s[v] || s[0]);
             }
 
-            // Update ordinal labels in a container
+            // Update ordinal labels, count badge, and scroll hint in a container
             function updateOrdinals(container) {
                 var entries = container.querySelectorAll('.port-entry');
                 entries.forEach(function(entry, i) {
                     var label = entry.querySelector('.port-ordinal');
                     if (label) label.textContent = ordinal(i + 1);
                 });
+
+                // Sync count badge and scroll hint for this container
+                var isAdd  = container.id === 'addPortsContainer';
+                var countEl = document.getElementById(isAdd ? 'addPortCount' : 'editPortCount');
+                var hintEl  = document.getElementById(isAdd ? 'addPortsScrollHint' : 'editPortsScrollHint');
+                if (countEl) countEl.textContent = entries.length;
+                if (hintEl) hintEl.style.display = (container.scrollHeight > container.clientHeight) ? 'block' : 'none';
             }
 
             // Setup drag-and-drop for a ports container
