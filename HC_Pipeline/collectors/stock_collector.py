@@ -7,6 +7,11 @@ try:
 except ImportError:
     yf = None
 
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
+
 
 class StockCollector(BaseCollector):
     """Collector for cruise company stock prices using Yahoo Finance."""
@@ -23,7 +28,7 @@ class StockCollector(BaseCollector):
         if yf is None:
             raise ImportError("yfinance is required. Install with: pip install yfinance")
 
-    def collect(self, days: int = 7) -> bool:
+    def collect(self, days: int = 14) -> bool:
         """
         Collect stock prices for cruise companies.
         Downloads each symbol individually to avoid batch format issues.
@@ -79,6 +84,10 @@ class StockCollector(BaseCollector):
 
                 row = data.loc[date_idx]
 
+                # If duplicate index caused a DataFrame slice, take the first row
+                if hasattr(row, 'ndim') and row.ndim == 2:
+                    row = row.iloc[0]
+
                 # Skip if all values are NaN
                 if row.isna().all():
                     continue
@@ -86,22 +95,22 @@ class StockCollector(BaseCollector):
                 if existing:
                     # Update if close price changed
                     if existing.close_price != row['Close']:
-                        existing.open_price = float(row['Open']) if not row.isna()['Open'] else None
-                        existing.high_price = float(row['High']) if not row.isna()['High'] else None
-                        existing.low_price = float(row['Low']) if not row.isna()['Low'] else None
+                        existing.open_price = float(row['Open']) if not pd.isna(row['Open']) else None
+                        existing.high_price = float(row['High']) if not pd.isna(row['High']) else None
+                        existing.low_price = float(row['Low']) if not pd.isna(row['Low']) else None
                         existing.close_price = float(row['Close'])
-                        existing.volume = int(row['Volume']) if not row.isna()['Volume'] else None
+                        existing.volume = int(row['Volume']) if not pd.isna(row['Volume']) else None
                         self.stats['updated'] += 1
                 else:
                     # Add new record
                     stock_price = StockPrice(
                         symbol=symbol,
                         date=date,
-                        open_price=float(row['Open']) if not row.isna()['Open'] else None,
-                        high_price=float(row['High']) if not row.isna()['High'] else None,
-                        low_price=float(row['Low']) if not row.isna()['Low'] else None,
+                        open_price=float(row['Open']) if not pd.isna(row['Open']) else None,
+                        high_price=float(row['High']) if not pd.isna(row['High']) else None,
+                        low_price=float(row['Low']) if not pd.isna(row['Low']) else None,
                         close_price=float(row['Close']),
-                        volume=int(row['Volume']) if not row.isna()['Volume'] else None
+                        volume=int(row['Volume']) if not pd.isna(row['Volume']) else None
                     )
                     self.db.add(stock_price)
                     self.stats['added'] += 1
