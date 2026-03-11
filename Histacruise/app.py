@@ -259,6 +259,12 @@ if _db_url.startswith('postgres://'):
     _db_url = _db_url.replace('postgres://', 'postgresql://', 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = _db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_pre_ping': True,   # test connection before use, discard stale ones
+    'pool_recycle': 280,     # recycle connections before Supabase's 300s idle timeout
+    'pool_timeout': 30,
+    'connect_args': {'connect_timeout': 10},
+}
 
 # Photo upload configuration
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
