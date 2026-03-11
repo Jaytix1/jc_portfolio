@@ -1912,7 +1912,7 @@ if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     # Run full pipeline on startup in background so data is ready immediately
     def _initial_pipeline_run():
         import time
-        time.sleep(3)  # Brief pause to let app fully initialize
+        time.sleep(20)  # Wait for DB lazy-init to complete on first request
         try:
             from HC_Pipeline.main import Pipeline
             print('[Startup] Running initial pipeline...')
@@ -1924,6 +1924,22 @@ if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
 
     import threading
     threading.Thread(target=_initial_pipeline_run, daemon=True).start()
+
+@app.route('/admin/run-pipeline')
+@login_required
+def admin_run_pipeline():
+    """Manually trigger the full pipeline. Admin/owner use only."""
+    def _run():
+        try:
+            from HC_Pipeline.main import Pipeline
+            Pipeline(app).run_all()
+        except Exception as e:
+            print(f'[Admin] Pipeline run failed: {e}')
+    import threading
+    threading.Thread(target=_run, daemon=True).start()
+    flash('Pipeline triggered — data will appear within a few minutes.')
+    return redirect(url_for('home'))
+
 
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=False)  # use_reloader=False prevents double scheduler
