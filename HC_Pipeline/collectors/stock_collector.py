@@ -52,6 +52,9 @@ class StockCollector(BaseCollector):
                 if data.empty:
                     self.logger.warning(f"No data returned for {symbol}")
                     continue
+                # Newer yfinance returns MultiIndex columns ('Close', 'CCL') — flatten to ('Close',)
+                if hasattr(data.columns, 'levels'):
+                    data.columns = data.columns.get_level_values(0)
                 self._process_symbol(symbol, data, StockPrice)
                 any_success = True
             except Exception as e:
