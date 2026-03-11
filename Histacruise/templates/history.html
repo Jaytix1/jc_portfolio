@@ -585,6 +585,12 @@
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     Edit Cruise
                 </button>
+                <button type="button" class="btn-cancel set-countdown-btn" id="setCountdownBtn" style="display:none;" onclick="setAsCountdown()">
+                    ⏳ Set as Countdown
+                </button>
+                <button type="button" class="btn-cancel set-countdown-btn countdown-active-btn" id="countdownActiveBtn" style="display:none;" onclick="clearCountdownFromModal()">
+                    ✓ Counting Down
+                </button>
                 <button type="button" class="create-post-submit-btn" id="closeViewBtn">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
                     Done
@@ -605,7 +611,31 @@
         </div>
     </div>
 
+    <!-- Countdown toast (shown when a future cruise was just added) -->
+    {% if prompt_countdown %}
+    <div class="countdown-toast" id="countdownToast">
+        <span>Cruise added! Set it as your countdown?</span>
+        <div class="countdown-toast-actions">
+            <button class="countdown-toast-yes" onclick="toastSetCountdown({{ prompt_countdown }})">Yes</button>
+            <button class="countdown-toast-no" onclick="document.getElementById('countdownToast').style.display='none'">No thanks</button>
+        </div>
+    </div>
+    {% endif %}
+
     <script>
+        {% if prompt_countdown %}
+        const SET_COUNTDOWN_URL = '{{ url_for("set_countdown") }}';
+        function toastSetCountdown(cruiseId) {
+            const form = new FormData();
+            form.append('cruise_id', cruiseId);
+            fetch(SET_COUNTDOWN_URL, { method: 'POST', body: form })
+                .then(() => {
+                    document.getElementById('countdownToast').style.display = 'none';
+                    currentCountdownId = cruiseId;
+                });
+        }
+        {% endif %}
+
         document.addEventListener('DOMContentLoaded', function() {
             // Store all ships data
             const allShips = [
@@ -1160,6 +1190,30 @@
             const closeViewModalBtn = document.getElementById('closeViewModal');
             const closeViewBtn = document.getElementById('closeViewBtn');
 
+            // Countdown state
+            let currentCountdownId = {{ current_countdown_id|tojson }};
+            const COUNTDOWN_URL = '{{ url_for("set_countdown") }}';
+
+            function setAsCountdown() {
+                const form = new FormData();
+                form.append('cruise_id', currentViewCruiseId);
+                fetch(COUNTDOWN_URL, { method: 'POST', body: form }).then(() => {
+                    currentCountdownId = parseInt(currentViewCruiseId);
+                    document.getElementById('setCountdownBtn').style.display = 'none';
+                    document.getElementById('countdownActiveBtn').style.display = 'inline-flex';
+                });
+            }
+
+            function clearCountdownFromModal() {
+                const form = new FormData();
+                form.append('cruise_id', '');
+                fetch(COUNTDOWN_URL, { method: 'POST', body: form }).then(() => {
+                    currentCountdownId = null;
+                    document.getElementById('setCountdownBtn').style.display = 'inline-flex';
+                    document.getElementById('countdownActiveBtn').style.display = 'none';
+                });
+            }
+
             // Open view modal and populate with cruise data
             let currentViewCruiseId = null;
             let currentViewCruiseData = null;
@@ -1244,6 +1298,25 @@
 
                 // Load photos
                 loadCruisePhotos(currentViewCruiseId);
+
+                // Show/hide countdown buttons based on whether cruise is in the future
+                const setBtn = document.getElementById('setCountdownBtn');
+                const activeBtn = document.getElementById('countdownActiveBtn');
+                const today = new Date(); today.setHours(0,0,0,0);
+                const begin = new Date(beginDate);
+                if (begin > today) {
+                    const cruiseIdInt = parseInt(currentViewCruiseId);
+                    if (cruiseIdInt === currentCountdownId) {
+                        setBtn.style.display = 'none';
+                        activeBtn.style.display = 'inline-flex';
+                    } else {
+                        setBtn.style.display = 'inline-flex';
+                        activeBtn.style.display = 'none';
+                    }
+                } else {
+                    setBtn.style.display = 'none';
+                    activeBtn.style.display = 'none';
+                }
 
                 // Show modal
                 viewModal.style.display = 'flex';

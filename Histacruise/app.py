@@ -308,6 +308,7 @@ class UserPreference(db.Model):
     dark_mode = db.Column(db.Boolean, default=False)
     yearly_budget = db.Column(db.Float, nullable=True)
     default_view = db.Column(db.String(20), default='table')
+    countdown_cruise_id = db.Column(db.Integer, db.ForeignKey('cruise_history.cruiseid'), nullable=True)
 
     user = db.relationship('User', backref=db.backref('preferences', uselist=False))
 
@@ -745,6 +746,7 @@ with app.app_context():
         _migrations = [
             "ALTER TABLE user_follow ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'accepted'",
             "ALTER TABLE cruise_history ADD COLUMN visibility VARCHAR(20) NOT NULL DEFAULT 'public'",
+            "ALTER TABLE user_preference ADD COLUMN IF NOT EXISTS countdown_cruise_id INTEGER REFERENCES cruise_history(cruiseid)",
         ]
         for _sql in _migrations:
             try:
@@ -818,6 +820,7 @@ def _lazy_db_init():
         _lazy_migrations = [
             "ALTER TABLE user_follow ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'accepted'",
             "ALTER TABLE cruise_history ADD COLUMN visibility VARCHAR(20) NOT NULL DEFAULT 'public'",
+            "ALTER TABLE user_preference ADD COLUMN IF NOT EXISTS countdown_cruise_id INTEGER REFERENCES cruise_history(cruiseid)",
         ]
         for _sql in _lazy_migrations:
             try:
@@ -945,11 +948,23 @@ def home():
         is_active=True
     ).order_by(CruiseDeal.scraped_at.desc()).limit(4).all()
 
+    # Cruise countdown
+    countdown_cruise = None
+    countdown_days = None
+    if current_user.is_authenticated and current_user.preferences and current_user.preferences.countdown_cruise_id:
+        from datetime import date
+        cc = CruiseHistory.query.get(current_user.preferences.countdown_cruise_id)
+        if cc and cc.begindate > date.today():
+            countdown_cruise = cc
+            countdown_days = (cc.begindate - date.today()).days
+
     return render_template('home.html',
                           stocks=stocks_data,
                           chart_data=chart_data,
                           news=news,
-                          deals=deals)
+                          deals=deals,
+                          countdown_cruise=countdown_cruise,
+                          countdown_days=countdown_days)
 
 @app.route('/about')
 def about():
@@ -1115,6 +1130,9 @@ def add_cruise():
     db.session.commit()
 
     flash('Cruise added successfully!', 'success')
+    from datetime import date
+    if new_cruise.begindate > date.today():
+        return redirect(url_for('history', prompt_countdown=new_cruise.cruiseid))
     return redirect(url_for('history'))
 
 @app.route('/delete_cruise/<int:cruise_id>', methods=['POST'])
@@ -1290,13 +1308,19 @@ def history():
     regions = Region.query.order_by(Region.name).all()
     ports = Port.query.order_by(Port.country, Port.name).all()
 
+    prompt_countdown = request.args.get('prompt_countdown', type=int)
+    current_countdown_id = (current_user.preferences.countdown_cruise_id
+                            if current_user.preferences else None)
+
     return render_template('history.html',
                            cruises=cruises,
                            cruiselines=cruiselines,
                            ships=ships,
                            regions=regions,
                            ports=ports,
-                           cabin_types=CABIN_TYPES)
+                           cabin_types=CABIN_TYPES,
+                           prompt_countdown=prompt_countdown,
+                           current_countdown_id=current_countdown_id)
 
 @app.route('/statistics')
 @login_required
@@ -1481,6 +1505,19 @@ def clear_budget():
         db.session.commit()
     flash('Budget cleared.', 'success')
     return redirect(url_for('statistics'))
+
+@app.route('/set_countdown', methods=['POST'])
+@login_required
+def set_countdown():
+    cruise_id = request.form.get('cruise_id', type=int)  # None if missing/empty
+    pref = UserPreference.query.filter_by(user_id=current_user.id).first()
+    if not pref:
+        pref = UserPreference(user_id=current_user.id)
+        db.session.add(pref)
+    pref.countdown_cruise_id = cruise_id
+    db.session.commit()
+    return ('', 204)
+
 
 @app.route('/toggle_dark_mode', methods=['POST'])
 @login_required

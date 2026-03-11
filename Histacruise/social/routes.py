@@ -150,6 +150,25 @@ def profile(username):
     check_and_award_badges(user.id)
     user_badges = {b.badge_type: b for b in UserBadge.query.filter_by(user_id=user.id).all()}
 
+    # Profile completeness (own profile only)
+    profile_completeness = None
+    if is_own_profile:
+        items = [
+            ('Display Name', bool(profile and profile.display_name)),
+            ('Bio', bool(profile and profile.bio)),
+            ('Profile Photo', bool(profile and profile.avatar_filename)),
+            ('Cover Photo', bool(profile and profile.cover_filename)),
+            ('Hometown', bool(profile and profile.hometown)),
+            ('First Cruise', total_cruises > 0),
+        ]
+        done = sum(1 for _, v in items if v)
+        profile_completeness = {
+            'score': int(done / len(items) * 100),
+            'done': done,
+            'total': len(items),
+            'items': items,
+        }
+
     return render_template('social/profile.html',
         profile_user=user,
         profile=profile,
@@ -173,7 +192,8 @@ def profile(username):
         user_badges=user_badges,
         badge_definitions=BADGE_DEFINITIONS,
         reaction_types=REACTION_TYPES,
-        friend_users=friend_users
+        friend_users=friend_users,
+        profile_completeness=profile_completeness
     )
 
 

@@ -146,6 +146,29 @@
 
         <!-- Right Column: Sidebar Tiles -->
         <div class="profile-col-sidebar">
+            <!-- Profile Completeness (own profile only) -->
+            {% if is_own_profile and profile_completeness %}
+            <div class="profile-sidebar-card completeness-card">
+                <div class="completeness-header">
+                    <span>Profile Completeness</span>
+                    <span class="completeness-score">{{ profile_completeness.score }}%</span>
+                </div>
+                <div class="completeness-bar-track">
+                    <div class="completeness-bar-fill" style="width: {{ profile_completeness.score }}%; background: {{ '#e74c3c' if profile_completeness.score < 34 else ('#f39c12' if profile_completeness.score < 67 else '#27ae60') }}"></div>
+                </div>
+                <ul class="completeness-checklist">
+                    {% for label, done in profile_completeness.items %}
+                    <li class="{{ 'done' if done else 'missing' }}">
+                        {{ '✓' if done else '○' }} {{ label }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% if profile_completeness.score < 100 %}
+                <a href="#" onclick="openEditProfileModal()" class="completeness-cta">Complete your profile →</a>
+                {% endif %}
+            </div>
+            {% endif %}
+
             <!-- Sailing Status Cruise Info -->
             {% if sailing_cruise %}
             <div class="sailing-status-card">
