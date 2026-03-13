@@ -757,26 +757,29 @@ with app.app_context():
             except Exception:
                 db.session.rollback()
 
-        # Sync reference data — always runs, inner checks are no-ops for existing rows
+        # Sync reference data — bulk queries instead of per-row lookups
         try:
             from reference_data import CRUISE_LINES, SHIPS, REGIONS, PORTS
-            _lines = {}
+            # Load all existing names in one query each
+            _existing_lines = {r[0] for r in db.session.query(CruiseLine.name).all()}
+            _existing_regions = {r[0] for r in db.session.query(Region.name).all()}
+            _existing_ports = {r[0] for r in db.session.query(Port.name).all()}
             for _name in CRUISE_LINES:
-                _cl = CruiseLine.query.filter_by(name=_name).first()
-                if not _cl:
-                    _cl = CruiseLine(name=_name)
-                    db.session.add(_cl)
-                    db.session.flush()
-                _lines[_name] = _cl
+                if _name not in _existing_lines:
+                    db.session.add(CruiseLine(name=_name))
+            db.session.flush()
+            _lines = {cl.name: cl for cl in CruiseLine.query.all()}
+            _existing_ships = {(r[0], r[1]) for r in db.session.query(Ship.name, Ship.cruiseline_id).all()}
             for _line_name, _ship_names in SHIPS.items():
+                _lid = _lines[_line_name].id
                 for _ship_name in _ship_names:
-                    if not Ship.query.filter_by(name=_ship_name, cruiseline_id=_lines[_line_name].id).first():
-                        db.session.add(Ship(name=_ship_name, cruiseline_id=_lines[_line_name].id))
+                    if (_ship_name, _lid) not in _existing_ships:
+                        db.session.add(Ship(name=_ship_name, cruiseline_id=_lid))
             for _rname in REGIONS:
-                if not Region.query.filter_by(name=_rname).first():
+                if _rname not in _existing_regions:
                     db.session.add(Region(name=_rname))
             for _pname, _city, _country, _lat, _lon in PORTS:
-                if not Port.query.filter_by(name=_pname).first():
+                if _pname not in _existing_ports:
                     db.session.add(Port(name=_pname, city=_city, country=_country,
                                         latitude=_lat, longitude=_lon))
             db.session.commit()
@@ -830,23 +833,25 @@ def _lazy_db_init():
             except Exception:
                 db.session.rollback()
         from reference_data import CRUISE_LINES, SHIPS, REGIONS, PORTS
-        _lines = {}
+        _existing_lines = {r[0] for r in db.session.query(CruiseLine.name).all()}
+        _existing_regions = {r[0] for r in db.session.query(Region.name).all()}
+        _existing_ports = {r[0] for r in db.session.query(Port.name).all()}
         for _name in CRUISE_LINES:
-            _cl = CruiseLine.query.filter_by(name=_name).first()
-            if not _cl:
-                _cl = CruiseLine(name=_name)
-                db.session.add(_cl)
-                db.session.flush()
-            _lines[_name] = _cl
+            if _name not in _existing_lines:
+                db.session.add(CruiseLine(name=_name))
+        db.session.flush()
+        _lines = {cl.name: cl for cl in CruiseLine.query.all()}
+        _existing_ships = {(r[0], r[1]) for r in db.session.query(Ship.name, Ship.cruiseline_id).all()}
         for _line_name, _ship_names in SHIPS.items():
+            _lid = _lines[_line_name].id
             for _ship_name in _ship_names:
-                if not Ship.query.filter_by(name=_ship_name, cruiseline_id=_lines[_line_name].id).first():
-                    db.session.add(Ship(name=_ship_name, cruiseline_id=_lines[_line_name].id))
+                if (_ship_name, _lid) not in _existing_ships:
+                    db.session.add(Ship(name=_ship_name, cruiseline_id=_lid))
         for _rname in REGIONS:
-            if not Region.query.filter_by(name=_rname).first():
+            if _rname not in _existing_regions:
                 db.session.add(Region(name=_rname))
         for _pname, _city, _country, _lat, _lon in PORTS:
-            if not Port.query.filter_by(name=_pname).first():
+            if _pname not in _existing_ports:
                 db.session.add(Port(name=_pname, city=_city, country=_country,
                                     latitude=_lat, longitude=_lon))
         db.session.commit()
