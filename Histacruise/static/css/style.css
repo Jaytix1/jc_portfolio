@@ -722,6 +722,28 @@ body.dark-mode .flash-message {
     background: #f0f2ff;
 }
 
+.cruise-image-upload-area.drag-over {
+    border-color: #764ba2;
+    background: #ede9fb;
+    transform: scale(1.01);
+}
+
+.folder-upload-link {
+    color: #667eea;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.folder-upload-link:hover {
+    color: #764ba2;
+}
+
+body.dark-mode .cruise-image-upload-area.drag-over {
+    border-color: #a78bfa;
+    background: #2a1f4a;
+}
+
 .cruise-image-upload-area svg {
     color: #999;
     margin-bottom: 8px;

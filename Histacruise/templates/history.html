@@ -351,10 +351,11 @@
                                     <circle cx="8.5" cy="8.5" r="1.5"></circle>
                                     <polyline points="21 15 16 10 5 21"></polyline>
                                 </svg>
-                                <p class="upload-label">Click to add photos</p>
-                                <p>PNG, JPG, GIF, WebP</p>
+                                <p class="upload-label">Click or drag &amp; drop photos</p>
+                                <p>PNG, JPG, GIF, WebP &mdash; or <a class="folder-upload-link" onclick="event.stopPropagation();document.getElementById('cruiseFolderInput').click()">upload a folder</a></p>
                             </div>
                             <input type="file" id="cruisePhotosInput" name="photos" multiple accept="image/png,image/jpeg,image/gif,image/webp" style="display:none;">
+                            <input type="file" id="cruiseFolderInput" webkitdirectory multiple accept="image/png,image/jpeg,image/gif,image/webp" style="display:none;">
                             <div class="cruise-image-thumbnails" id="addCruiseThumbnails"></div>
                         </div>
                     </div>
@@ -504,10 +505,11 @@
                                     <circle cx="8.5" cy="8.5" r="1.5"></circle>
                                     <polyline points="21 15 16 10 5 21"></polyline>
                                 </svg>
-                                <p class="upload-label">Click to add photos</p>
-                                <p>PNG, JPG, GIF, WebP</p>
+                                <p class="upload-label">Click or drag &amp; drop photos</p>
+                                <p>PNG, JPG, GIF, WebP &mdash; or <a class="folder-upload-link" onclick="event.stopPropagation();document.getElementById('editFolderInput').click()">upload a folder</a></p>
                             </div>
                             <input type="file" id="editPhotosInput" multiple accept="image/png,image/jpeg,image/gif,image/webp" style="display:none;">
+                            <input type="file" id="editFolderInput" webkitdirectory multiple accept="image/png,image/jpeg,image/gif,image/webp" style="display:none;">
                             <span id="editUploadStatus" style="display:none; font-size: 0.85em; color: #667eea; margin-top: 6px;"></span>
                         </div>
                     </div>
@@ -567,13 +569,15 @@
                     <div id="viewPhotoGallery" class="photo-gallery"></div>
                     <div class="photo-upload-area" style="margin-top: 10px;">
                         <input type="file" id="photoUploadInput" multiple accept="image/png,image/jpeg,image/gif,image/webp" style="display: none;">
+                        <input type="file" id="viewFolderInput" webkitdirectory multiple accept="image/png,image/jpeg,image/gif,image/webp" style="display:none;">
                         <div class="cruise-image-upload-area" id="viewCruiseDropzone" onclick="document.getElementById('photoUploadInput').click()">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                                 <circle cx="8.5" cy="8.5" r="1.5"></circle>
                                 <polyline points="21 15 16 10 5 21"></polyline>
                             </svg>
-                            <p class="upload-label">Click to add photos</p>
+                            <p class="upload-label">Click or drag &amp; drop photos</p>
+                            <p style="font-size:0.8em; color:#aaa; margin-top:4px;">or <a class="folder-upload-link" onclick="event.stopPropagation();document.getElementById('viewFolderInput').click()">upload a folder</a></p>
                         </div>
                         <span id="viewUploadStatus" style="display:none; font-size: 0.85em; color: #667eea; margin-top: 6px;"></span>
                     </div>
@@ -870,13 +874,54 @@
             });
 
             // ===== IMAGE UPLOAD PREVIEW =====
+            // ===== SHARED PHOTO DROPZONE HELPER =====
+            const ALLOWED_IMAGE_TYPES = ['image/png','image/jpeg','image/gif','image/webp'];
+
+            function setupPhotoDropzone(dropzoneEl, onFiles) {
+                ['dragenter','dragover'].forEach(evt => {
+                    dropzoneEl.addEventListener(evt, function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        dropzoneEl.classList.add('drag-over');
+                    });
+                });
+                dropzoneEl.addEventListener('dragleave', function(e) {
+                    // only remove if leaving the dropzone itself
+                    if (!dropzoneEl.contains(e.relatedTarget)) {
+                        dropzoneEl.classList.remove('drag-over');
+                    }
+                });
+                dropzoneEl.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzoneEl.classList.remove('drag-over');
+                    const files = filterImageFiles(Array.from(e.dataTransfer.files));
+                    if (files.length) onFiles(files);
+                });
+            }
+
+            function filterImageFiles(files) {
+                return files.filter(f => ALLOWED_IMAGE_TYPES.includes(f.type));
+            }
+
+            // ===== ADD CRUISE PHOTO UPLOAD =====
             const cruisePhotosInput = document.getElementById('cruisePhotosInput');
+            const cruiseFolderInput = document.getElementById('cruiseFolderInput');
             const thumbnailsContainer = document.getElementById('addCruiseThumbnails');
             let selectedFiles = [];
 
             cruisePhotosInput.addEventListener('change', function() {
-                const newFiles = Array.from(this.files);
-                newFiles.forEach(function(file) {
+                addFilesToAddForm(filterImageFiles(Array.from(this.files)));
+            });
+
+            function updateFileInput() {
+                var dt = new DataTransfer();
+                selectedFiles.forEach(function(f) { dt.items.add(f); });
+                cruisePhotosInput.files = dt.files;
+            }
+
+            function addFilesToAddForm(files) {
+                files.forEach(function(file) {
                     if (selectedFiles.length >= 50) return;
                     selectedFiles.push(file);
                     var reader = new FileReader();
@@ -885,7 +930,6 @@
                         thumb.className = 'cruise-image-thumb';
                         thumb.innerHTML = '<img src="' + e.target.result + '" alt="Preview">' +
                             '<button type="button" class="remove-thumb">&times;</button>';
-                        var idx = selectedFiles.indexOf(file);
                         thumb.querySelector('.remove-thumb').addEventListener('click', function() {
                             var i = selectedFiles.indexOf(file);
                             if (i > -1) selectedFiles.splice(i, 1);
@@ -897,13 +941,13 @@
                     reader.readAsDataURL(file);
                 });
                 updateFileInput();
-            });
-
-            function updateFileInput() {
-                var dt = new DataTransfer();
-                selectedFiles.forEach(function(f) { dt.items.add(f); });
-                cruisePhotosInput.files = dt.files;
             }
+
+            setupPhotoDropzone(document.getElementById('addCruiseDropzone'), addFilesToAddForm);
+            cruiseFolderInput.addEventListener('change', function() {
+                addFilesToAddForm(filterImageFiles(Array.from(this.files)));
+                this.value = '';
+            });
 
             // Add form - Ship filtering
             const cruiselineSelect = document.getElementById('cruiseline_id');
@@ -1160,14 +1204,30 @@
                     });
             }
 
-            // Edit modal photo upload - auto-upload on selection
+            // Edit modal photo upload - auto-upload on selection + drag/drop + folder
             const editPhotosInput = document.getElementById('editPhotosInput');
+            const editFolderInput = document.getElementById('editFolderInput');
             const editUploadStatus = document.getElementById('editUploadStatus');
+
+            function triggerEditUpload(files) {
+                const dt = new DataTransfer();
+                filterImageFiles(files).forEach(f => dt.items.add(f));
+                editPhotosInput.files = dt.files;
+                autoUploadPhotos(editPhotosInput, currentEditCruiseId, editUploadStatus, function() {
+                    loadEditCruisePhotos(currentEditCruiseId);
+                });
+            }
 
             editPhotosInput.addEventListener('change', function() {
                 autoUploadPhotos(this, currentEditCruiseId, editUploadStatus, function() {
                     loadEditCruisePhotos(currentEditCruiseId);
                 });
+            });
+
+            setupPhotoDropzone(document.getElementById('editCruiseDropzone'), triggerEditUpload);
+            editFolderInput.addEventListener('change', function() {
+                triggerEditUpload(Array.from(this.files));
+                this.value = '';
             });
 
             // Edit form - Ship filtering on cruise line change
@@ -1475,12 +1535,28 @@
 
             // View modal photo upload - auto-upload on selection
             const photoUploadInput = document.getElementById('photoUploadInput');
+            const viewFolderInput = document.getElementById('viewFolderInput');
             const viewUploadStatus = document.getElementById('viewUploadStatus');
+
+            function triggerViewUpload(files) {
+                const dt = new DataTransfer();
+                filterImageFiles(files).forEach(f => dt.items.add(f));
+                photoUploadInput.files = dt.files;
+                autoUploadPhotos(photoUploadInput, currentViewCruiseId, viewUploadStatus, function() {
+                    loadCruisePhotos(currentViewCruiseId);
+                });
+            }
 
             photoUploadInput.addEventListener('change', function() {
                 autoUploadPhotos(this, currentViewCruiseId, viewUploadStatus, function() {
                     loadCruisePhotos(currentViewCruiseId);
                 });
+            });
+
+            setupPhotoDropzone(document.getElementById('viewCruiseDropzone'), triggerViewUpload);
+            viewFolderInput.addEventListener('change', function() {
+                triggerViewUpload(Array.from(this.files));
+                this.value = '';
             });
 
             closeViewModalBtn.addEventListener('click', function() {
