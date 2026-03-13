@@ -54,6 +54,7 @@ def profile(username):
     from Histacruise.app import (db, User, CruiseHistory, SocialProfile, SocialPost,
                                   UserFollow, UserBlock, UserBadge, SOCIAL_POSTS_PER_PAGE,
                                   BADGE_DEFINITIONS, REACTION_TYPES)
+    from sqlalchemy.orm import joinedload
 
     user = User.query.filter_by(username=username).first_or_404()
 
@@ -105,10 +106,13 @@ def profile(username):
             friend_state = 'pending_received'
             pending_request_id = incoming.id
 
-    # Incoming friend requests for own profile
+    # Incoming friend requests for own profile — eager-load to avoid lazy
+    # loads during template rendering (prevents SSL EOF on stale connections)
     pending_requests = []
     if is_own_profile:
-        pending_requests = UserFollow.query.filter_by(
+        pending_requests = UserFollow.query.options(
+            joinedload(UserFollow.follower).joinedload(User.social_profile)
+        ).filter_by(
             following_id=current_user.id, status='pending'
         ).all()
 

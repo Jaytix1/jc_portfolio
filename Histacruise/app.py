@@ -262,6 +262,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_pre_ping': True,   # test connection before use, discard stale ones
     'pool_recycle': 280,     # recycle connections before Supabase's 300s idle timeout
+    'pool_size': 3,          # keep pool small for Supabase free tier connection limits
+    'max_overflow': 2,
     'pool_timeout': 30,
     'connect_args': {'connect_timeout': 10},
 }
