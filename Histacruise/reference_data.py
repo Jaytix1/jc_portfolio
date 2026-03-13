@@ -59,6 +59,7 @@ SHIPS = {
         'MSC Meraviglia', 'MSC Seaview', 'MSC Seaside',
         'MSC Preziosa', 'MSC Divina', 'MSC Splendida',
         'MSC Fantasia', 'MSC Musica', 'MSC Orchestra',
+        'MSC Magnifica',
     ],
     'Princess Cruises': [
         'Sun Princess', 'Star Princess', 'Discovery Princess',
