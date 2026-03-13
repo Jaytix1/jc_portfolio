@@ -22,7 +22,7 @@ SHIPS = {
         'Explorer of the Seas', 'Adventure of the Seas', 'Freedom of the Seas',
         'Liberty of the Seas', 'Independence of the Seas', 'Brilliance of the Seas',
         'Serenade of the Seas', 'Jewel of the Seas', 'Enchantment of the Seas',
-        'Vision of the Seas',
+        'Vision of the Seas', 'Sovereign of the Seas',
     ],
     'Carnival Cruise Line': [
         'Mardi Gras', 'Carnival Celebration', 'Carnival Jubilee',
