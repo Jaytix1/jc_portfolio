@@ -163,6 +163,13 @@ PORTS = [
     ('Perfect Day at CocoCay',     'CocoCay',         'Bahamas',        25.8233,  -77.8308),
     ('Half Moon Cay',              'Half Moon Cay',   'Bahamas',        25.0658,  -77.3825),
     ('Princess Cays',              'Eleuthera',       'Bahamas',        25.1280,  -76.1490),
+    ('Labadee',                    'Labadee',         'Haiti',          19.7500,  -73.0167),
+    ('Great Stirrup Cay',          'Great Stirrup Cay','Bahamas',       25.8333,  -77.9000),
+    ('Ocean Cay MSC Marine Reserve','Ocean Cay',      'Bahamas',        25.3667,  -79.0833),
+    ('Castaway Cay',               'Castaway Cay',    'Bahamas',        26.0167,  -77.5333),
+    ('Lookout Cay at Lighthouse Point','Eleuthera',   'Bahamas',        25.2500,  -76.3333),
+    ('Celebration Key',            'Grand Bahama',    'Bahamas',        26.5000,  -78.7000),
+    ('Beach Club at Bimini',       'Bimini',          'Bahamas',        25.7281,  -79.2981),
     # Mexico
     ('Cozumel Pier',               'Cozumel',         'Mexico',         20.5088,  -86.9517),
     ('Ensenada Cruise Terminal',   'Ensenada',        'Mexico',         31.8676, -116.5961),
