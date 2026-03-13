@@ -166,7 +166,7 @@ def profile(username):
             'score': int(done / len(items) * 100),
             'done': done,
             'total': len(items),
-            'items': items,
+            'checklist': items,
         }
 
     return render_template('social/profile.html',

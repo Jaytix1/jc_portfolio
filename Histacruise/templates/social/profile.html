@@ -157,7 +157,7 @@
                     <div class="completeness-bar-fill" style="width: {{ profile_completeness.score }}%; background: {{ '#e74c3c' if profile_completeness.score < 34 else ('#f39c12' if profile_completeness.score < 67 else '#27ae60') }}"></div>
                 </div>
                 <ul class="completeness-checklist">
-                    {% for label, done in profile_completeness.items %}
+                    {% for label, done in profile_completeness.checklist %}
                     <li class="{{ 'done' if done else 'missing' }}">
                         {{ '✓' if done else '○' }} {{ label }}
                     </li>
