@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: jc-portfolio
+    runtime: static
+    staticPublishPath: portfolio
+    pullRequestPreviewsEnabled: false

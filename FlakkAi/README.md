@@ -1,51 +1,63 @@
-# FlakkAi
+# FlakkAi — AI Code Analysis Platform
 
-AI-powered code review assistant designed for students and development teams.
+An AI-powered code analysis platform that detects bugs, security vulnerabilities, and performance issues in real time. Powered by the Claude API (Anthropic).
+
+**Live Demo:** https://jc-portfolio-gjm1.onrender.com
+
+---
 
 ## Features
 
-- Real-time code analysis with Claude AI
-- Multi-language support (Python, JavaScript, Java, C++, and more)
-- Educational feedback explaining the "why" behind each suggestion
-- Categories: Bugs, Security, Best Practices, Performance, Readability
+- Real-time code analysis powered by Claude AI
+- Supports 13+ programming languages
+- Analyzes across 5 dimensions: Bugs, Security, Performance, Best Practices, Readability
+- Educational feedback — explains *what* is wrong, *why* it matters, and *how* to fix it
+- Multi-file upload support
+- Analysis history
 
-## Setup
+## Tech Stack
 
-1. Create virtual environment:
+| Layer | Technology |
+|---|---|
+| Backend | Python, Flask |
+| AI | Claude API (Anthropic) — `claude-haiku-4-5` |
+| Frontend | Vanilla JavaScript, HTML, CSS |
+| Deployment | Render |
+
+## Local Setup
+
+1. Clone the repo and navigate to the FlakkAi directory:
+   ```bash
+   cd FlakkAi
+   ```
+
+2. Create and activate a virtual environment:
    ```bash
    python -m venv venv
    source venv/Scripts/activate  # Windows
-   # or: source venv/bin/activate  # Mac/Linux
+   source venv/bin/activate      # Mac/Linux
    ```
 
-2. Install dependencies:
+3. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
-3. Set up your API key:
+4. Set up your API key:
    ```bash
    cp .env.example .env
-   # Edit .env and add your Anthropic API key
+   # Add your Anthropic API key to .env
    ```
 
-4. Run the application:
+5. Run the app:
    ```bash
    python app.py
    ```
 
-5. Open http://localhost:5001 in your browser
+6. Open http://localhost:5001
 
-## Getting an API Key
+## Getting a Claude API Key
 
-1. Go to https://console.anthropic.com/
-2. Create an account
-3. Navigate to API Keys
-4. Create a new key and copy it to your `.env` file
-
-## Tech Stack
-
-- **Backend**: Flask (Python)
-- **AI**: Claude API (Anthropic)
-- **Frontend**: Vanilla JS, HTML, CSS
-- **Styling**: Custom dark theme with syntax highlighting
+1. Go to https://console.anthropic.com
+2. Create an account and navigate to API Keys
+3. Create a new key and add it to your `.env` as `ANTHROPIC_API_KEY`

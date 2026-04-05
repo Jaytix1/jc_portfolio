@@ -243,6 +243,11 @@ ul {
     background: rgba(99, 102, 241, 0.1);
 }
 
+.nav-link.active {
+    color: var(--accent-secondary);
+    background: rgba(99, 102, 241, 0.1);
+}
+
 .nav-resume {
     border: 1px solid var(--accent-primary);
     color: var(--accent-secondary);
