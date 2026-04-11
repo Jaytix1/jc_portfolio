@@ -89,7 +89,11 @@ class ShipCollector(BaseCollector):
         }
 
         try:
-            response = requests.get(self.WIKIPEDIA_API, params=search_params, timeout=10)
+            response = requests.get(self.WIKIPEDIA_API, params=search_params, timeout=10,
+                                    headers={'User-Agent': 'Histacruise/1.0 (cruise tracking app)'})
+            if response.status_code == 403:
+                self.logger.debug(f"Wikipedia blocked request for {ship_name}, skipping")
+                return None
             response.raise_for_status()
             data = response.json()
 
@@ -119,7 +123,10 @@ class ShipCollector(BaseCollector):
         }
 
         try:
-            response = requests.get(self.WIKIPEDIA_API, params=params, timeout=10)
+            response = requests.get(self.WIKIPEDIA_API, params=params, timeout=10,
+                                    headers={'User-Agent': 'Histacruise/1.0 (cruise tracking app)'})
+            if response.status_code == 403:
+                return None
             response.raise_for_status()
             data = response.json()
 

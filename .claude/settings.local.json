@@ -14,7 +14,13 @@
       "Bash(pip install:*)",
       "Bash(start:*)",
       "Bash(git add:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(ls:*)",
+      "Bash(venv/Scripts/python:*)",
+      "Bash(venv/Scripts/pip install:*)",
+      "Bash(/c/Users/joshu/Desktop/jc_portfolio/Histacruise/venv/Scripts/pip.exe list:*)",
+      "Bash(curl:*)",
+      "Bash(git commit -m ':*)"
     ]
   }
 }

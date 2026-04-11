@@ -16,24 +16,32 @@ social_bp = Blueprint(
 @social_bp.route('/')
 @login_required
 def feed():
-    from Histacruise.app import db, SocialPost, UserFollow, SOCIAL_POSTS_PER_PAGE
+    from Histacruise.app import db, SocialPost, UserFollow, UserBlock, SOCIAL_POSTS_PER_PAGE
 
     ensure_profile_exists(current_user)
 
     page = request.args.get('page', 1, type=int)
     feed_filter = request.args.get('filter', 'all')
 
-    if feed_filter == 'following':
-        followed_ids = [f.following_id for f in
-                        UserFollow.query.filter_by(follower_id=current_user.id).all()]
-        followed_ids.append(current_user.id)
+    # Collect all blocked user IDs (both directions)
+    blocked_ids = {b.blocked_id for b in UserBlock.query.filter_by(blocker_id=current_user.id).all()}
+    blocked_ids |= {b.blocker_id for b in UserBlock.query.filter_by(blocked_id=current_user.id).all()}
+
+    if feed_filter == 'friends':
+        friend_ids = [f.following_id for f in
+                      UserFollow.query.filter_by(follower_id=current_user.id, status='accepted').all()]
+        friend_ids.append(current_user.id)
         posts = SocialPost.query.filter(
-            SocialPost.user_id.in_(followed_ids)
+            SocialPost.user_id.in_(friend_ids),
+            ~SocialPost.user_id.in_(blocked_ids)
         ).order_by(
             SocialPost.created_at.desc()
         ).paginate(page=page, per_page=SOCIAL_POSTS_PER_PAGE, error_out=False)
     else:
-        posts = SocialPost.query.order_by(
+        base_q = SocialPost.query
+        if blocked_ids:
+            base_q = base_q.filter(~SocialPost.user_id.in_(blocked_ids))
+        posts = base_q.order_by(
             SocialPost.created_at.desc()
         ).paginate(page=page, per_page=SOCIAL_POSTS_PER_PAGE, error_out=False)
 
@@ -44,8 +52,9 @@ def feed():
 @login_required
 def profile(username):
     from Histacruise.app import (db, User, CruiseHistory, SocialProfile, SocialPost,
-                                  UserFollow, UserBadge, SOCIAL_POSTS_PER_PAGE,
+                                  UserFollow, UserBlock, UserBadge, SOCIAL_POSTS_PER_PAGE,
                                   BADGE_DEFINITIONS, REACTION_TYPES)
+    from sqlalchemy.orm import joinedload
 
     user = User.query.filter_by(username=username).first_or_404()
 
@@ -68,34 +77,101 @@ def profile(username):
         SocialPost.created_at.desc()
     ).paginate(page=page, per_page=SOCIAL_POSTS_PER_PAGE, error_out=False)
 
-    cruises = CruiseHistory.query.filter_by(user_id=user.id).order_by(
-        CruiseHistory.begindate.desc()
-    ).all()
-    total_cruises = len(cruises)
-    total_days = sum((c.enddate - c.begindate).days for c in cruises) if cruises else 0
-    unique_ships = len(set(c.ship_id for c in cruises)) if cruises else 0
-    unique_regions = len(set(c.region_id for c in cruises)) if cruises else 0
-
     is_own_profile = (current_user.id == user.id)
 
-    # Follow state
-    is_following = False
-    if not is_own_profile:
-        is_following = UserFollow.query.filter_by(
-            follower_id=current_user.id, following_id=user.id
-        ).first() is not None
+    # Block state
+    is_blocked_by_me = UserBlock.query.filter_by(
+        blocker_id=current_user.id, blocked_id=user.id
+    ).first() is not None
+    is_blocked_by_them = UserBlock.query.filter_by(
+        blocker_id=user.id, blocked_id=current_user.id
+    ).first() is not None
 
-    follower_count = UserFollow.query.filter_by(following_id=user.id).count()
-    following_count = UserFollow.query.filter_by(follower_id=user.id).count()
+    # Friend state: 'none', 'pending_sent', 'pending_received', 'friends'
+    friend_state = 'none'
+    pending_request_id = None
+    if not is_own_profile:
+        outgoing = UserFollow.query.filter_by(
+            follower_id=current_user.id, following_id=user.id
+        ).first()
+        incoming = UserFollow.query.filter_by(
+            follower_id=user.id, following_id=current_user.id
+        ).first()
+
+        if outgoing and outgoing.status == 'accepted':
+            friend_state = 'friends'
+        elif outgoing and outgoing.status == 'pending':
+            friend_state = 'pending_sent'
+        elif incoming and incoming.status == 'pending':
+            friend_state = 'pending_received'
+            pending_request_id = incoming.id
+
+    # Incoming friend requests for own profile — eager-load to avoid lazy
+    # loads during template rendering (prevents SSL EOF on stale connections)
+    pending_requests = []
+    if is_own_profile:
+        pending_requests = UserFollow.query.options(
+            joinedload(UserFollow.follower).joinedload(User.social_profile)
+        ).filter_by(
+            following_id=current_user.id, status='pending'
+        ).all()
+
+    # Cruises — filter by visibility for other profiles
+    all_cruises = CruiseHistory.query.filter_by(user_id=user.id).order_by(
+        CruiseHistory.begindate.desc()
+    ).all()
+
+    if is_own_profile:
+        visible_cruises = all_cruises
+    else:
+        i_am_friend = (friend_state == 'friends')
+        visible_cruises = [
+            c for c in all_cruises
+            if c.visibility == 'public'
+            or (c.visibility == 'followers' and i_am_friend)
+        ]
+
+    total_cruises = len(visible_cruises)
+    total_days = sum((c.enddate - c.begindate).days for c in visible_cruises) if visible_cruises else 0
+    unique_ships = len(set(c.ship_id for c in visible_cruises)) if visible_cruises else 0
+    unique_regions = len(set(c.region_id for c in visible_cruises)) if visible_cruises else 0
+
+    friend_count = UserFollow.query.filter_by(following_id=user.id, status='accepted').count()
+    friends_following_count = UserFollow.query.filter_by(follower_id=user.id, status='accepted').count()
+
+    # Friends list (people accepted to connect with user)
+    accepted_follows = UserFollow.query.filter_by(following_id=user.id, status='accepted').all()
+    friend_users = [f.follower for f in accepted_follows]
 
     # Favorite cruise
     favorite_cruise = None
     if profile.favorite_cruise_id:
-        favorite_cruise = CruiseHistory.query.get(profile.favorite_cruise_id)
+        fav = CruiseHistory.query.get(profile.favorite_cruise_id)
+        if fav and (is_own_profile or fav in visible_cruises):
+            favorite_cruise = fav
 
     # Badges
     check_and_award_badges(user.id)
     user_badges = {b.badge_type: b for b in UserBadge.query.filter_by(user_id=user.id).all()}
+
+    # Profile completeness (own profile only)
+    profile_completeness = None
+    if is_own_profile:
+        items = [
+            ('Display Name', bool(profile and profile.display_name)),
+            ('Bio', bool(profile and profile.bio)),
+            ('Profile Photo', bool(profile and profile.avatar_filename)),
+            ('Cover Photo', bool(profile and profile.cover_filename)),
+            ('Hometown', bool(profile and profile.hometown)),
+            ('First Cruise', total_cruises > 0),
+        ]
+        done = sum(1 for _, v in items if v)
+        profile_completeness = {
+            'score': int(done / len(items) * 100),
+            'done': done,
+            'total': len(items),
+            'checklist': items,
+        }
 
     return render_template('social/profile.html',
         profile_user=user,
@@ -106,16 +182,22 @@ def profile(username):
         unique_ships=unique_ships,
         unique_regions=unique_regions,
         is_own_profile=is_own_profile,
-        is_following=is_following,
-        follower_count=follower_count,
-        following_count=following_count,
-        cruises=cruises,
+        friend_state=friend_state,
+        pending_request_id=pending_request_id,
+        pending_requests=pending_requests,
+        is_blocked_by_me=is_blocked_by_me,
+        is_blocked_by_them=is_blocked_by_them,
+        friend_count=friend_count,
+        friends_following_count=friends_following_count,
+        cruises=visible_cruises,
         favorite_cruise=favorite_cruise,
         sailing_status=sailing_status,
         sailing_cruise=sailing_cruise,
         user_badges=user_badges,
         badge_definitions=BADGE_DEFINITIONS,
-        reaction_types=REACTION_TYPES
+        reaction_types=REACTION_TYPES,
+        friend_users=friend_users,
+        profile_completeness=profile_completeness
     )
 
 
@@ -484,52 +566,187 @@ def delete_post(post_id):
     return redirect(fallback)
 
 
-# ============== FOLLOW ROUTES ==============
+# ============== FRIEND REQUEST + BLOCK ROUTES ==============
 
-@social_bp.route('/follow/<username>', methods=['POST'])
+def _accepted_friend_count(user_id):
+    from Histacruise.app import UserFollow
+    return UserFollow.query.filter_by(following_id=user_id, status='accepted').count()
+
+
+@social_bp.route('/friend-request/<username>', methods=['POST'])
 @login_required
-def follow_user(username):
-    from Histacruise.app import db, User, UserFollow
+def send_friend_request(username):
+    from Histacruise.app import db, User, UserFollow, UserBlock
 
     user = User.query.filter_by(username=username).first_or_404()
 
     if user.id == current_user.id:
-        return jsonify({'error': 'Cannot follow yourself'}), 400
+        return jsonify({'error': 'Cannot add yourself'}), 400
+
+    blocked = UserBlock.query.filter(
+        db.or_(
+            db.and_(UserBlock.blocker_id == current_user.id, UserBlock.blocked_id == user.id),
+            db.and_(UserBlock.blocker_id == user.id, UserBlock.blocked_id == current_user.id)
+        )
+    ).first()
+    if blocked:
+        return jsonify({'error': 'Action not available'}), 400
 
     existing = UserFollow.query.filter_by(
         follower_id=current_user.id, following_id=user.id
     ).first()
-
     if existing:
-        return jsonify({'error': 'Already following'}), 400
+        return jsonify({'error': 'Already sent or already friends'}), 400
 
-    follow = UserFollow(follower_id=current_user.id, following_id=user.id)
+    follow = UserFollow(follower_id=current_user.id, following_id=user.id, status='pending')
     db.session.add(follow)
     db.session.commit()
 
-    create_notification(user.id, current_user.id, 'follow')
+    create_notification(user.id, current_user.id, 'friend_request')
 
-    follower_count = UserFollow.query.filter_by(following_id=user.id).count()
-    return jsonify({'followed': True, 'follower_count': follower_count})
+    return jsonify({'status': 'pending_sent', 'friend_count': _accepted_friend_count(user.id)})
 
 
-@social_bp.route('/unfollow/<username>', methods=['POST'])
+@social_bp.route('/friend-request/<int:request_id>/accept', methods=['POST'])
 @login_required
-def unfollow_user(username):
+def accept_friend_request(request_id):
+    from Histacruise.app import db, UserFollow
+
+    follow = UserFollow.query.get_or_404(request_id)
+
+    if follow.following_id != current_user.id:
+        return jsonify({'error': 'Not authorized'}), 403
+
+    if follow.status != 'pending':
+        return jsonify({'error': 'Not a pending request'}), 400
+
+    follow.status = 'accepted'
+    db.session.commit()
+
+    create_notification(follow.follower_id, current_user.id, 'friend_accepted')
+
+    return jsonify({'success': True})
+
+
+@social_bp.route('/friend-request/<int:request_id>/reject', methods=['POST'])
+@login_required
+def reject_friend_request(request_id):
+    from Histacruise.app import db, UserFollow
+
+    follow = UserFollow.query.get_or_404(request_id)
+
+    if follow.following_id != current_user.id:
+        return jsonify({'error': 'Not authorized'}), 403
+
+    db.session.delete(follow)
+    db.session.commit()
+
+    return jsonify({'success': True})
+
+
+@social_bp.route('/friend-request/<username>/cancel', methods=['POST'])
+@login_required
+def cancel_friend_request(username):
     from Histacruise.app import db, User, UserFollow
 
     user = User.query.filter_by(username=username).first_or_404()
 
-    existing = UserFollow.query.filter_by(
-        follower_id=current_user.id, following_id=user.id
+    follow = UserFollow.query.filter_by(
+        follower_id=current_user.id, following_id=user.id, status='pending'
     ).first()
-
-    if existing:
-        db.session.delete(existing)
+    if follow:
+        db.session.delete(follow)
         db.session.commit()
 
-    follower_count = UserFollow.query.filter_by(following_id=user.id).count()
-    return jsonify({'followed': False, 'follower_count': follower_count})
+    return jsonify({'status': 'none', 'friend_count': _accepted_friend_count(user.id)})
+
+
+@social_bp.route('/unfriend/<username>', methods=['POST'])
+@login_required
+def unfriend(username):
+    from Histacruise.app import db, User, UserFollow
+
+    user = User.query.filter_by(username=username).first_or_404()
+
+    UserFollow.query.filter(
+        db.or_(
+            db.and_(UserFollow.follower_id == current_user.id, UserFollow.following_id == user.id),
+            db.and_(UserFollow.follower_id == user.id, UserFollow.following_id == current_user.id)
+        )
+    ).delete(synchronize_session=False)
+    db.session.commit()
+
+    return jsonify({'status': 'none', 'friend_count': _accepted_friend_count(user.id)})
+
+
+@social_bp.route('/block/<username>', methods=['POST'])
+@login_required
+def block_user(username):
+    from Histacruise.app import db, User, UserFollow, UserBlock
+
+    user = User.query.filter_by(username=username).first_or_404()
+
+    if user.id == current_user.id:
+        return jsonify({'error': 'Cannot block yourself'}), 400
+
+    # Remove all follow connections between the two users
+    UserFollow.query.filter(
+        db.or_(
+            db.and_(UserFollow.follower_id == current_user.id, UserFollow.following_id == user.id),
+            db.and_(UserFollow.follower_id == user.id, UserFollow.following_id == current_user.id)
+        )
+    ).delete(synchronize_session=False)
+
+    existing_block = UserBlock.query.filter_by(
+        blocker_id=current_user.id, blocked_id=user.id
+    ).first()
+    if not existing_block:
+        db.session.add(UserBlock(blocker_id=current_user.id, blocked_id=user.id))
+
+    db.session.commit()
+    return jsonify({'blocked': True})
+
+
+@social_bp.route('/unblock/<username>', methods=['POST'])
+@login_required
+def unblock_user(username):
+    from Histacruise.app import db, User, UserBlock
+
+    user = User.query.filter_by(username=username).first_or_404()
+
+    UserBlock.query.filter_by(blocker_id=current_user.id, blocked_id=user.id).delete()
+    db.session.commit()
+
+    return jsonify({'blocked': False})
+
+
+# ============== FRIENDS LIST ROUTE ==============
+
+@social_bp.route('/profile/<username>/friends')
+@login_required
+def friends_list(username):
+    from Histacruise.app import db, User, UserFollow, UserBlock
+
+    user = User.query.filter_by(username=username).first_or_404()
+
+    # Check block — blocked users can't view friends list
+    is_blocked = UserBlock.query.filter(
+        db.or_(
+            db.and_(UserBlock.blocker_id == current_user.id, UserBlock.blocked_id == user.id),
+            db.and_(UserBlock.blocker_id == user.id, UserBlock.blocked_id == current_user.id)
+        )
+    ).first()
+    if is_blocked and current_user.id != user.id:
+        flash('This page is not available.', 'error')
+        return redirect(url_for('social.feed'))
+
+    accepted_follows = UserFollow.query.filter_by(following_id=user.id, status='accepted').all()
+    friends = [f.follower for f in accepted_follows]
+
+    return render_template('social/friends_list.html',
+        profile_user=user,
+        friends=friends
+    )
 
 
 # ============== NOTIFICATION ROUTES ==============
@@ -578,14 +795,20 @@ def notification_count():
 @social_bp.route('/discover')
 @login_required
 def discover():
-    from Histacruise.app import db, User, SocialProfile, UserFollow, DISCOVER_USERS_PER_PAGE
+    from Histacruise.app import db, User, SocialProfile, UserFollow, UserBlock, DISCOVER_USERS_PER_PAGE
 
     ensure_profile_exists(current_user)
 
     search = request.args.get('q', '').strip()
     page = request.args.get('page', 1, type=int)
 
+    # Collect blocked user IDs (both directions) to exclude from discover
+    blocked_ids = {b.blocked_id for b in UserBlock.query.filter_by(blocker_id=current_user.id).all()}
+    blocked_ids |= {b.blocker_id for b in UserBlock.query.filter_by(blocked_id=current_user.id).all()}
+
     query = User.query.filter(User.id != current_user.id)
+    if blocked_ids:
+        query = query.filter(~User.id.in_(blocked_ids))
 
     if search:
         search_term = f'%{search}%'
@@ -600,12 +823,25 @@ def discover():
         page=page, per_page=DISCOVER_USERS_PER_PAGE, error_out=False
     )
 
-    # Get follow states
-    followed_ids = {f.following_id for f in
-                    UserFollow.query.filter_by(follower_id=current_user.id).all()}
+    # Build friend state map: user_id -> 'none' | 'pending_sent' | 'pending_received' | 'friends'
+    outgoing = {f.following_id: f.status for f in
+                UserFollow.query.filter_by(follower_id=current_user.id).all()}
+    incoming_pending = {f.follower_id for f in
+                        UserFollow.query.filter_by(following_id=current_user.id, status='pending').all()}
+
+    friend_states = {}
+    for u in users.items:
+        if outgoing.get(u.id) == 'accepted':
+            friend_states[u.id] = 'friends'
+        elif outgoing.get(u.id) == 'pending':
+            friend_states[u.id] = 'pending_sent'
+        elif u.id in incoming_pending:
+            friend_states[u.id] = 'pending_received'
+        else:
+            friend_states[u.id] = 'none'
 
     return render_template('social/discover.html',
         users=users,
         search=search,
-        followed_ids=followed_ids
+        friend_states=friend_states
     )

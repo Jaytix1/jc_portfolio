@@ -26,37 +26,7 @@ from app import (
     SocialProfile, SocialPost, PostLike, PostComment, UserFollow,
 )
 from datetime import date, datetime
-
-
-# ─── Reference Data ──────────────────────────────────────────────────────────
-
-CRUISE_LINES = ['Royal Caribbean', 'Carnival Cruise Line', 'Norwegian Cruise Line',
-                'Celebrity Cruises', 'Disney Cruise Line']
-
-SHIPS = {
-    'Royal Caribbean':       ['Wonder of the Seas', 'Symphony of the Seas', 'Oasis of the Seas'],
-    'Carnival Cruise Line':  ['Carnival Sunshine', 'Carnival Celebration', 'Mardi Gras'],
-    'Norwegian Cruise Line': ['Norwegian Escape', 'Norwegian Bliss', 'Norwegian Prima'],
-    'Celebrity Cruises':     ['Celebrity Edge', 'Celebrity Apex', 'Celebrity Beyond'],
-    'Disney Cruise Line':    ['Disney Wish', 'Disney Dream', 'Disney Magic'],
-}
-
-REGIONS = ['Caribbean', 'Mediterranean', 'Alaska', 'Bahamas',
-           'Europe', 'Mexico', 'Hawaii', 'Bermuda']
-
-PORTS = [
-    ('Port of Miami',         'Miami',         'United States', 25.7742, -80.1747),
-    ('Port Canaveral',        'Cape Canaveral','United States', 28.4158, -80.5917),
-    ('Nassau Cruise Port',    'Nassau',        'Bahamas',       25.0833, -77.3500),
-    ('Cozumel Pier',          'Cozumel',       'Mexico',        20.5088, -86.9517),
-    ('St. Thomas WICO',       'Charlotte Amalie','US Virgin Islands',18.3381,-64.9307),
-    ('Barcelona Cruise Port', 'Barcelona',     'Spain',         41.3614,   2.1731),
-    ('Civitavecchia Port',    'Rome',          'Italy',         42.0941,  11.7962),
-    ('Venice Cruise Terminal','Venice',        'Italy',         45.4408,  12.3155),
-    ('Juneau',                'Juneau',        'United States', 58.3005,-134.4197),
-    ('Skagway',               'Skagway',       'United States', 59.4583,-135.3139),
-]
-
+from reference_data import CRUISE_LINES, SHIPS, REGIONS, PORTS
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -283,16 +253,18 @@ def seed_social(demo, second, cruises):
 
 def main():
     with app.app_context():
+        # Reference data always syncs — safe to run on existing DBs (uses get_or_create)
+        print('Syncing reference data (cruise lines, ships, regions, ports)...')
+        lines, ships, regions, ports = seed_reference_data()
+
         demo_exists = User.query.filter_by(email='demo@histacruise.com').first()
         if demo_exists:
-            print('Demo user already exists — skipping to avoid duplicates.')
-            print('To reseed, delete the database and run again.')
+            print('Demo user already exists — skipping user/social seed.')
             return
 
         print('Seeding Histacruise database...')
-        lines, ships, regions, ports = seed_reference_data()
-        demo, second                 = seed_users()
-        cruises                      = seed_cruises(demo, second, lines, ships, regions)
+        demo, second = seed_users()
+        cruises      = seed_cruises(demo, second, lines, ships, regions)
         seed_cruise_ports(cruises, ports)
         seed_social(demo, second, cruises)
 

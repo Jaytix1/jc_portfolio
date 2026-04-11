@@ -8,6 +8,41 @@
     <h1 style="text-align: center;">WELCOME TO HISTACRUISE</h1>
     <p class="home-intro">Your ultimate cruise statistic tracker! Track your adventures at sea and stay up to date with the cruise industry.</p>
 
+    {% if not current_user.is_authenticated %}
+    <div class="hero-cta">
+        <p class="hero-cta-message">Ready to log your voyages, track your spending, and connect with fellow cruisers? Join for free — your next adventure starts here.</p>
+        <div class="hero-cta-buttons">
+            <a href="{{ url_for('register') }}" class="btn-primary hero-cta-btn">Sign Up Free</a>
+            <a href="{{ url_for('login') }}" class="btn-secondary hero-cta-btn">Already a Member? Log In</a>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if current_user.is_authenticated and countdown_cruise %}
+    <div class="countdown-banner" id="countdownBanner">
+        <div class="countdown-info">
+            <span class="countdown-ship">{{ countdown_cruise.ship.name }}</span>
+            <span class="countdown-detail">{{ countdown_cruise.cruiseline.name }} · {{ countdown_cruise.region.name }}</span>
+            <span class="countdown-date">{{ countdown_cruise.begindate.strftime('%b %d, %Y') }}</span>
+        </div>
+        <div class="countdown-days">
+            <span class="countdown-number">{{ countdown_days }}</span>
+            <span class="countdown-label">days to go</span>
+        </div>
+        <button class="countdown-clear" onclick="clearCountdown()" title="Remove countdown">&times;</button>
+    </div>
+    <script>
+    function clearCountdown() {
+        const form = new FormData();
+        form.append('cruise_id', '');
+        fetch('{{ url_for("set_countdown") }}', { method: 'POST', body: form })
+            .then(() => {
+                document.getElementById('countdownBanner').style.display = 'none';
+            });
+    }
+    </script>
+    {% endif %}
+
     <!-- Section 1: Stock Ticker - Visual LEFT, Text RIGHT -->
     <div class="zigzag-section">
         <div class="zigzag-content">

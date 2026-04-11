@@ -9,7 +9,7 @@
 
     <div class="social-page-header">
         <h2>Discover Cruisers</h2>
-        <p class="social-page-subtitle">Find and follow fellow cruise enthusiasts</p>
+        <p class="social-page-subtitle">Find and connect with fellow cruise enthusiasts</p>
     </div>
 
     <!-- Search Bar -->
@@ -26,6 +26,7 @@
     <!-- User Grid -->
     <div class="discover-grid">
         {% for user in users.items %}
+        {% set state = friend_states.get(user.id, 'none') %}
         <div class="discover-user-card">
             <a href="{{ url_for('social.profile', username=user.username) }}" class="discover-avatar-link">
                 {% if user.social_profile and user.social_profile.avatar_filename %}
@@ -48,11 +49,18 @@
                     <span class="sailing-badge-mini sailing-soon">&#9875; Soon</span>
                 {% endif %}
             </div>
-            <button class="btn-primary discover-follow-btn {{ 'btn-following' if user.id in followed_ids else '' }}"
-                    onclick="toggleFollowDiscover('{{ user.username }}', this)"
-                    data-following="{{ 'true' if user.id in followed_ids else 'false' }}">
-                {{ 'Following' if user.id in followed_ids else 'Follow' }}
-            </button>
+            {% if state == 'friends' %}
+                <button class="btn-secondary discover-follow-btn btn-friends"
+                        onclick="unfriendDiscover('{{ user.username }}', this)">Friends &#10003;</button>
+            {% elif state == 'pending_sent' %}
+                <button class="btn-secondary discover-follow-btn"
+                        onclick="cancelRequestDiscover('{{ user.username }}', this)">Requested &times;</button>
+            {% elif state == 'pending_received' %}
+                <a href="{{ url_for('social.profile', username=user.username) }}" class="btn-primary discover-follow-btn">View Request</a>
+            {% else %}
+                <button class="btn-primary discover-follow-btn"
+                        onclick="sendRequestDiscover('{{ user.username }}', this)">Add Friend</button>
+            {% endif %}
         </div>
         {% else %}
         <div class="no-data-message">
@@ -80,16 +88,39 @@
 
 {% block scripts %}
 <script>
-    function toggleFollowDiscover(username, btn) {
-        var isFollowing = btn.getAttribute('data-following') === 'true';
-        var url = isFollowing ? '/community/unfollow/' + username : '/community/follow/' + username;
-        fetch(url, { method: 'POST' })
+    function sendRequestDiscover(username, btn) {
+        fetch('/community/friend-request/' + username, { method: 'POST' })
             .then(function(r) { return r.json(); })
             .then(function(data) {
-                if (data.followed !== undefined) {
-                    btn.setAttribute('data-following', data.followed ? 'true' : 'false');
-                    btn.textContent = data.followed ? 'Following' : 'Follow';
-                    btn.classList.toggle('btn-following', data.followed);
+                if (data.status === 'pending_sent') {
+                    btn.textContent = 'Requested \u00D7';
+                    btn.className = 'btn-secondary discover-follow-btn';
+                    btn.setAttribute('onclick', "cancelRequestDiscover('" + username + "', this)");
+                }
+            });
+    }
+
+    function cancelRequestDiscover(username, btn) {
+        fetch('/community/friend-request/' + username + '/cancel', { method: 'POST' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.status === 'none') {
+                    btn.textContent = 'Add Friend';
+                    btn.className = 'btn-primary discover-follow-btn';
+                    btn.setAttribute('onclick', "sendRequestDiscover('" + username + "', this)");
+                }
+            });
+    }
+
+    function unfriendDiscover(username, btn) {
+        if (!confirm('Remove ' + username + ' as a friend?')) return;
+        fetch('/community/unfriend/' + username, { method: 'POST' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.status === 'none') {
+                    btn.textContent = 'Add Friend';
+                    btn.className = 'btn-primary discover-follow-btn';
+                    btn.setAttribute('onclick', "sendRequestDiscover('" + username + "', this)");
                 }
             });
     }

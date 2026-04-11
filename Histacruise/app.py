@@ -252,9 +252,21 @@ def sanitize_text(text):
 
 # Use absolute path for database to ensure consistency
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SECRET_KEY'] = 'your-secret-key-here'
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(basedir, "instance", "histacruise.db")}'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-fallback-key')
+_db_url = os.environ.get('DATABASE_URL', f'sqlite:///{os.path.join(basedir, "instance", "histacruise.db")}')
+# SQLAlchemy requires postgresql:// not postgres:// (Supabase/Render may give postgres://)
+if _db_url.startswith('postgres://'):
+    _db_url = _db_url.replace('postgres://', 'postgresql://', 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = _db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_pre_ping': True,   # test connection before use, discard stale ones
+    'pool_recycle': 280,     # recycle connections before Supabase's 300s idle timeout
+    'pool_size': 3,          # keep pool small for Supabase free tier connection limits
+    'max_overflow': 2,
+    'pool_timeout': 30,
+    'connect_args': {'connect_timeout': 10},
+}
 
 # Photo upload configuration
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
@@ -298,6 +310,7 @@ class UserPreference(db.Model):
     dark_mode = db.Column(db.Boolean, default=False)
     yearly_budget = db.Column(db.Float, nullable=True)
     default_view = db.Column(db.String(20), default='table')
+    countdown_cruise_id = db.Column(db.Integer, db.ForeignKey('cruise_history.cruiseid'), nullable=True)
 
     user = db.relationship('User', backref=db.backref('preferences', uselist=False))
 
@@ -340,6 +353,7 @@ class CruiseHistory(db.Model):
     cost = db.Column(db.Float, nullable=True)
     notes = db.Column(db.Text, nullable=True)
     rating = db.Column(db.Integer, nullable=True)
+    visibility = db.Column(db.String(20), nullable=False, server_default='public')
     
     # Relationships
     cruiseline = db.relationship('CruiseLine', backref='cruises')
@@ -630,6 +644,8 @@ class UserFollow(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     follower_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     following_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    # status: 'pending' (friend request sent) or 'accepted' (friends)
+    status = db.Column(db.String(20), nullable=False, server_default='accepted')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     follower = db.relationship('User', foreign_keys=[follower_id], backref='following_assocs')
@@ -640,7 +656,26 @@ class UserFollow(db.Model):
     )
 
     def __repr__(self):
-        return f'<UserFollow {self.follower_id} -> {self.following_id}>'
+        return f'<UserFollow {self.follower_id} -> {self.following_id} [{self.status}]>'
+
+
+class UserBlock(db.Model):
+    __tablename__ = 'user_block'
+
+    id = db.Column(db.Integer, primary_key=True)
+    blocker_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    blocked_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    blocker = db.relationship('User', foreign_keys=[blocker_id], backref='blocked_assocs')
+    blocked = db.relationship('User', foreign_keys=[blocked_id], backref='blocked_by_assocs')
+
+    __table_args__ = (
+        db.UniqueConstraint('blocker_id', 'blocked_id', name='unique_user_block'),
+    )
+
+    def __repr__(self):
+        return f'<UserBlock {self.blocker_id} -> {self.blocked_id}>'
 
 
 class PostReaction(db.Model):
@@ -703,19 +738,128 @@ class UserBadge(db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+if _db_url.startswith('sqlite'):
+    os.makedirs(os.path.join(basedir, 'instance'), exist_ok=True)
 with app.app_context():
-    db.create_all()  # Creates tables for fresh deployments; use `flask db upgrade` for migrations
+    try:
+        db.create_all()  # Creates tables for fresh deployments; use `flask db upgrade` for migrations
+
+        # Safe column additions — ignored if column already exists
+        _migrations = [
+            "ALTER TABLE user_follow ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'accepted'",
+            "ALTER TABLE cruise_history ADD COLUMN visibility VARCHAR(20) NOT NULL DEFAULT 'public'",
+            "ALTER TABLE user_preference ADD COLUMN IF NOT EXISTS countdown_cruise_id INTEGER REFERENCES cruise_history(cruiseid)",
+        ]
+        for _sql in _migrations:
+            try:
+                db.session.execute(db.text(_sql))
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+
+        # Sync reference data — bulk queries instead of per-row lookups
+        try:
+            from reference_data import CRUISE_LINES, SHIPS, REGIONS, PORTS
+            # Load all existing names in one query each
+            _existing_lines = {r[0] for r in db.session.query(CruiseLine.name).all()}
+            _existing_regions = {r[0] for r in db.session.query(Region.name).all()}
+            _existing_ports = {r[0] for r in db.session.query(Port.name).all()}
+            for _name in CRUISE_LINES:
+                if _name not in _existing_lines:
+                    db.session.add(CruiseLine(name=_name))
+            db.session.flush()
+            _lines = {cl.name: cl for cl in CruiseLine.query.all()}
+            _existing_ships = {(r[0], r[1]) for r in db.session.query(Ship.name, Ship.cruiseline_id).all()}
+            for _line_name, _ship_names in SHIPS.items():
+                _lid = _lines[_line_name].id
+                for _ship_name in _ship_names:
+                    if (_ship_name, _lid) not in _existing_ships:
+                        db.session.add(Ship(name=_ship_name, cruiseline_id=_lid))
+            for _rname in REGIONS:
+                if _rname not in _existing_regions:
+                    db.session.add(Region(name=_rname))
+            for _pname, _city, _country, _lat, _lon in PORTS:
+                if _pname not in _existing_ports:
+                    db.session.add(Port(name=_pname, city=_city, country=_country,
+                                        latitude=_lat, longitude=_lon))
+            db.session.commit()
+            print('[Startup] Reference data synced.')
+        except Exception as _e:
+            db.session.rollback()
+            print(f'[Startup] Reference data sync failed: {_e}')
+    except Exception as _startup_err:
+        # DB unreachable during gunicorn's import phase (e.g. IPv6-only on free tier).
+        # Tables already exist from prior deploys; runtime connections will work normally.
+        print(f'[Startup] DB init skipped (will connect on first request): {_startup_err}')
 
 # Register Pipeline API blueprint
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Gunicorn imports this module as 'app', but social routes import from 'Histacruise.app'.
+# Alias them to the same module so Python doesn't import app.py a second time.
+sys.modules.setdefault('Histacruise.app', sys.modules[__name__])
 from HC_Pipeline.api.routes import pipeline_api
 app.register_blueprint(pipeline_api)
 
 # Register Social Community blueprint
 from Histacruise.social import social_bp
 app.register_blueprint(social_bp)
+
+# ── Lazy DB init ──────────────────────────────────────────────────────────────
+# db.create_all() at module level fails on Render free tier (IPv6 unreachable
+# during gunicorn's import phase). Instead we run it on the first request, when
+# the worker process is fully running and the network is available.
+_db_initialized = False
+
+@app.before_request
+def _lazy_db_init():
+    global _db_initialized
+    if _db_initialized:
+        return
+    _db_initialized = True
+    try:
+        db.create_all()
+        _lazy_migrations = [
+            "ALTER TABLE user_follow ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'accepted'",
+            "ALTER TABLE cruise_history ADD COLUMN visibility VARCHAR(20) NOT NULL DEFAULT 'public'",
+            "ALTER TABLE user_preference ADD COLUMN IF NOT EXISTS countdown_cruise_id INTEGER REFERENCES cruise_history(cruiseid)",
+        ]
+        for _sql in _lazy_migrations:
+            try:
+                db.session.execute(db.text(_sql))
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+        from reference_data import CRUISE_LINES, SHIPS, REGIONS, PORTS
+        _existing_lines = {r[0] for r in db.session.query(CruiseLine.name).all()}
+        _existing_regions = {r[0] for r in db.session.query(Region.name).all()}
+        _existing_ports = {r[0] for r in db.session.query(Port.name).all()}
+        for _name in CRUISE_LINES:
+            if _name not in _existing_lines:
+                db.session.add(CruiseLine(name=_name))
+        db.session.flush()
+        _lines = {cl.name: cl for cl in CruiseLine.query.all()}
+        _existing_ships = {(r[0], r[1]) for r in db.session.query(Ship.name, Ship.cruiseline_id).all()}
+        for _line_name, _ship_names in SHIPS.items():
+            _lid = _lines[_line_name].id
+            for _ship_name in _ship_names:
+                if (_ship_name, _lid) not in _existing_ships:
+                    db.session.add(Ship(name=_ship_name, cruiseline_id=_lid))
+        for _rname in REGIONS:
+            if _rname not in _existing_regions:
+                db.session.add(Region(name=_rname))
+        for _pname, _city, _country, _lat, _lon in PORTS:
+            if _pname not in _existing_ports:
+                db.session.add(Port(name=_pname, city=_city, country=_country,
+                                    latitude=_lat, longitude=_lon))
+        db.session.commit()
+        print('[DB] Reference data synced. Init complete.')
+    except Exception as _lazy_err:
+        _db_initialized = False  # retry on next request
+        db.session.rollback()
+        print(f'[DB] Init failed, will retry: {_lazy_err}')
 
 @app.route('/uploads/<category>/<filename>')
 def serve_upload(category, filename):
@@ -808,11 +952,23 @@ def home():
         is_active=True
     ).order_by(CruiseDeal.scraped_at.desc()).limit(4).all()
 
+    # Cruise countdown
+    countdown_cruise = None
+    countdown_days = None
+    if current_user.is_authenticated and current_user.preferences and current_user.preferences.countdown_cruise_id:
+        from datetime import date
+        cc = CruiseHistory.query.get(current_user.preferences.countdown_cruise_id)
+        if cc and cc.begindate > date.today():
+            countdown_cruise = cc
+            countdown_days = (cc.begindate - date.today()).days
+
     return render_template('home.html',
                           stocks=stocks_data,
                           chart_data=chart_data,
                           news=news,
-                          deals=deals)
+                          deals=deals,
+                          countdown_cruise=countdown_cruise,
+                          countdown_days=countdown_days)
 
 @app.route('/about')
 def about():
@@ -838,6 +994,9 @@ def add_cruise():
     cost = request.form.get('cost', None)
     notes = request.form.get('notes', '').strip()
     rating = request.form.get('rating', None)
+    visibility = request.form.get('visibility', 'public')
+    if visibility not in ('public', 'followers', 'private'):
+        visibility = 'public'
 
     # Validate required fields
     if not all([begindate, enddate, cruiseline_id, ship_id, region_id]):
@@ -927,6 +1086,7 @@ def add_cruise():
         cost=cost,
         notes=notes if notes else None,
         rating=rating,
+        visibility=visibility,
         user_id=current_user.id
     )
 
@@ -974,6 +1134,9 @@ def add_cruise():
     db.session.commit()
 
     flash('Cruise added successfully!', 'success')
+    from datetime import date
+    if new_cruise.begindate > date.today():
+        return redirect(url_for('history', prompt_countdown=new_cruise.cruiseid))
     return redirect(url_for('history'))
 
 @app.route('/delete_cruise/<int:cruise_id>', methods=['POST'])
@@ -1025,6 +1188,9 @@ def edit_cruise(cruise_id):
     cost = request.form.get('cost', None)
     notes = request.form.get('notes', '').strip()
     rating = request.form.get('rating', None)
+    visibility = request.form.get('visibility', 'public')
+    if visibility not in ('public', 'followers', 'private'):
+        visibility = 'public'
 
     # Validate required fields
     if not all([begindate, enddate, cruiseline_id, ship_id, region_id]):
@@ -1113,6 +1279,7 @@ def edit_cruise(cruise_id):
     cruise.cost = cost
     cruise.notes = notes if notes else None
     cruise.rating = rating
+    cruise.visibility = visibility
 
     # Handle ports - remove old ones and add new (with duplicate check)
     CruisePort.query.filter_by(cruise_id=cruise_id).delete()
@@ -1145,13 +1312,19 @@ def history():
     regions = Region.query.order_by(Region.name).all()
     ports = Port.query.order_by(Port.country, Port.name).all()
 
+    prompt_countdown = request.args.get('prompt_countdown', type=int)
+    current_countdown_id = (current_user.preferences.countdown_cruise_id
+                            if current_user.preferences else None)
+
     return render_template('history.html',
                            cruises=cruises,
                            cruiselines=cruiselines,
                            ships=ships,
                            regions=regions,
                            ports=ports,
-                           cabin_types=CABIN_TYPES)
+                           cabin_types=CABIN_TYPES,
+                           prompt_countdown=prompt_countdown,
+                           current_countdown_id=current_countdown_id)
 
 @app.route('/statistics')
 @login_required
@@ -1336,6 +1509,19 @@ def clear_budget():
         db.session.commit()
     flash('Budget cleared.', 'success')
     return redirect(url_for('statistics'))
+
+@app.route('/set_countdown', methods=['POST'])
+@login_required
+def set_countdown():
+    cruise_id = request.form.get('cruise_id', type=int)  # None if missing/empty
+    pref = UserPreference.query.filter_by(user_id=current_user.id).first()
+    if not pref:
+        pref = UserPreference(user_id=current_user.id)
+        db.session.add(pref)
+    pref.countdown_cruise_id = cruise_id
+    db.session.commit()
+    return ('', 204)
+
 
 @app.route('/toggle_dark_mode', methods=['POST'])
 @login_required
@@ -1654,8 +1840,9 @@ def register():
         new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
-        
-        flash('Registration successful!')
+
+        login_user(new_user)
+        flash('Welcome to Histacruise!')
         return redirect(url_for('home'))
     
     return render_template('register.html')
@@ -1764,7 +1951,42 @@ def setup_scheduler():
 
     return scheduler
 
-if __name__ == '__main__':
-    # Start the scheduler when running the app directly
+# Start scheduler — runs under both gunicorn and direct python app.py
+# Guard prevents double-start when Flask dev reloader forks a second process
+if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     scheduler = setup_scheduler()
+
+    # Run full pipeline on startup in background so data is ready immediately
+    def _initial_pipeline_run():
+        import time
+        time.sleep(20)  # Wait for DB lazy-init to complete on first request
+        try:
+            from HC_Pipeline.main import Pipeline
+            print('[Startup] Running initial pipeline...')
+            pipeline = Pipeline(app)
+            results = pipeline.run_all()
+            print(f'[Startup] Pipeline complete: {results}')
+        except Exception as e:
+            print(f'[Startup] Pipeline failed: {e}')
+
+    import threading
+    threading.Thread(target=_initial_pipeline_run, daemon=True).start()
+
+@app.route('/admin/run-pipeline')
+@login_required
+def admin_run_pipeline():
+    """Manually trigger the full pipeline. Admin/owner use only."""
+    def _run():
+        try:
+            from HC_Pipeline.main import Pipeline
+            Pipeline(app).run_all()
+        except Exception as e:
+            print(f'[Admin] Pipeline run failed: {e}')
+    import threading
+    threading.Thread(target=_run, daemon=True).start()
+    flash('Pipeline triggered — data will appear within a few minutes.')
+    return redirect(url_for('home'))
+
+
+if __name__ == '__main__':
     app.run(debug=True, use_reloader=False)  # use_reloader=False prevents double scheduler

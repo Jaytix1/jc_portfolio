@@ -21,11 +21,23 @@
         </div>
         {% else %}
         <div class="profile-header-actions">
-            <button id="followBtn" class="btn-primary {{ 'btn-following' if is_following else '' }}"
-                    onclick="toggleFollow('{{ profile_user.username }}', this)"
-                    data-following="{{ 'true' if is_following else 'false' }}">
-                {{ 'Following' if is_following else 'Follow' }}
-            </button>
+            {% if is_blocked_by_me %}
+                <button class="btn-secondary" onclick="unblockUser('{{ profile_user.username }}', this)">Unblock</button>
+            {% elif is_blocked_by_them %}
+                <span class="btn-secondary" style="opacity:0.6;cursor:default;">Unavailable</span>
+            {% elif friend_state == 'friends' %}
+                <button id="friendBtn" class="btn-secondary btn-friends" onclick="unfriendUser('{{ profile_user.username }}', this)">Friends &#10003;</button>
+            {% elif friend_state == 'pending_sent' %}
+                <button id="friendBtn" class="btn-secondary" onclick="cancelRequest('{{ profile_user.username }}', this)">Request Sent &times;</button>
+            {% elif friend_state == 'pending_received' %}
+                <button class="btn-primary" onclick="acceptRequest({{ pending_request_id }}, this)">Accept Request</button>
+                <button class="btn-secondary" onclick="rejectRequest({{ pending_request_id }}, this)">Decline</button>
+            {% else %}
+                <button id="friendBtn" class="btn-primary" onclick="sendFriendRequest('{{ profile_user.username }}', this)">Add Friend</button>
+            {% endif %}
+            {% if not is_blocked_by_me and not is_blocked_by_them %}
+                <button class="btn-danger-sm" onclick="blockUser('{{ profile_user.username }}', this)" title="Block user">Block</button>
+            {% endif %}
         </div>
         {% endif %}
         <div class="social-profile-avatar-section">
@@ -58,10 +70,14 @@
             </div>
             {% endif %}
 
-            <!-- Follow Stats -->
+            <!-- Friend Stats -->
             <div class="profile-follow-stats">
-                <span><strong>{{ follower_count }}</strong> Followers</span>
-                <span><strong>{{ following_count }}</strong> Following</span>
+                <a href="{{ url_for('social.friends_list', username=profile_user.username) }}" style="text-decoration: none; color: inherit;">
+                    <span><strong>{{ friend_count }}</strong> Friends</span>
+                </a>
+                {% if is_own_profile and pending_requests %}
+                    <span class="pending-requests-badge"><strong>{{ pending_requests|length }}</strong> Pending</span>
+                {% endif %}
             </div>
 
             <span class="social-profile-joined">Member since {{ profile_user.social_profile.created_at.strftime('%B %Y') if profile_user.social_profile else 'recently' }}</span>
@@ -70,6 +86,30 @@
 
     {% if is_own_profile %}
     {% include 'social/_create_post_modal.html' %}
+    {% endif %}
+
+    {% if is_own_profile and pending_requests %}
+    <div class="pending-requests-panel">
+        <h3>Friend Requests ({{ pending_requests|length }})</h3>
+        <div class="pending-requests-list">
+            {% for req in pending_requests %}
+            <div class="pending-request-item" id="req-{{ req.id }}">
+                <a href="{{ url_for('social.profile', username=req.follower.username) }}" class="pending-request-user">
+                    {% if req.follower.social_profile and req.follower.social_profile.avatar_filename %}
+                        <img src="{{ url_for('serve_upload', category='profile_photos', filename=req.follower.social_profile.avatar_filename) }}" class="social-avatar-tiny" alt="{{ req.follower.username }}">
+                    {% else %}
+                        <div class="social-avatar-tiny social-avatar-default">{{ req.follower.username[0]|upper }}</div>
+                    {% endif %}
+                    <span>{{ req.follower.social_profile.display_name or req.follower.username if req.follower.social_profile else req.follower.username }}</span>
+                </a>
+                <div class="pending-request-actions">
+                    <button class="btn-primary btn-sm" onclick="acceptRequest({{ req.id }}, this, 'req-{{ req.id }}')">Accept</button>
+                    <button class="btn-secondary btn-sm" onclick="rejectRequest({{ req.id }}, this, 'req-{{ req.id }}')">Decline</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
     {% endif %}
 
     <!-- Two-Column Layout: Posts (left) + Sidebar (right) -->
@@ -106,6 +146,29 @@
 
         <!-- Right Column: Sidebar Tiles -->
         <div class="profile-col-sidebar">
+            <!-- Profile Completeness (own profile only) -->
+            {% if is_own_profile and profile_completeness %}
+            <div class="profile-sidebar-card completeness-card">
+                <div class="completeness-header">
+                    <span>Profile Completeness</span>
+                    <span class="completeness-score">{{ profile_completeness.score }}%</span>
+                </div>
+                <div class="completeness-bar-track">
+                    <div class="completeness-bar-fill" style="width: {{ profile_completeness.score }}%; background: {{ '#e74c3c' if profile_completeness.score < 34 else ('#f39c12' if profile_completeness.score < 67 else '#27ae60') }}"></div>
+                </div>
+                <ul class="completeness-checklist">
+                    {% for label, done in profile_completeness.checklist %}
+                    <li class="{{ 'done' if done else 'missing' }}">
+                        {{ '✓' if done else '○' }} {{ label }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% if profile_completeness.score < 100 %}
+                <a href="#" onclick="openEditProfileModal()" class="completeness-cta">Complete your profile →</a>
+                {% endif %}
+            </div>
+            {% endif %}
+
             <!-- Sailing Status Cruise Info -->
             {% if sailing_cruise %}
             <div class="sailing-status-card">
@@ -236,6 +299,34 @@
                     {% endfor %}
                 </div>
             </div>
+
+            <!-- Friends List -->
+            {% if friend_users %}
+            <div class="cruise-passport friends-list-section">
+                <div class="passport-header">
+                    <span class="passport-stamp">&#128101;</span>
+                    <h3>Friends ({{ friend_count }})</h3>
+                </div>
+                <div class="friends-grid">
+                    {% for friend in friend_users[:12] %}
+                    <a href="{{ url_for('social.profile', username=friend.username) }}" class="friend-card">
+                        {% if friend.social_profile and friend.social_profile.avatar_filename %}
+                            <img src="{{ url_for('serve_upload', category='profile_photos', filename=friend.social_profile.avatar_filename) }}" class="social-avatar-small" alt="{{ friend.username }}">
+                        {% else %}
+                            <div class="social-avatar-small social-avatar-default">{{ friend.username[0]|upper }}</div>
+                        {% endif %}
+                        <span class="friend-name">{{ friend.social_profile.display_name or friend.username if friend.social_profile else friend.username }}</span>
+                        <span class="friend-username">@{{ friend.username }}</span>
+                    </a>
+                    {% endfor %}
+                    {% if friend_count > 12 %}
+                    <a href="{{ url_for('social.friends_list', username=profile_user.username) }}" class="friend-card" style="justify-content: center; font-size: 0.85rem; color: #667eea;">
+                        +{{ friend_count - 12 }} more
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 
@@ -453,19 +544,96 @@
         });
     });
 
-    function toggleFollow(username, btn) {
-        var isFollowing = btn.getAttribute('data-following') === 'true';
-        var url = isFollowing ? '/community/unfollow/' + username : '/community/follow/' + username;
-        fetch(url, { method: 'POST' })
+    function _updateFriendCount(count) {
+        var span = document.querySelector('.profile-follow-stats span:first-child strong');
+        if (span && count !== undefined) span.textContent = count;
+    }
+
+    function sendFriendRequest(username, btn) {
+        fetch('/community/friend-request/' + username, { method: 'POST' })
             .then(function(r) { return r.json(); })
             .then(function(data) {
-                if (data.followed !== undefined) {
-                    btn.setAttribute('data-following', data.followed ? 'true' : 'false');
-                    btn.textContent = data.followed ? 'Following' : 'Follow';
-                    btn.classList.toggle('btn-following', data.followed);
-                    var followerSpan = document.querySelector('.profile-follow-stats span:first-child strong');
-                    if (followerSpan) followerSpan.textContent = data.follower_count;
+                if (data.status === 'pending_sent') {
+                    btn.textContent = 'Request Sent \u00D7';
+                    btn.className = 'btn-secondary';
+                    btn.setAttribute('onclick', "cancelRequest('" + username + "', this)");
+                    _updateFriendCount(data.friend_count);
                 }
+            });
+    }
+
+    function cancelRequest(username, btn) {
+        fetch('/community/friend-request/' + username + '/cancel', { method: 'POST' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.status === 'none') {
+                    btn.textContent = 'Add Friend';
+                    btn.className = 'btn-primary';
+                    btn.setAttribute('onclick', "sendFriendRequest('" + username + "', this)");
+                    _updateFriendCount(data.friend_count);
+                }
+            });
+    }
+
+    function acceptRequest(requestId, btn, rowId) {
+        fetch('/community/friend-request/' + requestId + '/accept', { method: 'POST' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    if (rowId) {
+                        var row = document.getElementById(rowId);
+                        if (row) row.remove();
+                    } else {
+                        // On other's profile — update the button area
+                        location.reload();
+                    }
+                }
+            });
+    }
+
+    function rejectRequest(requestId, btn, rowId) {
+        fetch('/community/friend-request/' + requestId + '/reject', { method: 'POST' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    if (rowId) {
+                        var row = document.getElementById(rowId);
+                        if (row) row.remove();
+                    } else {
+                        location.reload();
+                    }
+                }
+            });
+    }
+
+    function unfriendUser(username, btn) {
+        if (!confirm('Remove ' + username + ' as a friend?')) return;
+        fetch('/community/unfriend/' + username, { method: 'POST' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.status === 'none') {
+                    btn.textContent = 'Add Friend';
+                    btn.className = 'btn-primary';
+                    btn.setAttribute('onclick', "sendFriendRequest('" + username + "', this)");
+                    _updateFriendCount(data.friend_count);
+                }
+            });
+    }
+
+    function blockUser(username, btn) {
+        if (!confirm('Block ' + username + '? This will remove your friendship and prevent interaction.')) return;
+        fetch('/community/block/' + username, { method: 'POST' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.blocked) { location.reload(); }
+            });
+    }
+
+    function unblockUser(username, btn) {
+        fetch('/community/unblock/' + username, { method: 'POST' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data.blocked) { location.reload(); }
             });
     }
 

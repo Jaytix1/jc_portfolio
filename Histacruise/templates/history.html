@@ -114,7 +114,8 @@
                                     data-deck="{{ cruise.deck or '' }}"
                                     data-cost="{{ cruise.cost or '' }}"
                                     data-rating="{{ cruise.rating or '' }}"
-                                    data-notes="{{ cruise.notes or '' }}">
+                                    data-notes="{{ cruise.notes or '' }}"
+                                    data-visibility="{{ cruise.visibility or 'public' }}">
                                 Edit
                             </button>
                             <form method="POST" action="{{ url_for('social.share_cruise', cruise_id=cruise.cruiseid) }}" style="margin: 0;">
@@ -200,7 +201,8 @@
                         data-deck="{{ cruise.deck or '' }}"
                         data-cost="{{ cruise.cost or '' }}"
                         data-rating="{{ cruise.rating or '' }}"
-                        data-notes="{{ cruise.notes or '' }}">Edit</button>
+                        data-notes="{{ cruise.notes or '' }}"
+                        data-visibility="{{ cruise.visibility or 'public' }}">Edit</button>
                     <form method="POST" action="{{ url_for('social.share_cruise', cruise_id=cruise.cruiseid) }}" style="margin: 0; background: transparent; padding: 0; flex: 1;">
                         <button type="submit" class="action-btn social-share-btn" style="width: 100%;" onclick="return confirm('Share this cruise to the community feed?')">Share</button>
                     </form>
@@ -270,12 +272,16 @@
                             </select>
                         </div>
 
-                        <div class="add-cruise-section-header" style="margin-top: 14px;">Ports Visited</div>
+                        <div class="add-cruise-section-header" style="margin-top: 14px; display: flex; align-items: center; gap: 8px;">
+                            Ports Visited
+                            <span id="addPortCount" class="port-count-badge">0</span>
+                        </div>
                         <p style="color: #888; font-size: 0.82em; margin-bottom: 8px;">Search and add ports, drag to reorder</p>
 
                         <div id="addPortsContainer" class="ports-container">
                             <!-- First port entry will be added by JS -->
                         </div>
+                        <div id="addPortsScrollHint" class="ports-scroll-hint" style="display:none;">Scroll to see all ports</div>
                         <button type="button" class="btn-secondary" id="addMorePorts" style="margin-top: 8px; font-size: 0.82em;">+ Add Port</button>
                     </div>
 
@@ -327,6 +333,15 @@
                             <textarea id="notes" name="notes" rows="3" placeholder="Share your thoughts..."></textarea>
                         </div>
 
+                        <div class="edit-profile-field">
+                            <label for="visibility">Visibility</label>
+                            <select id="visibility" name="visibility">
+                                <option value="public">&#127760; Public — visible to everyone</option>
+                                <option value="followers">&#128101; Friends only — visible to friends</option>
+                                <option value="private">&#128274; Private — only you can see</option>
+                            </select>
+                        </div>
+
                         <div class="add-cruise-section-header" style="margin-top: 14px;">Photos</div>
 
                         <div class="edit-profile-field">
@@ -336,10 +351,11 @@
                                     <circle cx="8.5" cy="8.5" r="1.5"></circle>
                                     <polyline points="21 15 16 10 5 21"></polyline>
                                 </svg>
-                                <p class="upload-label">Click to add photos</p>
-                                <p>PNG, JPG, GIF, WebP</p>
+                                <p class="upload-label">Click or drag &amp; drop photos</p>
+                                <p>PNG, JPG, GIF, WebP &mdash; or <a class="folder-upload-link" onclick="event.stopPropagation();document.getElementById('cruiseFolderInput').click()">upload a folder</a></p>
                             </div>
                             <input type="file" id="cruisePhotosInput" name="photos" multiple accept="image/png,image/jpeg,image/gif,image/webp" style="display:none;">
+                            <input type="file" id="cruiseFolderInput" webkitdirectory multiple accept="image/png,image/jpeg,image/gif,image/webp" style="display:none;">
                             <div class="cruise-image-thumbnails" id="addCruiseThumbnails"></div>
                         </div>
                     </div>
@@ -409,12 +425,16 @@
                             </select>
                         </div>
 
-                        <div class="add-cruise-section-header" style="margin-top: 14px;">Ports Visited</div>
+                        <div class="add-cruise-section-header" style="margin-top: 14px; display: flex; align-items: center; gap: 8px;">
+                            Ports Visited
+                            <span id="editPortCount" class="port-count-badge">0</span>
+                        </div>
                         <p style="color: #888; font-size: 0.82em; margin-bottom: 8px;">Search and add ports, drag to reorder</p>
 
                         <div id="editPortsContainer" class="ports-container">
                             <!-- Ports will be populated by JavaScript -->
                         </div>
+                        <div id="editPortsScrollHint" class="ports-scroll-hint" style="display:none;">Scroll to see all ports</div>
                         <button type="button" class="btn-secondary" id="editAddMorePorts" style="margin-top: 8px; font-size: 0.82em;">+ Add Port</button>
                     </div>
 
@@ -466,6 +486,15 @@
                             <textarea id="edit_notes" name="notes" rows="3" placeholder="Share your thoughts..."></textarea>
                         </div>
 
+                        <div class="edit-profile-field">
+                            <label for="edit_visibility">Visibility</label>
+                            <select id="edit_visibility" name="visibility">
+                                <option value="public">&#127760; Public — visible to everyone</option>
+                                <option value="followers">&#128101; Friends only — visible to friends</option>
+                                <option value="private">&#128274; Private — only you can see</option>
+                            </select>
+                        </div>
+
                         <div class="add-cruise-section-header" style="margin-top: 14px;">Photos</div>
 
                         <div class="edit-profile-field">
@@ -476,10 +505,11 @@
                                     <circle cx="8.5" cy="8.5" r="1.5"></circle>
                                     <polyline points="21 15 16 10 5 21"></polyline>
                                 </svg>
-                                <p class="upload-label">Click to add photos</p>
-                                <p>PNG, JPG, GIF, WebP</p>
+                                <p class="upload-label">Click or drag &amp; drop photos</p>
+                                <p>PNG, JPG, GIF, WebP &mdash; or <a class="folder-upload-link" onclick="event.stopPropagation();document.getElementById('editFolderInput').click()">upload a folder</a></p>
                             </div>
                             <input type="file" id="editPhotosInput" multiple accept="image/png,image/jpeg,image/gif,image/webp" style="display:none;">
+                            <input type="file" id="editFolderInput" webkitdirectory multiple accept="image/png,image/jpeg,image/gif,image/webp" style="display:none;">
                             <span id="editUploadStatus" style="display:none; font-size: 0.85em; color: #667eea; margin-top: 6px;"></span>
                         </div>
                     </div>
@@ -539,13 +569,15 @@
                     <div id="viewPhotoGallery" class="photo-gallery"></div>
                     <div class="photo-upload-area" style="margin-top: 10px;">
                         <input type="file" id="photoUploadInput" multiple accept="image/png,image/jpeg,image/gif,image/webp" style="display: none;">
+                        <input type="file" id="viewFolderInput" webkitdirectory multiple accept="image/png,image/jpeg,image/gif,image/webp" style="display:none;">
                         <div class="cruise-image-upload-area" id="viewCruiseDropzone" onclick="document.getElementById('photoUploadInput').click()">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                                 <circle cx="8.5" cy="8.5" r="1.5"></circle>
                                 <polyline points="21 15 16 10 5 21"></polyline>
                             </svg>
-                            <p class="upload-label">Click to add photos</p>
+                            <p class="upload-label">Click or drag &amp; drop photos</p>
+                            <p style="font-size:0.8em; color:#aaa; margin-top:4px;">or <a class="folder-upload-link" onclick="event.stopPropagation();document.getElementById('viewFolderInput').click()">upload a folder</a></p>
                         </div>
                         <span id="viewUploadStatus" style="display:none; font-size: 0.85em; color: #667eea; margin-top: 6px;"></span>
                     </div>
@@ -556,6 +588,12 @@
                 <button type="button" class="btn-cancel" id="editFromViewBtn">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     Edit Cruise
+                </button>
+                <button type="button" class="btn-cancel set-countdown-btn" id="setCountdownBtn" style="display:none;" onclick="setAsCountdown()">
+                    ⏳ Set as Countdown
+                </button>
+                <button type="button" class="btn-cancel set-countdown-btn countdown-active-btn" id="countdownActiveBtn" style="display:none;" onclick="clearCountdownFromModal()">
+                    ✓ Counting Down
                 </button>
                 <button type="button" class="create-post-submit-btn" id="closeViewBtn">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
@@ -577,7 +615,31 @@
         </div>
     </div>
 
+    <!-- Countdown toast (shown when a future cruise was just added) -->
+    {% if prompt_countdown %}
+    <div class="countdown-toast" id="countdownToast">
+        <span>Cruise added! Set it as your countdown?</span>
+        <div class="countdown-toast-actions">
+            <button class="countdown-toast-yes" onclick="toastSetCountdown({{ prompt_countdown }})">Yes</button>
+            <button class="countdown-toast-no" onclick="document.getElementById('countdownToast').style.display='none'">No thanks</button>
+        </div>
+    </div>
+    {% endif %}
+
     <script>
+        {% if prompt_countdown %}
+        const SET_COUNTDOWN_URL = '{{ url_for("set_countdown") }}';
+        function toastSetCountdown(cruiseId) {
+            const form = new FormData();
+            form.append('cruise_id', cruiseId);
+            fetch(SET_COUNTDOWN_URL, { method: 'POST', body: form })
+                .then(() => {
+                    document.getElementById('countdownToast').style.display = 'none';
+                    currentCountdownId = cruiseId;
+                });
+        }
+        {% endif %}
+
         document.addEventListener('DOMContentLoaded', function() {
             // Store all ships data
             const allShips = [
@@ -607,13 +669,20 @@
                 return n + (s[(v-20)%10] || s[v] || s[0]);
             }
 
-            // Update ordinal labels in a container
+            // Update ordinal labels, count badge, and scroll hint in a container
             function updateOrdinals(container) {
                 var entries = container.querySelectorAll('.port-entry');
                 entries.forEach(function(entry, i) {
                     var label = entry.querySelector('.port-ordinal');
                     if (label) label.textContent = ordinal(i + 1);
                 });
+
+                // Sync count badge and scroll hint for this container
+                var isAdd  = container.id === 'addPortsContainer';
+                var countEl = document.getElementById(isAdd ? 'addPortCount' : 'editPortCount');
+                var hintEl  = document.getElementById(isAdd ? 'addPortsScrollHint' : 'editPortsScrollHint');
+                if (countEl) countEl.textContent = entries.length;
+                if (hintEl) hintEl.style.display = (container.scrollHeight > container.clientHeight) ? 'block' : 'none';
             }
 
             // Setup drag-and-drop for a ports container
@@ -805,13 +874,54 @@
             });
 
             // ===== IMAGE UPLOAD PREVIEW =====
+            // ===== SHARED PHOTO DROPZONE HELPER =====
+            const ALLOWED_IMAGE_TYPES = ['image/png','image/jpeg','image/gif','image/webp'];
+
+            function setupPhotoDropzone(dropzoneEl, onFiles) {
+                ['dragenter','dragover'].forEach(evt => {
+                    dropzoneEl.addEventListener(evt, function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        dropzoneEl.classList.add('drag-over');
+                    });
+                });
+                dropzoneEl.addEventListener('dragleave', function(e) {
+                    // only remove if leaving the dropzone itself
+                    if (!dropzoneEl.contains(e.relatedTarget)) {
+                        dropzoneEl.classList.remove('drag-over');
+                    }
+                });
+                dropzoneEl.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzoneEl.classList.remove('drag-over');
+                    const files = filterImageFiles(Array.from(e.dataTransfer.files));
+                    if (files.length) onFiles(files);
+                });
+            }
+
+            function filterImageFiles(files) {
+                return files.filter(f => ALLOWED_IMAGE_TYPES.includes(f.type));
+            }
+
+            // ===== ADD CRUISE PHOTO UPLOAD =====
             const cruisePhotosInput = document.getElementById('cruisePhotosInput');
+            const cruiseFolderInput = document.getElementById('cruiseFolderInput');
             const thumbnailsContainer = document.getElementById('addCruiseThumbnails');
             let selectedFiles = [];
 
             cruisePhotosInput.addEventListener('change', function() {
-                const newFiles = Array.from(this.files);
-                newFiles.forEach(function(file) {
+                addFilesToAddForm(filterImageFiles(Array.from(this.files)));
+            });
+
+            function updateFileInput() {
+                var dt = new DataTransfer();
+                selectedFiles.forEach(function(f) { dt.items.add(f); });
+                cruisePhotosInput.files = dt.files;
+            }
+
+            function addFilesToAddForm(files) {
+                files.forEach(function(file) {
                     if (selectedFiles.length >= 50) return;
                     selectedFiles.push(file);
                     var reader = new FileReader();
@@ -820,7 +930,6 @@
                         thumb.className = 'cruise-image-thumb';
                         thumb.innerHTML = '<img src="' + e.target.result + '" alt="Preview">' +
                             '<button type="button" class="remove-thumb">&times;</button>';
-                        var idx = selectedFiles.indexOf(file);
                         thumb.querySelector('.remove-thumb').addEventListener('click', function() {
                             var i = selectedFiles.indexOf(file);
                             if (i > -1) selectedFiles.splice(i, 1);
@@ -832,13 +941,13 @@
                     reader.readAsDataURL(file);
                 });
                 updateFileInput();
-            });
-
-            function updateFileInput() {
-                var dt = new DataTransfer();
-                selectedFiles.forEach(function(f) { dt.items.add(f); });
-                cruisePhotosInput.files = dt.files;
             }
+
+            setupPhotoDropzone(document.getElementById('addCruiseDropzone'), addFilesToAddForm);
+            cruiseFolderInput.addEventListener('change', function() {
+                addFilesToAddForm(filterImageFiles(Array.from(this.files)));
+                this.value = '';
+            });
 
             // Add form - Ship filtering
             const cruiselineSelect = document.getElementById('cruiseline_id');
@@ -964,6 +1073,7 @@
                     const cost = this.dataset.cost;
                     const rating = this.dataset.rating;
                     const notes = this.dataset.notes;
+                    const visibility = this.dataset.visibility || 'public';
 
                     // Track cruise ID for photo uploads
                     currentEditCruiseId = cruiseId;
@@ -984,6 +1094,7 @@
                     document.getElementById('edit_cost').value = cost;
                     document.getElementById('edit_rating').value = rating;
                     document.getElementById('edit_notes').value = notes;
+                    document.getElementById('edit_visibility').value = visibility;
 
                     // Filter and select ship
                     filterEditShips(parseInt(cruiselineId), parseInt(shipId));
@@ -1093,14 +1204,30 @@
                     });
             }
 
-            // Edit modal photo upload - auto-upload on selection
+            // Edit modal photo upload - auto-upload on selection + drag/drop + folder
             const editPhotosInput = document.getElementById('editPhotosInput');
+            const editFolderInput = document.getElementById('editFolderInput');
             const editUploadStatus = document.getElementById('editUploadStatus');
+
+            function triggerEditUpload(files) {
+                const dt = new DataTransfer();
+                filterImageFiles(files).forEach(f => dt.items.add(f));
+                editPhotosInput.files = dt.files;
+                autoUploadPhotos(editPhotosInput, currentEditCruiseId, editUploadStatus, function() {
+                    loadEditCruisePhotos(currentEditCruiseId);
+                });
+            }
 
             editPhotosInput.addEventListener('change', function() {
                 autoUploadPhotos(this, currentEditCruiseId, editUploadStatus, function() {
                     loadEditCruisePhotos(currentEditCruiseId);
                 });
+            });
+
+            setupPhotoDropzone(document.getElementById('editCruiseDropzone'), triggerEditUpload);
+            editFolderInput.addEventListener('change', function() {
+                triggerEditUpload(Array.from(this.files));
+                this.value = '';
             });
 
             // Edit form - Ship filtering on cruise line change
@@ -1122,6 +1249,30 @@
             const viewBtns = document.querySelectorAll('.action-btn.view-btn');
             const closeViewModalBtn = document.getElementById('closeViewModal');
             const closeViewBtn = document.getElementById('closeViewBtn');
+
+            // Countdown state
+            let currentCountdownId = {{ current_countdown_id|tojson }};
+            const COUNTDOWN_URL = '{{ url_for("set_countdown") }}';
+
+            function setAsCountdown() {
+                const form = new FormData();
+                form.append('cruise_id', currentViewCruiseId);
+                fetch(COUNTDOWN_URL, { method: 'POST', body: form }).then(() => {
+                    currentCountdownId = parseInt(currentViewCruiseId);
+                    document.getElementById('setCountdownBtn').style.display = 'none';
+                    document.getElementById('countdownActiveBtn').style.display = 'inline-flex';
+                });
+            }
+
+            function clearCountdownFromModal() {
+                const form = new FormData();
+                form.append('cruise_id', '');
+                fetch(COUNTDOWN_URL, { method: 'POST', body: form }).then(() => {
+                    currentCountdownId = null;
+                    document.getElementById('setCountdownBtn').style.display = 'inline-flex';
+                    document.getElementById('countdownActiveBtn').style.display = 'none';
+                });
+            }
 
             // Open view modal and populate with cruise data
             let currentViewCruiseId = null;
@@ -1207,6 +1358,25 @@
 
                 // Load photos
                 loadCruisePhotos(currentViewCruiseId);
+
+                // Show/hide countdown buttons based on whether cruise is in the future
+                const setBtn = document.getElementById('setCountdownBtn');
+                const activeBtn = document.getElementById('countdownActiveBtn');
+                const today = new Date(); today.setHours(0,0,0,0);
+                const begin = new Date(beginDate);
+                if (begin > today) {
+                    const cruiseIdInt = parseInt(currentViewCruiseId);
+                    if (cruiseIdInt === currentCountdownId) {
+                        setBtn.style.display = 'none';
+                        activeBtn.style.display = 'inline-flex';
+                    } else {
+                        setBtn.style.display = 'inline-flex';
+                        activeBtn.style.display = 'none';
+                    }
+                } else {
+                    setBtn.style.display = 'none';
+                    activeBtn.style.display = 'none';
+                }
 
                 // Show modal
                 viewModal.style.display = 'flex';
@@ -1365,12 +1535,28 @@
 
             // View modal photo upload - auto-upload on selection
             const photoUploadInput = document.getElementById('photoUploadInput');
+            const viewFolderInput = document.getElementById('viewFolderInput');
             const viewUploadStatus = document.getElementById('viewUploadStatus');
+
+            function triggerViewUpload(files) {
+                const dt = new DataTransfer();
+                filterImageFiles(files).forEach(f => dt.items.add(f));
+                photoUploadInput.files = dt.files;
+                autoUploadPhotos(photoUploadInput, currentViewCruiseId, viewUploadStatus, function() {
+                    loadCruisePhotos(currentViewCruiseId);
+                });
+            }
 
             photoUploadInput.addEventListener('change', function() {
                 autoUploadPhotos(this, currentViewCruiseId, viewUploadStatus, function() {
                     loadCruisePhotos(currentViewCruiseId);
                 });
+            });
+
+            setupPhotoDropzone(document.getElementById('viewCruiseDropzone'), triggerViewUpload);
+            viewFolderInput.addEventListener('change', function() {
+                triggerViewUpload(Array.from(this.files));
+                this.value = '';
             });
 
             closeViewModalBtn.addEventListener('click', function() {

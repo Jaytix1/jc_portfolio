@@ -7,6 +7,11 @@ try:
 except ImportError:
     yf = None
 
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
+
 
 class StockCollector(BaseCollector):
     """Collector for cruise company stock prices using Yahoo Finance."""
@@ -23,71 +28,65 @@ class StockCollector(BaseCollector):
         if yf is None:
             raise ImportError("yfinance is required. Install with: pip install yfinance")
 
-    def collect(self, days: int = 5) -> bool:
+    def collect(self, days: int = 14) -> bool:
         """
         Collect stock prices for cruise companies.
+        Downloads each symbol individually to avoid batch format issues.
 
         Args:
-            days: Number of days of history to fetch (default 5 to handle weekends)
+            days: Number of days of history to fetch (default 7 to cover weekends)
 
         Returns:
-            bool: True on success, False on failure
+            bool: True if at least one symbol succeeded
         """
         from Histacruise.app import StockPrice
 
         self.reset_stats()
         self.logger.info(f"Starting stock collection for {self.SYMBOLS}")
 
-        try:
-            # Download data for all symbols at once
-            data = yf.download(
-                self.SYMBOLS,
-                period=f'{days}d',
-                interval='1d',
-                progress=False,
-                group_by='ticker'
-            )
-
-            if data.empty:
-                self.logger.warning("No stock data returned from yfinance")
-                return False
-
-            for symbol in self.SYMBOLS:
+        any_success = False
+        for symbol in self.SYMBOLS:
+            try:
+                # Ticker.history() returns flat columns consistently across yfinance versions
+                data = yf.Ticker(symbol).history(
+                    period=f'{days}d',
+                    interval='1d',
+                    auto_adjust=True,
+                )
+                if data.empty:
+                    self.logger.warning(f"No data returned for {symbol}")
+                    continue
                 self._process_symbol(symbol, data, StockPrice)
+                any_success = True
+            except Exception as e:
+                self.logger.error(f"Failed to download {symbol}: {e}")
+                self.stats['errors'] += 1
 
+        if any_success:
             self.db.commit()
-            self.logger.info(
-                f"Stock collection complete: {self.stats['processed']} processed, "
-                f"{self.stats['added']} added, {self.stats['updated']} updated"
-            )
-            return True
-
-        except Exception as e:
-            self.logger.error(f"Stock collection failed: {e}")
-            self.db.rollback()
-            self.stats['errors'] += 1
-            return False
+        self.logger.info(
+            f"Stock collection complete: {self.stats['processed']} processed, "
+            f"{self.stats['added']} added, {self.stats['updated']} updated"
+        )
+        return any_success
 
     def _process_symbol(self, symbol: str, data, StockPrice):
         """Process stock data for a single symbol."""
         try:
-            # Handle both single and multi-ticker data formats
-            if len(self.SYMBOLS) == 1:
-                symbol_data = data
-            else:
-                symbol_data = data[symbol]
-
-            for date_idx in symbol_data.index:
+            for date_idx in data.index:
                 self.stats['processed'] += 1
                 date = date_idx.date()
 
-                # Check if we already have this data point
                 existing = self.db.query(StockPrice).filter_by(
                     symbol=symbol,
                     date=date
                 ).first()
 
-                row = symbol_data.loc[date_idx]
+                row = data.loc[date_idx]
+
+                # If duplicate index caused a DataFrame slice, take the first row
+                if hasattr(row, 'ndim') and row.ndim == 2:
+                    row = row.iloc[0]
 
                 # Skip if all values are NaN
                 if row.isna().all():
@@ -96,22 +95,22 @@ class StockCollector(BaseCollector):
                 if existing:
                     # Update if close price changed
                     if existing.close_price != row['Close']:
-                        existing.open_price = float(row['Open']) if not row.isna()['Open'] else None
-                        existing.high_price = float(row['High']) if not row.isna()['High'] else None
-                        existing.low_price = float(row['Low']) if not row.isna()['Low'] else None
+                        existing.open_price = float(row['Open']) if not pd.isna(row['Open']) else None
+                        existing.high_price = float(row['High']) if not pd.isna(row['High']) else None
+                        existing.low_price = float(row['Low']) if not pd.isna(row['Low']) else None
                         existing.close_price = float(row['Close'])
-                        existing.volume = int(row['Volume']) if not row.isna()['Volume'] else None
+                        existing.volume = int(row['Volume']) if not pd.isna(row['Volume']) else None
                         self.stats['updated'] += 1
                 else:
                     # Add new record
                     stock_price = StockPrice(
                         symbol=symbol,
                         date=date,
-                        open_price=float(row['Open']) if not row.isna()['Open'] else None,
-                        high_price=float(row['High']) if not row.isna()['High'] else None,
-                        low_price=float(row['Low']) if not row.isna()['Low'] else None,
+                        open_price=float(row['Open']) if not pd.isna(row['Open']) else None,
+                        high_price=float(row['High']) if not pd.isna(row['High']) else None,
+                        low_price=float(row['Low']) if not pd.isna(row['Low']) else None,
                         close_price=float(row['Close']),
-                        volume=int(row['Volume']) if not row.isna()['Volume'] else None
+                        volume=int(row['Volume']) if not pd.isna(row['Volume']) else None
                     )
                     self.db.add(stock_price)
                     self.stats['added'] += 1

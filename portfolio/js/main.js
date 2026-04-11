@@ -20,7 +20,7 @@
         deletingSpeed: 50,
         pauseDuration: 2000,
         // Replace with your Formspree endpoint: https://formspree.io/f/YOUR_FORM_ID
-        formspreeUrl: ''
+        formspreeUrl: 'https://formspree.io/f/xojppaqv'
     };
 
     // ===================================
